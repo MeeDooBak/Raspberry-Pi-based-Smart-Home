@@ -23,7 +23,7 @@ public class MotionDetectoeWithLED_Timer {
         pin12.addListener(Sensor);
     }
 
-    private static GpioPinListenerDigital Sensor = new GpioPinListenerDigital() {
+    private static final GpioPinListenerDigital Sensor = new GpioPinListenerDigital() {
 
         @Override
         public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
@@ -37,7 +37,7 @@ public class MotionDetectoeWithLED_Timer {
         }
     };
 
-    private static TimerTask Task = new TimerTask() {
+    private static final TimerTask Task = new TimerTask() {
         @Override
         public void run() {
             System.out.println(counter);
