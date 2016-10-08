@@ -8,7 +8,7 @@ public class MotionDetectoeWithLED_Timer {
     private static GpioPinDigitalInput pin12;
     private static GpioPinDigitalOutput pin4;
 
-    private static int count = 0;
+    private static int counter = 0;
     private static int stop = 0;
 
     public static void main(String[] args) {
@@ -29,8 +29,8 @@ public class MotionDetectoeWithLED_Timer {
         public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
             if (event.getState().isHigh()) {
                 pin4.high();
-                stop = count + 20;
-                System.out.println("-------------- " + count);
+                stop = 20;
+                counter = 0;
                 System.out.println("-------------- " + stop);
                 System.out.println("WARNING Motion detected!!!");
             }
@@ -40,9 +40,9 @@ public class MotionDetectoeWithLED_Timer {
     private static TimerTask Task = new TimerTask() {
         @Override
         public void run() {
-            System.out.println(count);
-            count++;
-            if (stop == count) {
+            System.out.println(counter);
+            counter++;
+            if (stop == counter) {
                 pin4.low();
                 System.out.println("LED Stop");
             }
