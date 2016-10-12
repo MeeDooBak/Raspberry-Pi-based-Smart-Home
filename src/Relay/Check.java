@@ -6,7 +6,6 @@ import java.util.logging.*;
 public class Check {
 
     public static Relay command;
-
     private static String[] Ports;
 
     public static void main(String[] args) {
