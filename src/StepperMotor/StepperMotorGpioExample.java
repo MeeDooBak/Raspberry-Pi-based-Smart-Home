@@ -9,7 +9,9 @@ public class StepperMotorGpioExample {
     private static BufferedReader client;
     private static GpioStepperMotorComponent motor;
     private static boolean isOpen;
-    private static boolean isColse;
+    private static boolean LastMoveIsOpen;
+    private static boolean Stop;
+    private static int value;
 
     public static void main(String[] args) throws InterruptedException, IOException {
         System.out.println("<--Pi4J--> GPIO Stepper Motor Example ... started.");
@@ -57,15 +59,18 @@ public class StepperMotorGpioExample {
                     if (!isOpen) {
                         new Thread(open).start();
                         isOpen = true;
-                        isColse = false;
                     }
                 } else if (Line.split(" ")[2].equals("KEY_5")) {
                     System.out.println(Line.split(" ")[2]);
-                    if (!isColse) {
+                    if (isOpen) {
                         new Thread(close).start();
                         isOpen = false;
-                        isColse = true;
                     }
+
+                } else if (Line.split(" ")[2].equals("KEY_8")) {
+                    System.out.println(Line.split(" ")[2]);
+                    value = 0;
+                    Stop = true;
                 }
             }
         }
@@ -75,14 +80,54 @@ public class StepperMotorGpioExample {
     private static final Runnable open = new Runnable() {
         @Override
         public void run() {
-            motor.step(-6114);
+            if (value > 0) {
+                for (int i = value; i > 0; i--) {
+                    motor.step(-1);
+                    if (Stop) {
+                        value = i;
+                        Stop = false;
+                        break;
+                    }
+                }
+                //value = 0;
+            } else {
+                for (int i = 1; i < 6114; i++) {
+                    motor.step(-1);
+                    if (Stop) {
+                        value = i;
+                        Stop = false;
+                        break;
+                    }
+                }
+            }
+            LastMoveIsOpen = true;
         }
     };
 
     private static final Runnable close = new Runnable() {
         @Override
         public void run() {
-            motor.step(6114);
+            if (value > 0) {
+                for (int i = value; i > 0; i--) {
+                    motor.step(1);
+                    if (Stop) {
+                        value = i;
+                        Stop = false;
+                        break;
+                    }
+                }
+                //value = 0;
+            } else {
+                for (int i = 1; i < 6114; i++) {
+                    motor.step(1);
+                    if (Stop) {
+                        value = i;
+                        Stop = false;
+                        break;
+                    }
+                }
+            }
+            LastMoveIsOpen = false;
         }
     };
 }
