@@ -38,7 +38,6 @@ public class TestSENSORwithLED {
                     Result = Statement.executeQuery("select * from device");
                     Result.beforeFirst();
                     while (Result.next()) {
-                        int ID = Result.getInt("ID");
                         int State = Result.getInt("State");
                         int Change = Result.getInt("Change");
 

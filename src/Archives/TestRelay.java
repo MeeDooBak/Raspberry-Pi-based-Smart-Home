@@ -1,9 +1,10 @@
-package Relay;
+package Archives;
 
+import SmartHome.Relay;
 import com.adventnet.snmp.snmp2.*;
 import java.util.logging.*;
 
-public class Check {
+public class TestRelay {
 
     public static Relay command;
     private static String[] Ports;
@@ -34,7 +35,7 @@ public class Check {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException ex) {
-            Logger.getLogger(Check.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TestRelay.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         for (int i = 1; i < 17; i++) {

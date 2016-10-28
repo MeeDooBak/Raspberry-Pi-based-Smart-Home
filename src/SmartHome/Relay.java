@@ -1,4 +1,4 @@
-package Relay;
+package SmartHome;
 
 import com.adventnet.snmp.snmp2.*;
 
