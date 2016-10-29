@@ -7,42 +7,59 @@ import java.util.logging.*;
 
 public class Device extends Thread {
 
-    private final Statement Statement;
+    private final Connection DB;
     private final GpioController GPIO;
     public final Relay command;
 
-    public Device(Statement Statement) {
-        this.Statement = Statement;
+    public Device(Connection DB) {
+        this.DB = DB;
         GPIO = GpioFactory.getInstance();
-        command = new Relay("192.168.1.2", 161, "private");
+        command = new Relay("192.168.1.14", 161, "private");
     }
 
     @Override
     public void run() {
         try {
             while (true) {
-                ResultSet Result = Statement.executeQuery("select * from device");
+                Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                ResultSet Result = Statement.executeQuery("select DeviceID, DeviceName , DeviceState , GateNum , isStatusChanged  from device");
                 Result.beforeFirst();
 
                 while (Result.next()) {
 
+                    int DeviceID = Result.getInt("DeviceID");
                     String DeviceName = Result.getString("DeviceName");
-                    int DeviceState = Result.getInt("DeviceState");
+                    boolean DeviceState = Result.getBoolean("DeviceState");
                     int GateNum = Result.getInt("GateNum");
-                    int isStatusChanged = Result.getInt("isStatusChanged");
+                    boolean isStatusChanged = Result.getBoolean("isStatusChanged");
 
                     if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC")) {
-                        if (isStatusChanged == 1) {
+                        if (isStatusChanged) {
+                            System.out.println(DeviceName);
 
-                            if (DeviceState == 1) {
-                                command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.1." + GateNum + ".0", SnmpAPI.INTEGER, "1");
+                            if (DeviceState) {
+                                if (GateNum < 9) {
+                                    command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.1." + GateNum + ".0", SnmpAPI.INTEGER, "1");
+                                } else {
+                                    command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.2." + (GateNum - 8) + ".0", SnmpAPI.INTEGER, "1");
+                                }
                             } else {
-                                command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.1." + GateNum + ".0", SnmpAPI.INTEGER, "0");
+                                if (GateNum < 9) {
+                                    command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.1." + GateNum + ".0", SnmpAPI.INTEGER, "0");
+                                } else {
+                                    command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.2." + (GateNum - 8) + ".0", SnmpAPI.INTEGER, "0");
+                                }
                             }
 
-                            isStatusChanged = 0;
-                            Result.updateInt("isStatusChanged", isStatusChanged);
-                            Result.updateRow();
+                            isStatusChanged = false;
+
+                            PreparedStatement ps = DB.prepareStatement("SELECT DeviceID, isStatusChanged FROM device WHERE DeviceID=? FOR UPDATE", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+                            ps.setInt(1, DeviceID);
+                            ResultSet rs = ps.executeQuery();
+
+                            rs.next();
+                            rs.updateBoolean("isStatusChanged", isStatusChanged);
+                            rs.updateRow();
                         }
                     } else if (DeviceName.equals("Curtains") || DeviceName.equals("Garage Door")) {
                     }
