@@ -45,6 +45,7 @@ public class StepperMotorGpioExample {
     private static void scanEvents() throws IOException {
         String Line;
         String Previous = "";
+        value = -1;
 
         while ((Line = client.readLine()) != null) {
             if (Line.split(" ")[2].equals(Previous)) {
@@ -63,6 +64,7 @@ public class StepperMotorGpioExample {
                 } else if (Line.split(" ")[2].equals("KEY_8")) {
                     System.out.println(Line.split(" ")[2]);
                     Stop = true;
+                    System.out.println(value);
                 }
             }
         }
@@ -73,7 +75,7 @@ public class StepperMotorGpioExample {
         @Override
         public void run() {
             for (int i = value; i > -1; i--) {
-                motor.step(-1);
+                motor.step(1);
                 value = i;
                 if (Stop) {
                     Stop = false;
@@ -86,8 +88,8 @@ public class StepperMotorGpioExample {
     private static final Runnable close = new Runnable() {
         @Override
         public void run() {
-            for (int i = value; i < 6115; i++) {
-                motor.step(1);
+            for (int i = value; i < 4410; i++) {
+                motor.step(-1);
                 value = i;
                 if (Stop) {
                     Stop = false;
