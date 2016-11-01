@@ -1,6 +1,6 @@
 package Test;
 
-import SmartHome.Relay;
+import Device.Relay;
 import com.adventnet.snmp.snmp2.SnmpAPI;
 import com.pi4j.io.gpio.*;
 

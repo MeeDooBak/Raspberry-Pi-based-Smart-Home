@@ -1,6 +1,6 @@
 package UltrasonicSensor;
 
-import SmartHome.Relay;
+import Device.Relay;
 import com.adventnet.snmp.snmp2.*;
 import com.pi4j.io.gpio.*;
 import java.util.logging.*;

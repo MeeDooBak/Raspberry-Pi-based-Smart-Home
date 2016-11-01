@@ -1,4 +1,4 @@
-package SmartHome;
+package Device;
 
 import com.adventnet.snmp.snmp2.*;
 

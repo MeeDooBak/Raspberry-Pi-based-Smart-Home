@@ -1,5 +1,6 @@
 package SmartHome;
 
+import Device.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -15,7 +16,7 @@ public class Main {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             DB = DriverManager.getConnection("jdbc:mysql://localhost:3306/smarthome", "root", "");
 
-            Device Device = new Device(DB);
+            Device Device = new Device(DB, "192.168.1.102");
             Device.start();
 
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException ex) {

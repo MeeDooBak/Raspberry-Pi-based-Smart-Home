@@ -1,4 +1,4 @@
-package StepperMotor;
+package Archives;
 
 import com.pi4j.component.motor.impl.*;
 import com.pi4j.io.gpio.*;

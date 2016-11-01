@@ -1,17 +1,18 @@
-package SmartHome;
+package Archives;
 
+import Device.Relay;
 import com.adventnet.snmp.snmp2.*;
 import com.pi4j.io.gpio.*;
 import java.sql.*;
 import java.util.logging.*;
 
-public class Device extends Thread {
+public class Device2 extends Thread {
 
     private final Connection DB;
     private final GpioController GPIO;
     public final Relay command;
 
-    public Device(Connection DB) {
+    public Device2(Connection DB) {
         this.DB = DB;
         GPIO = GpioFactory.getInstance();
         command = new Relay("192.168.1.14", 161, "private");
@@ -67,7 +68,7 @@ public class Device extends Thread {
                 Thread.sleep(400);
             }
         } catch (SQLException | InterruptedException ex) {
-            Logger.getLogger(Device.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Device2.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }
