@@ -1,3 +1,5 @@
+package WebCam;
+
 
 import com.github.sarxos.webcam.*;
 import com.github.sarxos.webcam.ds.v4l4j.*;
