@@ -10,11 +10,10 @@ public class Device extends Thread {
     private final Connection DB;
     private final ArrayList<DeviceList> DeviceList;
 
-    public Device(Connection DB, String IP) {
+    public Device(Connection DB, ArrayList<DeviceList> DeviceList, String IP) {
         this.DB = DB;
         this.IP = IP;
-
-        DeviceList = new ArrayList();
+        this.DeviceList = DeviceList;
     }
 
     public int indexof(int DeviceID) {
@@ -37,7 +36,7 @@ public class Device extends Thread {
                 while (Result.next()) {
 
                     int DeviceID = Result.getInt("DeviceID");
-                    int RoomID = Result.getInt("DeviceID");
+                    int RoomID = Result.getInt("RoomID");
                     String DeviceName = Result.getString("DeviceName");
                     boolean DeviceState = Result.getBoolean("DeviceState");
                     int GateNum = Result.getInt("GateNum");
@@ -46,18 +45,25 @@ public class Device extends Thread {
 
                     int index = indexof(DeviceID);
                     if (index > -1) {
-                        if (GateNum == -1) {
+                        if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC")) {
+                            DeviceList.get(index).setDeviceState(DeviceState);
+                            DeviceList.get(index).setIsStatusChanged(isStatusChanged);
+                            DeviceList.get(index).Start();
+
+                        } else if (DeviceName.equals("Curtains") || DeviceName.equals("Garage Door")) {
                             DeviceList.get(index).setDeviceState(DeviceState);
                             DeviceList.get(index).setStepperMotorMoves(StepperMotorMoves);
                             DeviceList.get(index).setIsStatusChanged(isStatusChanged);
                             DeviceList.get(index).Start();
-                        } else {
-                            DeviceList.get(index).setDeviceState(DeviceState);
-                            DeviceList.get(index).setIsStatusChanged(isStatusChanged);
-                            DeviceList.get(index).Start();
+
+                        } else if (DeviceName.equals("Alarm")) {
+
                         }
                     } else {
-                        if (GateNum == -1) {
+                        if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC")) {
+                            DeviceList.add(new DeviceList(DeviceID, RoomID, DeviceName, DeviceState, GateNum, -1, -1, -1, isStatusChanged, -1, -1, -1, DB, IP));
+
+                        } else if (DeviceName.equals("Curtains") || DeviceName.equals("Garage Door")) {
                             ResultSet Result2 = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + DeviceID);
                             Result2.next();
 
@@ -66,9 +72,10 @@ public class Device extends Thread {
                             int GateNum3 = Result2.getInt("GateNum3");
                             int GateNum4 = Result2.getInt("GateNum4");
 
-                            DeviceList.add(new DeviceList(DeviceID, RoomID, DeviceName, DeviceState, GateNum1, GateNum2, GateNum3, GateNum4, isStatusChanged, StepperMotorMoves, DB, IP));
-                        } else {
-                            DeviceList.add(new DeviceList(DeviceID, RoomID, DeviceName, DeviceState, GateNum, -1, -1, -1, isStatusChanged, -1, DB, IP));
+                            DeviceList.add(new DeviceList(DeviceID, RoomID, DeviceName, DeviceState, GateNum1, GateNum2, GateNum3, GateNum4, isStatusChanged, StepperMotorMoves, -1, -1, DB, IP));
+
+                        } else if (DeviceName.equals("Alarm")) {
+                            DeviceList.add(new DeviceList(DeviceID, RoomID, DeviceName, DeviceState, GateNum, -1, -1, -1, isStatusChanged, -1, 0, 0, DB, IP));
                         }
                     }
                 }

@@ -7,10 +7,10 @@ import java.util.logging.*;
 
 public class MotorThread extends Thread {
 
-    private boolean DeviceState;
     private boolean isStatusChanged;
     private int StepperMotorMoves;
 
+    private final boolean DeviceState;
     private final int DeviceID;
     private final Connection DB;
     private final GpioStepperMotorComponent Motor;
@@ -36,18 +36,6 @@ public class MotorThread extends Thread {
         Motor.setStepInterval(2);
         Motor.setStepSequence(new byte[]{0b0001, 0b0010, 0b0100, 0b1000});
         Motor.setStepsPerRevolution(2038);
-    }
-
-    public void setDeviceState(boolean DeviceState) {
-        this.DeviceState = DeviceState;
-    }
-
-    public void setisStatusChanged(boolean isStatusChanged) {
-        this.isStatusChanged = isStatusChanged;
-    }
-
-    public void setStepperMotorMoves(int StepperMotorMoves) {
-        this.StepperMotorMoves = StepperMotorMoves;
     }
 
     @Override

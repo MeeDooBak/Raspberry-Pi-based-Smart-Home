@@ -1,23 +1,33 @@
 package SmartHome;
 
 import Device.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import Sensor.*;
+import Task.*;
+import java.sql.*;
+import java.util.*;
+import java.util.logging.*;
 
 public class Main {
 
     private static Connection DB;
+
+    private static ArrayList<SensorList> SensorList;
+    private static ArrayList<DeviceList> DeviceList;
+    private static ArrayList<TaskList> TaskList;
 
     public static void main(String[] args) {
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             DB = DriverManager.getConnection("jdbc:mysql://localhost:3306/smarthome", "root", "");
 
-            Device Device = new Device(DB, "192.168.1.102");
+            Device Device = new Device(DB, DeviceList, "192.168.1.102");
             Device.start();
+
+            Sensor Sensor = new Sensor(DB, SensorList);
+            Sensor.start();
+
+            Task Task = new Task(DB, TaskList, SensorList, DeviceList);
+            Task.start();
 
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
