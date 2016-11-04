@@ -14,6 +14,24 @@ public class Sensor {
         this.SensorList = SensorList;
     }
 
+    public int indexof(int SensorID) {
+        for (int i = 0; i < SensorList.size(); i++) {
+            if (SensorList.get(i).getSensorID() == SensorID) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public SensorList Get(int SensorID) {
+        for (int i = 0; i < SensorList.size(); i++) {
+            if (SensorList.get(i).getSensorID() == SensorID) {
+                return SensorList.get(i);
+            }
+        }
+        return null;
+    }
+
     public void start() {
         try {
             Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
@@ -29,24 +47,19 @@ public class Sensor {
                 int GateNum = Result.getInt("GateNum");
                 int SensorValue = Result.getInt("SensorValue");
 
-                ResultSet Result2 = Statement.executeQuery("select * from sensor_type where SensorTypeID = " + SensorTypeID);
+                Statement Statement2 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                ResultSet Result2 = Statement2.executeQuery("select * from sensor_type where SensorTypeID = " + SensorTypeID);
                 Result2.next();
-
-                String SensorName = Result.getString("SensorName");
+                String SensorName = Result2.getString("SensorName");
+                Result2.close();
+                Statement2.close();
 
                 SensorList.add(new SensorList(SensorID, RoomID, SensorName, SenesorState, GateNum, -1, SensorValue, DB));
             }
+            Result.close();
+            Statement.close();
         } catch (SQLException ex) {
             Logger.getLogger(Sensor.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    public int indexof(int SensorID) {
-        for (int i = 0; i < SensorList.size(); i++) {
-            if (SensorList.get(i).getSensorID() == SensorID) {
-                return i;
-            }
-        }
-        return -1;
     }
 }

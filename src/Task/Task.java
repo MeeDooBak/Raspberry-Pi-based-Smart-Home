@@ -12,14 +12,14 @@ public class Task extends Thread {
 
     private final Connection DB;
     private final ArrayList<TaskList> TaskList;
-    private final ArrayList<SensorList> SensorList;
-    private final ArrayList<DeviceList> DeviceList;
+    private final Sensor Sensors;
+    private final Device Devices;
 
-    public Task(Connection DB, ArrayList<TaskList> TaskList, ArrayList<SensorList> SensorList, ArrayList<DeviceList> DeviceList) {
+    public Task(Connection DB, ArrayList<TaskList> TaskList, Sensor Sensors, Device Devices) {
         this.DB = DB;
         this.TaskList = TaskList;
-        this.SensorList = SensorList;
-        this.DeviceList = DeviceList;
+        this.Sensors = Sensors;
+        this.Devices = Devices;
     }
 
     public int indexof(int TaskID) {
@@ -93,13 +93,16 @@ public class Task extends Thread {
                             isChange = true;
                         }
 
-                        ResultSet Result2 = Statement.executeQuery("select * from task_devices where TaskID = " + TaskID);
+                        Statement Statement2 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                        ResultSet Result2 = Statement2.executeQuery("select * from task_devices where TaskID = " + TaskID);
                         Result2.next();
 
                         Map<DeviceList, Boolean> NewList = new HashMap();
                         while (Result2.next()) {
-                            NewList.put(DeviceList.get(Result2.getInt("GateNum1")), Result2.getBoolean("DeviceID"));
+                            NewList.put(Devices.Get(Result2.getInt("GateNum1")), Result2.getBoolean("DeviceID"));
                         }
+                        Result2.close();
+                        Statement2.close();
 
                         Map<DeviceList, Boolean> OldList = TaskList.get(index).getList();
 
@@ -118,8 +121,8 @@ public class Task extends Thread {
                             }
                         }
 
-                        if (TaskList.get(index).getSensor().getSensorID() != SensorList.get(SensorID).getSensorID()) {
-                            TaskList.get(index).setSensor(SensorList.get(SensorID));
+                        if (TaskList.get(index).getSensor().getSensorID() != Sensors.Get(SensorID).getSensorID()) {
+                            TaskList.get(index).setSensor(Sensors.Get(SensorID));
                             isChange = true;
                         }
 
@@ -130,21 +133,26 @@ public class Task extends Thread {
                         if (isChange) {
                             TaskList.get(index).setIsDisabled(isDisabled);
                         }
-
                     } else {
-                        ResultSet Result2 = Statement.executeQuery("select * from task_devices where TaskID = " + TaskID);
+                        Statement Statement2 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                        ResultSet Result2 = Statement2.executeQuery("select * from task_devices where TaskID = " + TaskID);
                         Result2.next();
 
                         Map<DeviceList, Boolean> List = new HashMap();
                         while (Result2.next()) {
-                            List.put(DeviceList.get(Result2.getInt("GateNum1")), Result2.getBoolean("DeviceID"));
+                            List.put(Devices.Get(Result2.getInt("GateNum1")), Result2.getBoolean("DeviceID"));
                         }
-                        SensorList Sensor = SensorList.get(SensorID);
+                        Result2.close();
+                        Statement2.close();
+
+                        SensorList Sensor = Sensors.Get(SensorID);
 
                         TaskList.add(new TaskList(TaskID, UserID, RoomID, isDisabled, TaskName, ActionTime, repeatDaily, ActionDate, AlarmDuration,
                                 AlarmInterval, SelectedSensorValue, Sensor, List, DB));
                     }
                 }
+                Result.close();
+                Statement.close();
                 Thread.sleep(1000);
             }
         } catch (SQLException | InterruptedException ex) {

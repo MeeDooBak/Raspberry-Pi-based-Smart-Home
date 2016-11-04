@@ -1,5 +1,6 @@
 package Device;
 
+import Rooms.*;
 import java.sql.*;
 
 public class DeviceList {
@@ -12,7 +13,7 @@ public class DeviceList {
     private int AlarmInterval;
 
     private final int DeviceID;
-    private final int RoomID;
+    private final RoomList Room;
     private final String DeviceName;
     private final int GateNum1;
     private final int GateNum2;
@@ -26,11 +27,12 @@ public class DeviceList {
     private MotorThread MotorThread;
     private AlarmThread AlarmThread;
 
-    public DeviceList(int DeviceID, int RoomID, String DeviceName, boolean DeviceState, int GateNum1, int GateNum2, int GateNum3, int GateNum4,
+    public DeviceList(int DeviceID, RoomList Room, String DeviceName, boolean DeviceState, int GateNum1, int GateNum2, int GateNum3, int GateNum4,
             boolean isStatusChanged, int StepperMotorMoves, int AlarmDuration, int AlarmInterval, Connection DB, String IP) {
 
         this.DeviceID = DeviceID;
-        this.RoomID = RoomID;
+        this.Room = Room;
+        Room.getDeviceList().add(DeviceID);
         this.DeviceName = DeviceName;
         this.GateNum1 = GateNum1;
         this.GateNum2 = GateNum2;
@@ -99,8 +101,8 @@ public class DeviceList {
         return DeviceID;
     }
 
-    public int getRoomID() {
-        return RoomID;
+    public RoomList getRoom() {
+        return Room;
     }
 
     public String getDeviceName() {
