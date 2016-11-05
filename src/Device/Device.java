@@ -7,14 +7,14 @@ import java.util.logging.*;
 
 public class Device extends Thread {
 
-    private final String IP;
+    private final Relay command;
     private final Connection DB;
     private final ArrayList<DeviceList> DeviceList;
     private final Room Rooms;
 
-    public Device(Connection DB, ArrayList<DeviceList> DeviceList, Room Rooms, String IP) {
+    public Device(Connection DB, ArrayList<DeviceList> DeviceList, Room Rooms, Relay command) {
         this.DB = DB;
-        this.IP = IP;
+        this.command = command;
         this.DeviceList = DeviceList;
         this.Rooms = Rooms;
     }
@@ -53,30 +53,40 @@ public class Device extends Thread {
                     boolean DeviceState = Result.getBoolean("DeviceState");
                     int GateNum = Result.getInt("GateNum");
                     boolean isStatusChanged = Result.getBoolean("isStatusChanged");
-                    int StepperMotorMoves = Result.getInt("StepperMotorMoves");
 
                     int index = indexof(DeviceID);
                     if (index > -1) {
-                        if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC")) {
-                            DeviceList.get(index).setDeviceState(DeviceState);
-                            DeviceList.get(index).setIsStatusChanged(isStatusChanged);
-                            DeviceList.get(index).Start();
+                        if (isStatusChanged) {
+                            if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC") || DeviceName.equals("Alarm")) {
+                                DeviceList.get(index).setDeviceState(DeviceState);
+                                DeviceList.get(index).setIsStatusChanged(isStatusChanged);
+                                DeviceList.get(index).Start();
+                                System.out.println(DeviceName + " State Change to " + DeviceState);
 
-                        } else if (DeviceName.equals("Curtains") || DeviceName.equals("Garage Door")) {
-                            DeviceList.get(index).setDeviceState(DeviceState);
-                            DeviceList.get(index).setStepperMotorMoves(StepperMotorMoves);
-                            DeviceList.get(index).setIsStatusChanged(isStatusChanged);
-                            DeviceList.get(index).Start();
+                            } else if (DeviceName.equals("Curtains") || DeviceName.equals("Garage Door")) {
+                                DeviceList.get(index).setDeviceState(DeviceState);
+                                DeviceList.get(index).setIsStatusChanged(isStatusChanged);
 
-                        } else if (DeviceName.equals("Alarm")) {
-                            DeviceList.get(index).setDeviceState(DeviceState);
-                            DeviceList.get(index).setIsStatusChanged(isStatusChanged);
-                            DeviceList.get(index).Start();
+                                Statement Statement2 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                                ResultSet Result2 = Statement2.executeQuery("select * from device_stepper_motor where DeviceID = " + DeviceID);
+                                Result2.next();
 
+                                int StepperMotorMoves = Result2.getInt("StepperMotorMoves");
+                                if (DeviceList.get(index).getStepperMotorMoves() != StepperMotorMoves) {
+                                    DeviceList.get(index).setStepperMotorMoves(StepperMotorMoves);
+                                }
+
+                                Result2.close();
+                                Statement2.close();
+
+                                DeviceList.get(index).Start();
+                                System.out.println(DeviceName + " State Change to " + DeviceState);
+                            }
                         }
                     } else {
                         if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC")) {
-                            DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, GateNum, -1, -1, -1, isStatusChanged, -1, -1, -1, DB, IP));
+                            DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, GateNum, -1, -1, -1, isStatusChanged, -1, -1, -1, DB, command));
+                            System.out.println("Add Device : " + DeviceID + " " + DeviceName + " With State " + DeviceState);
 
                         } else if (DeviceName.equals("Curtains") || DeviceName.equals("Garage Door")) {
                             Statement Statement2 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
@@ -87,13 +97,15 @@ public class Device extends Thread {
                             int GateNum2 = Result2.getInt("GateNum2");
                             int GateNum3 = Result2.getInt("GateNum3");
                             int GateNum4 = Result2.getInt("GateNum4");
+                            int StepperMotorMoves = Result2.getInt("StepperMotorMoves");
                             Result2.close();
                             Statement2.close();
 
-                            DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, GateNum1, GateNum2, GateNum3, GateNum4, isStatusChanged, StepperMotorMoves, -1, -1, DB, IP));
-
+                            DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, GateNum1, GateNum2, GateNum3, GateNum4, isStatusChanged, StepperMotorMoves, -1, -1, DB, command));
+                            System.out.println("Add Device : " + DeviceID + " " + DeviceName + " With State " + DeviceState);
                         } else if (DeviceName.equals("Alarm")) {
-                            DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, GateNum, -1, -1, -1, isStatusChanged, -1, 0, 0, DB, IP));
+                            DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, GateNum, -1, -1, -1, isStatusChanged, -1, 0, 0, DB, command));
+                            System.out.println("Add Device : " + DeviceID + " " + DeviceName + " With State " + DeviceState);
                         }
                     }
                 }

@@ -11,8 +11,8 @@ public class SensorThread extends Thread {
 
     private final int SensorID;
     private final Connection DB;
-    private final GpioController GPIO;
-    private final GpioPinDigitalInput PIN;
+//    private final GpioController GPIO;
+//    private final GpioPinDigitalInput PIN;
 
     public SensorThread(int SensorID, boolean SensorState, int GateNum, int SensorValue, Connection DB) {
 
@@ -21,8 +21,8 @@ public class SensorThread extends Thread {
         this.SensorState = SensorState;
         this.SensorValue = SensorValue;
 
-        GPIO = GpioFactory.getInstance();
-        PIN = GPIO.provisionDigitalInputPin(RaspiPin.getPinByAddress(GateNum));
+//        GPIO = GpioFactory.getInstance();
+//        PIN = GPIO.provisionDigitalInputPin(RaspiPin.getPinByAddress(GateNum));
     }
 
     public boolean getSensorState() {
@@ -37,7 +37,8 @@ public class SensorThread extends Thread {
     public void run() {
         while (true) {
             try {
-                if (PIN.isHigh()) {
+//                if (PIN.isHigh()) {
+                if (true) {
                     SensorState = true;
                     SensorValue = 1;
 
@@ -46,16 +47,12 @@ public class SensorThread extends Thread {
                     SensorState = false;
                     SensorValue = 0;
                 }
-
-                PreparedStatement ps = DB.prepareStatement("SELECT DeviceID, isStatusChanged FROM device WHERE DeviceID=? FOR UPDATE", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-                ps.setInt(1, SensorID);
-
-                ResultSet rs = ps.executeQuery();
-                rs.next();
-
-                rs.updateBoolean("SensorState", SensorState);
-                rs.updateInt("SensorValue", SensorValue);
-                rs.updateRow();
+                
+                PreparedStatement ps = DB.prepareStatement("update sensor set SenesorState = ? and SensorValue = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+                ps.setBoolean(1, SensorState);
+                ps.setInt(2, SensorValue);
+                ps.setInt(3, SensorID);
+                ps.executeUpdate();
 
                 Thread.sleep(1000);
             } catch (SQLException | InterruptedException ex) {

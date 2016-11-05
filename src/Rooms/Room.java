@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.*;
 
-public class Room extends Thread {
+public class Room {
 
     private final Connection DB;
     private final ArrayList<RoomList> RoomList;
@@ -32,8 +32,7 @@ public class Room extends Thread {
         return null;
     }
 
-    @Override
-    public void run() {
+    public void start() {
         try {
             Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
             ResultSet Result = Statement.executeQuery("select * from room");
@@ -42,6 +41,7 @@ public class Room extends Thread {
             while (Result.next()) {
                 int RoomID = Result.getInt("RoomID");
                 String RoomName = Result.getString("RoomName");
+                System.out.println("Add : " + RoomID + " " + RoomName);
                 RoomList.add(new RoomList(RoomID, RoomName, new ArrayList()));
             }
             Result.close();

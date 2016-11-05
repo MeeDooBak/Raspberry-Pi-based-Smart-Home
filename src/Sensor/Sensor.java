@@ -54,7 +54,21 @@ public class Sensor {
                 Result2.close();
                 Statement2.close();
 
-                SensorList.add(new SensorList(SensorID, RoomID, SensorName, SenesorState, GateNum, -1, SensorValue, DB));
+                if (SensorName.equals("Ultrasonic")) {
+
+                    Statement Statement3 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    ResultSet Result3 = Statement3.executeQuery("select * from sensor_multi_gate where SensorID = " + SensorID);
+                    Result3.next();
+                    int GateNum1 = Result3.getInt("GateNum1");
+                    int GateNum2 = Result3.getInt("GateNum2");
+                    Result3.close();
+                    Statement3.close();
+
+                    SensorList.add(new SensorList(SensorID, RoomID, SensorName, SenesorState, GateNum1, GateNum2, SensorValue, DB));
+                } else {
+                    SensorList.add(new SensorList(SensorID, RoomID, SensorName, SenesorState, GateNum, -1, SensorValue, DB));
+                }
+                System.out.println("Add " + SensorID + " " + SensorName);
             }
             Result.close();
             Statement.close();

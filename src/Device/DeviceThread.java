@@ -42,12 +42,10 @@ public class DeviceThread extends Thread {
                 }
                 isStatusChanged = false;
 
-                PreparedStatement ps = DB.prepareStatement("SELECT DeviceID, isStatusChanged FROM device WHERE DeviceID=? FOR UPDATE", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-                ps.setInt(1, DeviceID);
-                ResultSet rs = ps.executeQuery();
-                rs.next();
-                rs.updateBoolean("isStatusChanged", isStatusChanged);
-                rs.updateRow();
+                PreparedStatement ps = DB.prepareStatement("update device set isStatusChanged = ? where DeviceID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+                ps.setBoolean(1, isStatusChanged);
+                ps.setInt(2, DeviceID);
+                ps.executeUpdate();
             }
         } catch (SQLException ex) {
             Logger.getLogger(Device.class.getName()).log(Level.SEVERE, null, ex);

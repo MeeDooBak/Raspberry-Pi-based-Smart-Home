@@ -11,10 +11,10 @@ public class UltrasonicThread extends Thread {
 
     private final int SensorID;
     private final Connection DB;
-    private final GpioController GPIO;
-
-    private final GpioPinDigitalInput EchoPin;
-    private final GpioPinDigitalOutput TrigPin;
+//    private final GpioController GPIO;
+//
+//    private final GpioPinDigitalInput EchoPin;
+//    private final GpioPinDigitalOutput TrigPin;
 
     public UltrasonicThread(int SensorID, boolean SensorState, int GateNum1, int GateNum2, int SensorValue, Connection DB) {
 
@@ -23,10 +23,10 @@ public class UltrasonicThread extends Thread {
         this.SensorState = SensorState;
         this.SensorValue = SensorValue;
 
-        this.GPIO = GpioFactory.getInstance();
-        this.EchoPin = GPIO.provisionDigitalInputPin(RaspiPin.getPinByAddress(GateNum1));
-        this.TrigPin = GPIO.provisionDigitalOutputPin(RaspiPin.getPinByAddress(GateNum2));
-        this.TrigPin.low();
+//        this.GPIO = GpioFactory.getInstance();
+//        this.EchoPin = GPIO.provisionDigitalInputPin(RaspiPin.getPinByAddress(GateNum1));
+//        this.TrigPin = GPIO.provisionDigitalOutputPin(RaspiPin.getPinByAddress(GateNum2));
+//        this.TrigPin.low();
     }
 
     public boolean getSensorState() {
@@ -41,32 +41,29 @@ public class UltrasonicThread extends Thread {
     public void run() {
         while (true) {
             try {
-                this.TrigPin.high();
-                Thread.sleep(0, 10000);
-                this.TrigPin.low();
-
-                int countdown = 2100;
-                while (this.EchoPin.isLow() && countdown > 0) {
-                    countdown--;
-                }
-
-                countdown = 2100;
-                long start = System.nanoTime();
-                while (this.EchoPin.isHigh() && countdown > 0) {
-                    countdown--;
-                }
-                SensorValue = (int) Math.ceil(Math.ceil((System.nanoTime() - start) / 1000.0) * 340.29f / (2 * 10000));
+//                this.TrigPin.high();
+//                Thread.sleep(0, 10000);
+//                this.TrigPin.low();
+//
+//                int countdown = 2100;
+//                while (this.EchoPin.isLow() && countdown > 0) {
+//                    countdown--;
+//                }
+//
+//                countdown = 2100;
+//                long start = System.nanoTime();
+//                while (this.EchoPin.isHigh() && countdown > 0) {
+//                    countdown--;
+//                }
+//                SensorValue = (int) Math.ceil(Math.ceil((System.nanoTime() - start) / 1000.0) * 340.29f / (2 * 10000));
+                SensorValue = (int) Math.ceil(Math.ceil((System.nanoTime() - 1000) / 1000.0) * 340.29f / (2 * 10000));
                 SensorState = true;
 
-                PreparedStatement ps = DB.prepareStatement("SELECT DeviceID, isStatusChanged FROM device WHERE DeviceID=? FOR UPDATE", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-                ps.setInt(1, SensorID);
-
-                ResultSet rs = ps.executeQuery();
-                rs.next();
-
-                rs.updateBoolean("SensorState", SensorState);
-                rs.updateInt("SensorValue", SensorValue);
-                rs.updateRow();
+                PreparedStatement ps = DB.prepareStatement("update sensor set SenesorState = ? and SensorValue = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+                ps.setBoolean(1, SensorState);
+                ps.setInt(2, SensorValue);
+                ps.setInt(3, SensorID);
+                ps.executeUpdate();
 
                 Thread.sleep(1000);
             } catch (SQLException | InterruptedException ex) {

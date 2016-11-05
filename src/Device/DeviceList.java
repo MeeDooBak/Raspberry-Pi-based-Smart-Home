@@ -28,7 +28,7 @@ public class DeviceList {
     private AlarmThread AlarmThread;
 
     public DeviceList(int DeviceID, RoomList Room, String DeviceName, boolean DeviceState, int GateNum1, int GateNum2, int GateNum3, int GateNum4,
-            boolean isStatusChanged, int StepperMotorMoves, int AlarmDuration, int AlarmInterval, Connection DB, String IP) {
+            boolean isStatusChanged, int StepperMotorMoves, int AlarmDuration, int AlarmInterval, Connection DB, Relay command) {
 
         this.DeviceID = DeviceID;
         this.Room = Room;
@@ -46,7 +46,7 @@ public class DeviceList {
         this.AlarmInterval = AlarmInterval;
 
         this.DB = DB;
-        this.command = new Relay(IP, 161, "private");
+        this.command = command;
 
         if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC")) {
             DeviceThread = new DeviceThread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB, command);

@@ -13,7 +13,7 @@ public class MotorThread extends Thread {
     private final boolean DeviceState;
     private final int DeviceID;
     private final Connection DB;
-    private final GpioStepperMotorComponent Motor;
+//    private final GpioStepperMotorComponent Motor;
 
     public MotorThread(int DeviceID, boolean DeviceState, int GateNum1, int GateNum2, int GateNum3, int GateNum4, boolean isStatusChanged, Connection DB, int StepperMotorMoves) {
 
@@ -23,19 +23,19 @@ public class MotorThread extends Thread {
         this.isStatusChanged = isStatusChanged;
         this.StepperMotorMoves = StepperMotorMoves;
 
-        GpioController gpio = GpioFactory.getInstance();
-        GpioPinDigitalOutput[] PINS = {
-            gpio.provisionDigitalOutputPin(RaspiPin.getPinByAddress(GateNum1), PinState.LOW),
-            gpio.provisionDigitalOutputPin(RaspiPin.getPinByAddress(GateNum2), PinState.LOW),
-            gpio.provisionDigitalOutputPin(RaspiPin.getPinByAddress(GateNum3), PinState.LOW),
-            gpio.provisionDigitalOutputPin(RaspiPin.getPinByAddress(GateNum4), PinState.LOW)
-        };
-        gpio.setShutdownOptions(true, PinState.LOW, PINS);
-        Motor = new GpioStepperMotorComponent(PINS);
-
-        Motor.setStepInterval(2);
-        Motor.setStepSequence(new byte[]{0b0001, 0b0010, 0b0100, 0b1000});
-        Motor.setStepsPerRevolution(2038);
+//        GpioController gpio = GpioFactory.getInstance();
+//        GpioPinDigitalOutput[] PINS = {
+//            gpio.provisionDigitalOutputPin(RaspiPin.getPinByAddress(GateNum1), PinState.LOW),
+//            gpio.provisionDigitalOutputPin(RaspiPin.getPinByAddress(GateNum2), PinState.LOW),
+//            gpio.provisionDigitalOutputPin(RaspiPin.getPinByAddress(GateNum3), PinState.LOW),
+//            gpio.provisionDigitalOutputPin(RaspiPin.getPinByAddress(GateNum4), PinState.LOW)
+//        };
+//        gpio.setShutdownOptions(true, PinState.LOW, PINS);
+//        Motor = new GpioStepperMotorComponent(PINS);
+//
+//        Motor.setStepInterval(2);
+//        Motor.setStepSequence(new byte[]{0b0001, 0b0010, 0b0100, 0b1000});
+//        Motor.setStepsPerRevolution(2038);
     }
 
     @Override
@@ -44,24 +44,26 @@ public class MotorThread extends Thread {
             if (isStatusChanged) {
                 if (DeviceState) {
                     for (int i = StepperMotorMoves; i > -1; i--) {
-                        Motor.step(1);
+//                        Motor.step(1);
                         StepperMotorMoves = i;
                     }
                 } else {
                     for (int i = StepperMotorMoves; i < 4410; i++) {
-                        Motor.step(-1);
+//                        Motor.step(-1);
                         StepperMotorMoves = i;
                     }
                 }
                 isStatusChanged = false;
 
-                PreparedStatement ps = DB.prepareStatement("SELECT DeviceID, isStatusChanged FROM device WHERE DeviceID=? FOR UPDATE", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-                ps.setInt(1, DeviceID);
-                ResultSet rs = ps.executeQuery();
-                rs.next();
-                rs.updateBoolean("isStatusChanged", isStatusChanged);
-                rs.updateInt("StepperMotorMoves", StepperMotorMoves);
-                rs.updateRow();
+                PreparedStatement ps = DB.prepareStatement("update device_stepper_motor set StepperMotorMoves = ? where DeviceID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+                ps.setInt(1, StepperMotorMoves);
+                ps.setInt(2, DeviceID);
+                ps.executeUpdate();
+
+                PreparedStatement ps2 = DB.prepareStatement("update device set isStatusChanged = ? where DeviceID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+                ps2.setBoolean(1, isStatusChanged);
+                ps2.setInt(2, DeviceID);
+                ps2.executeUpdate();
             }
         } catch (SQLException ex) {
             Logger.getLogger(Device.class.getName()).log(Level.SEVERE, null, ex);

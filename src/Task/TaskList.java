@@ -46,6 +46,7 @@ public class TaskList {
 
         if (ActionTime == null && SelectedSensorValue == 0) {
             ActionOnDetectionThread = new ActionOnDetectionThread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, DB);
+            ActionOnDetectionThread.start();
         }
     }
 

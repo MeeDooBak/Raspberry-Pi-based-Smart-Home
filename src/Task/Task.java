@@ -63,9 +63,11 @@ public class Task extends Thread {
                             isChange = true;
                         }
 
-                        if (!TaskList.get(index).getActionTime().equals(ActionTime)) {
-                            TaskList.get(index).setActionTime(ActionTime);
-                            isChange = true;
+                        if (Sensors.Get(SensorID).getSensorName().equals("Clock")) {
+                            if (!TaskList.get(index).getActionTime().equals(ActionTime)) {
+                                TaskList.get(index).setActionTime(ActionTime);
+                                isChange = true;
+                            }
                         }
 
                         if (TaskList.get(index).isRepeatDaily() != repeatDaily) {
@@ -73,9 +75,14 @@ public class Task extends Thread {
                             isChange = true;
                         }
 
-                        if (!TaskList.get(index).getActionDate().equals(ActionDate)) {
-                            TaskList.get(index).setActionDate(ActionDate);
-                            isChange = true;
+                        if (!repeatDaily) {
+                            if (TaskList.get(index).getActionDate() == null) {
+                                TaskList.get(index).setActionDate(ActionDate);
+                                isChange = true;
+                            } else if (!TaskList.get(index).getActionDate().equals(ActionDate)) {
+                                TaskList.get(index).setActionDate(ActionDate);
+                                isChange = true;
+                            }
                         }
 
                         if (TaskList.get(index).getAlarmDuration() != AlarmDuration) {
@@ -99,26 +106,32 @@ public class Task extends Thread {
 
                         Map<DeviceList, Boolean> NewList = new HashMap();
                         while (Result2.next()) {
-                            NewList.put(Devices.Get(Result2.getInt("GateNum1")), Result2.getBoolean("DeviceID"));
+                            if (Result2.getInt("RequiredDeviceStatus") == 1) {
+                                NewList.put(Devices.Get(Result2.getInt("DeviceID")), true);
+                            } else if (Result2.getInt("RequiredDeviceStatus") == 0) {
+                                NewList.put(Devices.Get(Result2.getInt("DeviceID")), false);
+                            }
                         }
                         Result2.close();
                         Statement2.close();
 
                         Map<DeviceList, Boolean> OldList = TaskList.get(index).getList();
 
-                        boolean Exit = false;
                         for (Map.Entry<DeviceList, Boolean> NewDevice : NewList.entrySet()) {
+                            boolean Found = false;
                             for (Map.Entry<DeviceList, Boolean> OldDevice : OldList.entrySet()) {
-                                if (NewDevice.getKey().getDeviceID() != OldDevice.getKey().getDeviceID()) {
-                                    TaskList.get(index).setList(NewList);
-                                    isChange = true;
-                                    Exit = true;
+                                if (NewDevice.getKey().getDeviceID() == OldDevice.getKey().getDeviceID()) {
+                                    Found = true;
                                     break;
                                 }
                             }
-                            if (Exit) {
+                            if (!Found) {
                                 break;
                             }
+                        }
+
+                        if (isChange) {
+                            TaskList.get(index).setList(NewList);
                         }
 
                         if (TaskList.get(index).getSensor().getSensorID() != Sensors.Get(SensorID).getSensorID()) {
@@ -132,15 +145,19 @@ public class Task extends Thread {
 
                         if (isChange) {
                             TaskList.get(index).setIsDisabled(isDisabled);
+                            System.out.println("Task ID :" + TaskID + " Changed ");
                         }
                     } else {
                         Statement Statement2 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
                         ResultSet Result2 = Statement2.executeQuery("select * from task_devices where TaskID = " + TaskID);
-                        Result2.next();
 
                         Map<DeviceList, Boolean> List = new HashMap();
                         while (Result2.next()) {
-                            List.put(Devices.Get(Result2.getInt("GateNum1")), Result2.getBoolean("DeviceID"));
+                            if (Result2.getInt("RequiredDeviceStatus") == 1) {
+                                List.put(Devices.Get(Result2.getInt("DeviceID")), true);
+                            } else if (Result2.getInt("RequiredDeviceStatus") == 0) {
+                                List.put(Devices.Get(Result2.getInt("DeviceID")), false);
+                            }
                         }
                         Result2.close();
                         Statement2.close();
@@ -149,6 +166,7 @@ public class Task extends Thread {
 
                         TaskList.add(new TaskList(TaskID, UserID, RoomID, isDisabled, TaskName, ActionTime, repeatDaily, ActionDate, AlarmDuration,
                                 AlarmInterval, SelectedSensorValue, Sensor, List, DB));
+                        System.out.println("Add Task " + TaskID + " ");
                     }
                 }
                 Result.close();

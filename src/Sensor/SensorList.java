@@ -20,7 +20,7 @@ public class SensorList {
         this.GateNum1 = GateNum1;
         this.GateNum2 = GateNum2;
 
-        if (GateNum2 > -1) {
+        if (SensorName.equals("Ultrasonic")) {
             UltrasonicThread = new UltrasonicThread(SensorID, SensorState, GateNum1, GateNum2, SensorValue, DB);
             SensorThread = null;
             UltrasonicThread.start();
