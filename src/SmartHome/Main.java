@@ -81,7 +81,8 @@ public class Main {
             Task Task = new Task(DB, TaskList, Sensor, Device);
             Task.start();
 
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | InterruptedException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException 
+                | SQLException | InterruptedException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
