@@ -68,7 +68,7 @@ public class Sensor {
                 } else {
                     SensorList.add(new SensorList(SensorID, RoomID, SensorName, SenesorState, GateNum, -1, SensorValue, DB));
                 }
-                System.out.println("Add " + SensorID + " " + SensorName);
+                System.out.println("Add Sensor " + SensorID + " " + SensorName);
             }
             Result.close();
             Statement.close();

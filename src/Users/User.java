@@ -119,7 +119,7 @@ public class User extends Thread {
                         Result2.close();
                         Statement2.close();
 
-                        System.out.println("Add : " + UserID + " " + UserName);
+                        System.out.println("Add User : " + UserID + " " + UserName);
                         UserList.add(new UserList(UserID, UserName, UserEmail, Title, Password, isAdmin, isDisabled, UserRoomList));
                     }
                 }

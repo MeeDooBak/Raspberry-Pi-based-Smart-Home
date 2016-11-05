@@ -41,7 +41,7 @@ public class Room {
             while (Result.next()) {
                 int RoomID = Result.getInt("RoomID");
                 String RoomName = Result.getString("RoomName");
-                System.out.println("Add : " + RoomID + " " + RoomName);
+                System.out.println("Add Room : " + RoomID + " " + RoomName);
                 RoomList.add(new RoomList(RoomID, RoomName, new ArrayList()));
             }
             Result.close();
