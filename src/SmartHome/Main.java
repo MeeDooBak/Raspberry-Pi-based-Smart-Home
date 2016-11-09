@@ -1,6 +1,7 @@
 package SmartHome;
 
 import Device.*;
+import Pins.*;
 import Rooms.*;
 import Sensor.*;
 import Task.*;
@@ -23,35 +24,13 @@ public class Main {
     private static ArrayList<SensorList> SensorList;
     private static ArrayList<DeviceList> DeviceList;
     private static ArrayList<TaskList> TaskList;
+    private static ArrayList<PinsList> PinsList;
 
     public static void main(String[] args) {
         try {
             System.out.println("Start");
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             DB = DriverManager.getConnection("jdbc:mysql://localhost:3306/smarthome", "root", "");
-            System.out.println("Start");
-
-            Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-            ResultSet Result = Statement.executeQuery("select * from ip_address");
-
-            Result.beforeFirst();
-            while (Result.next()) {
-                String DeviceName = Result.getString("DeviceName");
-                String IPaddress = Result.getString("IPaddress");
-                if (DeviceName.equals("Relay Switch")) {
-                    RelayIP = IPaddress;
-                    System.out.println("Relay Switch IP : " + RelayIP);
-                } else if (DeviceName.equals("Camera 1")) {
-                    Camera1IP = IPaddress;
-                    System.out.println("Camera 1 IP : " + Camera1IP);
-                } else if (DeviceName.equals("Camera 2")) {
-                    Camera2IP = IPaddress;
-                    System.out.println("Camera 2 IP : " + Camera2IP);
-                }
-            }
-            Result.close();
-            Statement.close();
-
             command = new Relay(RelayIP, 161, "private");
 
             RoomList = new ArrayList();
@@ -59,6 +38,10 @@ public class Main {
             SensorList = new ArrayList();
             DeviceList = new ArrayList();
             TaskList = new ArrayList();
+            PinsList = new ArrayList();
+
+            Pins Pins = new Pins(DB, PinsList);
+            Pins.start();
 
             Room Room = new Room(DB, RoomList);
             Room.start();
@@ -81,8 +64,35 @@ public class Main {
             Task Task = new Task(DB, TaskList, Sensor, Device);
             Task.start();
 
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException 
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
                 | SQLException | InterruptedException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static void getIP() {
+        try {
+            Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            ResultSet Result = Statement.executeQuery("select * from ip_address");
+
+            Result.beforeFirst();
+            while (Result.next()) {
+                String DeviceName = Result.getString("DeviceName");
+                String IPaddress = Result.getString("IPaddress");
+                if (DeviceName.equals("Relay Switch")) {
+                    RelayIP = IPaddress;
+                    System.out.println("Relay Switch IP : " + RelayIP);
+                } else if (DeviceName.equals("Camera 1")) {
+                    Camera1IP = IPaddress;
+                    System.out.println("Camera 1 IP : " + Camera1IP);
+                } else if (DeviceName.equals("Camera 2")) {
+                    Camera2IP = IPaddress;
+                    System.out.println("Camera 2 IP : " + Camera2IP);
+                }
+            }
+            Result.close();
+            Statement.close();
+        } catch (SQLException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

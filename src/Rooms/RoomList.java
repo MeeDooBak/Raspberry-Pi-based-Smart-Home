@@ -1,6 +1,5 @@
 package Rooms;
 
-import Device.DeviceList;
 import java.util.ArrayList;
 
 public class RoomList {
@@ -10,7 +9,6 @@ public class RoomList {
     private ArrayList<Integer> DeviceList;
 
     public RoomList(int RoomID, String RoomName, ArrayList<Integer> DeviceList) {
-
         this.RoomID = RoomID;
         this.RoomName = RoomName;
         this.DeviceList = DeviceList;
