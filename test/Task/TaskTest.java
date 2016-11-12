@@ -29,10 +29,10 @@ public class TaskTest {
             Room Room = new Room(DB, RoomList);
             Room.start();
             Thread.sleep(1000);
-            Device Device = new Device(DB, DeviceList, Room, null);
+            Device Device = new Device(DB, DeviceList, Room, null, null);
             Device.start();
             Thread.sleep(1000);
-            Sensor Sensor = new Sensor(DB, SensorList);
+            Sensor Sensor = new Sensor(DB, SensorList, null);
             Sensor.start();
             Thread.sleep(1000);
             Task = new Task(DB, TaskList, Sensor, Device);

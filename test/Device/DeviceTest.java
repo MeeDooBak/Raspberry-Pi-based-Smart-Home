@@ -23,7 +23,7 @@ public class DeviceTest {
             RoomList = new ArrayList();
             Room = new Room(DB, RoomList);
             Room.start();
-            Device = new Device(DB, DeviceList, Room, null);
+            Device = new Device(DB, DeviceList, Room, null, null);
             Device.start();
             Thread.sleep(1000);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | InterruptedException ex) {

@@ -25,6 +25,8 @@ public class TaskList {
     private final Connection DB;
 
     private ActionOnDetectionThread ActionOnDetectionThread;
+    private ActionAfterNoDetection ActionAfterNoDetection;
+    private TimingThread TimingThread;
 
     public TaskList(int TaskID, int UserID, int RoomID, boolean isDisabled, String TaskName, Time ActionTime, boolean repeatDaily, Date ActionDate, int AlarmDuration,
             int AlarmInterval, int SelectedSensorValue, SensorList Sensor, Map<DeviceList, Boolean> List, Connection DB) {
@@ -44,9 +46,26 @@ public class TaskList {
         this.List = List;
         this.DB = DB;
 
-        if (ActionTime == null && SelectedSensorValue == 0) {
+        if (Sensor.getSensorName().equals("Ultrasonic") && RoomID == 110) {
+
+        } else if (Sensor.getSensorName().equals("Motion Sensor") && RoomID == 110) {
+
+        } else if (Sensor.getSensorName().equals("Motion Sensor") && SelectedSensorValue == 0) {
             ActionOnDetectionThread = new ActionOnDetectionThread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, DB);
             ActionOnDetectionThread.start();
+
+        } else if (Sensor.getSensorName().equals("Motion Sensor") && SelectedSensorValue > 0) {
+            ActionAfterNoDetection = new ActionAfterNoDetection(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, SelectedSensorValue, Sensor, List, DB);
+            ActionAfterNoDetection.start();
+
+        } else if (Sensor.getSensorName().equals("Clock")) {
+            TimingThread = new TimingThread(TaskID, isDisabled, ActionDate, ActionTime, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, DB);
+            TimingThread.start();
+
+        } else if (Sensor.getSensorName().equals("Temperature Sensor")) {
+
+        } else if (Sensor.getSensorName().equals("Light Sensor")) {
+
         }
     }
 
@@ -68,9 +87,30 @@ public class TaskList {
 
     public void setIsDisabled(boolean isDisabled) {
         this.isDisabled = isDisabled;
-        if (ActionTime == null && SelectedSensorValue == 0) {
-            ActionOnDetectionThread.setIsDisabled(false);
+
+        if (Sensor.getSensorName().equals("Ultrasonic") && RoomID == 110) {
+
+        } else if (Sensor.getSensorName().equals("Motion Sensor") && RoomID == 110) {
+
+        } else if (Sensor.getSensorName().equals("Motion Sensor") && SelectedSensorValue == 0) {
+            ActionOnDetectionThread.setIsDisabled(isDisabled);
             ActionOnDetectionThread = new ActionOnDetectionThread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, DB);
+            ActionOnDetectionThread.start();
+
+        } else if (Sensor.getSensorName().equals("Motion Sensor") && SelectedSensorValue > 0) {
+            ActionAfterNoDetection.setIsDisabled(isDisabled);
+            ActionAfterNoDetection = new ActionAfterNoDetection(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, SelectedSensorValue, Sensor, List, DB);
+            ActionAfterNoDetection.start();
+
+        } else if (Sensor.getSensorName().equals("Clock")) {
+            TimingThread.setIsDisabled(isDisabled);
+            TimingThread = new TimingThread(TaskID, isDisabled, ActionDate, ActionTime, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, DB);
+            TimingThread.start();
+
+        } else if (Sensor.getSensorName().equals("Temperature Sensor")) {
+
+        } else if (Sensor.getSensorName().equals("Light Sensor")) {
+
         }
     }
 
