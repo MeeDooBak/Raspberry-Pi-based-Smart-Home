@@ -1,4 +1,4 @@
-package WebCam;
+package Cam;
 
 
 import com.github.sarxos.webcam.*;

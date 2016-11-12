@@ -1,5 +1,6 @@
 package Device;
 
+import Pins.PinsList;
 import java.sql.*;
 import java.util.logging.*;
 import com.adventnet.snmp.snmp2.*;
@@ -7,13 +8,13 @@ import com.adventnet.snmp.snmp2.*;
 public class DeviceThread extends Thread {
 
     private boolean isStatusChanged;
-    private final int GateNum;
+    private final PinsList GateNum;
     private final boolean DeviceState;
     private final int DeviceID;
     private final Connection DB;
     private final Relay command;
 
-    public DeviceThread(int DeviceID, boolean DeviceState, int GateNum, boolean isStatusChanged, Connection DB, Relay command) {
+    public DeviceThread(int DeviceID, boolean DeviceState, PinsList GateNum, boolean isStatusChanged, Connection DB, Relay command) {
 
         this.DB = DB;
         this.command = command;
@@ -28,17 +29,9 @@ public class DeviceThread extends Thread {
         try {
             if (isStatusChanged) {
                 if (DeviceState) {
-                    if (GateNum < 9) {
-//                        command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.1." + GateNum + ".0", SnmpAPI.INTEGER, "1");
-                    } else {
-//                        command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.2." + (GateNum - 8) + ".0", SnmpAPI.INTEGER, "1");
-                    }
+                    command.SNMP_SET(".1.3.6.1.4.1.19865.1.2." + GateNum.getOutputPINRelay() + ".0", SnmpAPI.INTEGER, "1");
                 } else {
-                    if (GateNum < 9) {
-//                        command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.1." + GateNum + ".0", SnmpAPI.INTEGER, "0");
-                    } else {
-//                        command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.2." + (GateNum - 8) + ".0", SnmpAPI.INTEGER, "0");
-                    }
+                    command.SNMP_SET(".1.3.6.1.4.1.19865.1.2." + GateNum.getOutputPINRelay() + ".0", SnmpAPI.INTEGER, "0");
                 }
                 isStatusChanged = false;
 

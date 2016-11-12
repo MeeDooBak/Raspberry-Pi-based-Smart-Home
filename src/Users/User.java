@@ -27,6 +27,15 @@ public class User extends Thread {
         return -1;
     }
 
+    public UserList Get(int UserID) {
+        for (int i = 0; i < UserList.size(); i++) {
+            if (UserList.get(i).getUserID() == UserID) {
+                return UserList.get(i);
+            }
+        }
+        return null;
+    }
+
     @Override
     public void run() {
         try {

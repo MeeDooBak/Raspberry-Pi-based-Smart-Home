@@ -1,5 +1,6 @@
 package Sensor;
 
+import Pins.Pins;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.*;
@@ -8,10 +9,12 @@ public class Sensor {
 
     private final Connection DB;
     private final ArrayList<SensorList> SensorList;
+    private final Pins Pins;
 
-    public Sensor(Connection DB, ArrayList<SensorList> SensorList) {
+    public Sensor(Connection DB, ArrayList<SensorList> SensorList, Pins Pins) {
         this.DB = DB;
         this.SensorList = SensorList;
+        this.Pins = Pins;
     }
 
     public int indexof(int SensorID) {
@@ -64,9 +67,9 @@ public class Sensor {
                     Result3.close();
                     Statement3.close();
 
-                    SensorList.add(new SensorList(SensorID, RoomID, SensorName, SenesorState, GateNum1, GateNum2, SensorValue, DB));
+                    SensorList.add(new SensorList(SensorID, RoomID, SensorName, SenesorState, Pins.Get(GateNum1), Pins.Get(GateNum2), SensorValue, DB));
                 } else {
-                    SensorList.add(new SensorList(SensorID, RoomID, SensorName, SenesorState, GateNum, -1, SensorValue, DB));
+                    SensorList.add(new SensorList(SensorID, RoomID, SensorName, SenesorState, Pins.Get(GateNum), null, SensorValue, DB));
                 }
                 System.out.println("Add Sensor " + SensorID + " " + SensorName);
             }

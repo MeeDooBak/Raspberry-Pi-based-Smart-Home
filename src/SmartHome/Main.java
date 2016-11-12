@@ -31,6 +31,8 @@ public class Main {
             System.out.println("Start");
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             DB = DriverManager.getConnection("jdbc:mysql://localhost:3306/smarthome", "root", "");
+
+            getIP();
             command = new Relay(RelayIP, 161, "private");
 
             RoomList = new ArrayList();
@@ -51,12 +53,12 @@ public class Main {
 
             Thread.sleep(1000);
 
-            Device Device = new Device(DB, DeviceList, Room, command);
+            Device Device = new Device(DB, DeviceList, Room, Pins, command);
             Device.start();
 
             Thread.sleep(1000);
 
-            Sensor Sensor = new Sensor(DB, SensorList);
+            Sensor Sensor = new Sensor(DB, SensorList, Pins);
             Sensor.start();
 
             Thread.sleep(1000);

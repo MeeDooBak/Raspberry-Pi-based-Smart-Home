@@ -13,6 +13,7 @@ public class PinsList {
     private int PinIndex = 0;
     private GpioPinDigitalInput PIN_IN;
     private GpioPinDigitalOutput PIN_OUT;
+    private String PIN_OUTRelay;
 
     public PinsList(int PinID, boolean isPinInput, String Type, String PinNumber, String PI4Jnumber, String MCP23017, String DeviceName) {
         this.PinID = PinID;
@@ -44,6 +45,10 @@ public class PinsList {
             } catch (IOException ex) {
                 Logger.getLogger(PinsList.class.getName()).log(Level.SEVERE, null, ex);
             }
+        } else if (Type.equals("Relay")) {
+            if (!isPinInput) {
+                PIN_OUTRelay = PI4Jnumber;
+            }
         }
     }
 
@@ -53,6 +58,10 @@ public class PinsList {
 
     public GpioPinDigitalOutput getOutputPIN() {
         return PIN_OUT;
+    }
+
+    public String getOutputPINRelay() {
+        return PIN_OUTRelay;
     }
 
     public int getPinID() {

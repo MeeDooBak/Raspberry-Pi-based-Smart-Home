@@ -1,5 +1,6 @@
 package Device;
 
+import Pins.PinsList;
 import Rooms.*;
 import java.sql.*;
 
@@ -15,10 +16,10 @@ public class DeviceList {
     private final int DeviceID;
     private final RoomList Room;
     private final String DeviceName;
-    private final int GateNum1;
-    private final int GateNum2;
-    private final int GateNum3;
-    private final int GateNum4;
+    private final PinsList GateNum1;
+    private final PinsList GateNum2;
+    private final PinsList GateNum3;
+    private final PinsList GateNum4;
 
     private final Connection DB;
     private final Relay command;
@@ -27,8 +28,8 @@ public class DeviceList {
     private MotorThread MotorThread;
     private AlarmThread AlarmThread;
 
-    public DeviceList(int DeviceID, RoomList Room, String DeviceName, boolean DeviceState, int GateNum1, int GateNum2, int GateNum3, int GateNum4,
-            boolean isStatusChanged, int StepperMotorMoves, int AlarmDuration, int AlarmInterval, Connection DB, Relay command) {
+    public DeviceList(int DeviceID, RoomList Room, String DeviceName, boolean DeviceState, PinsList GateNum1, PinsList GateNum2, PinsList GateNum3,
+            PinsList GateNum4, boolean isStatusChanged, int StepperMotorMoves, int AlarmDuration, int AlarmInterval, Connection DB, Relay command) {
 
         this.DeviceID = DeviceID;
         this.Room = Room;
@@ -109,19 +110,19 @@ public class DeviceList {
         return DeviceName;
     }
 
-    public int getGateNum1() {
+    public PinsList getGateNum1() {
         return GateNum1;
     }
 
-    public int getGateNum2() {
+    public PinsList getGateNum2() {
         return GateNum2;
     }
 
-    public int getGateNum3() {
+    public PinsList getGateNum3() {
         return GateNum3;
     }
 
-    public int getGateNum4() {
+    public PinsList getGateNum4() {
         return GateNum4;
     }
 
