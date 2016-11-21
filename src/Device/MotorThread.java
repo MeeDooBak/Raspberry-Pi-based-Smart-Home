@@ -59,11 +59,13 @@ public class MotorThread extends Thread {
                 ps.setInt(1, StepperMotorMoves);
                 ps.setInt(2, DeviceID);
                 ps.executeUpdate();
+                ps.close();
 
                 PreparedStatement ps2 = DB.prepareStatement("update device set isStatusChanged = ? where DeviceID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
                 ps2.setBoolean(1, isStatusChanged);
                 ps2.setInt(2, DeviceID);
                 ps2.executeUpdate();
+                ps2.close();
             }
         } catch (SQLException ex) {
             Logger.getLogger(Device.class.getName()).log(Level.SEVERE, null, ex);

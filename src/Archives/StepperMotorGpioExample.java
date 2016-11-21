@@ -1,7 +1,10 @@
 package Archives;
 
 import com.pi4j.component.motor.impl.*;
+import com.pi4j.gpio.extension.mcp.MCP23017GpioProvider;
+import com.pi4j.gpio.extension.mcp.MCP23017Pin;
 import com.pi4j.io.gpio.*;
+import com.pi4j.io.i2c.I2CBus;
 import java.io.*;
 
 public class StepperMotorGpioExample {
@@ -17,12 +20,15 @@ public class StepperMotorGpioExample {
         client = new BufferedReader(new InputStreamReader((Runtime.getRuntime().exec(new String[]{"/usr/bin/irw"})).getInputStream()));
 
         GpioController gpio = GpioFactory.getInstance();
+        MCP23017GpioProvider Provider = new MCP23017GpioProvider(I2CBus.BUS_1, 0x20);
+
         GpioPinDigitalOutput[] pins = {
-            gpio.provisionDigitalOutputPin(RaspiPin.GPIO_21, PinState.LOW),
-            gpio.provisionDigitalOutputPin(RaspiPin.GPIO_22, PinState.LOW),
-            gpio.provisionDigitalOutputPin(RaspiPin.GPIO_23, PinState.LOW),
-            gpio.provisionDigitalOutputPin(RaspiPin.GPIO_24, PinState.LOW)
+            gpio.provisionDigitalOutputPin(Provider, MCP23017Pin.GPIO_A0, PinState.LOW),
+            gpio.provisionDigitalOutputPin(Provider, MCP23017Pin.GPIO_A1, PinState.LOW),
+            gpio.provisionDigitalOutputPin(Provider, MCP23017Pin.GPIO_A2, PinState.LOW),
+            gpio.provisionDigitalOutputPin(Provider, MCP23017Pin.GPIO_A3, PinState.LOW)
         };
+
         gpio.setShutdownOptions(true, PinState.LOW, pins);
         motor = new GpioStepperMotorComponent(pins);
 
@@ -57,11 +63,11 @@ public class StepperMotorGpioExample {
                     System.out.println(Line.split(" ")[2]);
                     new Thread(open).start();
 
-                } else if (Line.split(" ")[2].equals("KEY_5")) {
+                } else if (Line.split(" ")[2].equals("KEY_DOWN")) {
                     System.out.println(Line.split(" ")[2]);
                     new Thread(close).start();
 
-                } else if (Line.split(" ")[2].equals("KEY_8")) {
+                } else if (Line.split(" ")[2].equals("KEY_OK")) {
                     System.out.println(Line.split(" ")[2]);
                     Stop = true;
                     System.out.println(value);
@@ -74,7 +80,7 @@ public class StepperMotorGpioExample {
     private static final Runnable open = new Runnable() {
         @Override
         public void run() {
-            for (int i = value; i > -1; i--) {
+            for (int i = value; i > -20000; i--) {
                 motor.step(1);
                 value = i;
                 if (Stop) {
@@ -88,7 +94,7 @@ public class StepperMotorGpioExample {
     private static final Runnable close = new Runnable() {
         @Override
         public void run() {
-            for (int i = value; i < 4410; i++) {
+            for (int i = value; i < 20000; i++) {
                 motor.step(-1);
                 value = i;
                 if (Stop) {

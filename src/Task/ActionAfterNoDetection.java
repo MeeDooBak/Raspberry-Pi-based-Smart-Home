@@ -10,7 +10,7 @@ public class ActionAfterNoDetection extends Thread {
 
     private boolean isDisabled;
 
-    private java.util.Date CouyntingDate;
+    private long CouyntingDate;
     private boolean TimeFinish;
 
     private final int AlarmDuration;
@@ -37,8 +37,7 @@ public class ActionAfterNoDetection extends Thread {
         this.List = List;
         this.DB = DB;
 
-        this.CouyntingDate = new java.util.Date();
-        CouyntingDate.setMinutes(CouyntingDate.getMinutes() + SelectedSensorValue);
+        CouyntingDate = new java.util.Date().getTime() + (SelectedSensorValue * 60000);
         new Thread(Timer).start();
     }
 
@@ -47,36 +46,29 @@ public class ActionAfterNoDetection extends Thread {
     }
 
     private void execute() {
-        if (Sensor.getSensorThread().getSensorState()) {
-            for (Map.Entry<DeviceList, Boolean> Device : List.entrySet()) {
-                if (Device.getKey().getDeviceName().equals("Alarm")) {
-                    Device.getKey().setDeviceState(Device.getValue());
-                    Device.getKey().setAlarmDuration(AlarmDuration);
-                    Device.getKey().setAlarmInterval(AlarmInterval);
-                    Device.getKey().setIsStatusChanged(true);
-                    Device.getKey().Start();
+        for (Map.Entry<DeviceList, Boolean> Device : List.entrySet()) {
+            if (Device.getKey().getDeviceName().equals("Alarm")) {
+                Device.getKey().setDeviceState(Device.getValue());
+                Device.getKey().setAlarmDuration(AlarmDuration);
+                Device.getKey().setAlarmInterval(AlarmInterval);
+                Device.getKey().setIsStatusChanged(true);
+                Device.getKey().Start();
 
-                } else if (!Device.getKey().getDeviceState() == Device.getValue()) {
-                    Device.getKey().setDeviceState(Device.getValue());
-                    Device.getKey().setIsStatusChanged(true);
-                    Device.getKey().Start();
-                }
+            } else if (!Device.getKey().getDeviceState() == Device.getValue()) {
+                Device.getKey().setDeviceState(Device.getValue());
+                Device.getKey().setIsStatusChanged(true);
+                Device.getKey().Start();
             }
         }
     }
 
     private void Check() {
         if (Sensor.getSensorThread().getSensorState()) {
-            java.util.Date NewDate = new java.util.Date();
-            NewDate.setMinutes(NewDate.getMinutes() + SelectedSensorValue);
-            CouyntingDate = NewDate;
+            CouyntingDate = new java.util.Date().getTime() + (SelectedSensorValue * 60000);
 
         } else {
             if (TimeFinish) {
-                java.util.Date NewDate = new java.util.Date();
-                NewDate.setMinutes(NewDate.getMinutes() + SelectedSensorValue);
-                CouyntingDate = NewDate;
-
+                CouyntingDate = new java.util.Date().getTime() + (SelectedSensorValue * 60000);
                 new Thread(Timer).start();
             }
         }
@@ -92,23 +84,11 @@ public class ActionAfterNoDetection extends Thread {
                         execute();
                     } else {
 
-                        Calendar startOfToday = Calendar.getInstance();
-                        Calendar endOfToday = Calendar.getInstance();
-                        endOfToday.setTime(startOfToday.getTime());
+                        java.sql.Date CDate = new java.sql.Date(new java.util.Date().getTime());
 
-                        startOfToday.set(Calendar.HOUR_OF_DAY, 0);
-                        startOfToday.set(Calendar.MINUTE, 0);
-                        startOfToday.set(Calendar.SECOND, 0);
-                        startOfToday.set(Calendar.MILLISECOND, 0);
-
-                        endOfToday.set(Calendar.HOUR_OF_DAY, 23);
-                        endOfToday.set(Calendar.MINUTE, 59);
-                        endOfToday.set(Calendar.SECOND, 59);
-                        endOfToday.set(Calendar.MILLISECOND, 999);
-
-                        if (startOfToday.getTimeInMillis() <= ActionDate.getTime() && ActionDate.getTime() <= endOfToday.getTimeInMillis()) {
+                        if (("" + CDate).equals("" + ActionDate)) {
                             execute();
-                        } else if (startOfToday.getTimeInMillis() > ActionDate.getTime()) {
+                        } else if (CDate.after(ActionDate)) {
                             isDisabled = true;
 
                             PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
@@ -129,7 +109,7 @@ public class ActionAfterNoDetection extends Thread {
         @Override
         public void run() {
             while (true) {
-                if (CouyntingDate.equals(new java.util.Date())) {
+                if (CouyntingDate == new java.util.Date().getTime()) {
                     TimeFinish = true;
                     break;
                 } else {

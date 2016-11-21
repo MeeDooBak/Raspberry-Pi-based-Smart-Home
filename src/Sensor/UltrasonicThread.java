@@ -61,6 +61,7 @@ public class UltrasonicThread extends Thread {
                 ps.setInt(2, SensorValue);
                 ps.setInt(3, SensorID);
                 ps.executeUpdate();
+                ps.close();
 
                 Thread.sleep(1000);
             } catch (SQLException | InterruptedException ex) {

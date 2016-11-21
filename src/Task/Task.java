@@ -171,7 +171,7 @@ public class Task extends Thread {
                 }
                 Result.close();
                 Statement.close();
-                Thread.sleep(1000);
+                Thread.sleep(2000);
             }
         } catch (SQLException | InterruptedException ex) {
             Logger.getLogger(Task.class.getName()).log(Level.SEVERE, null, ex);

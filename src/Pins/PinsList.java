@@ -22,7 +22,7 @@ public class PinsList {
 
         if (Type.equals("GPIO")) {
             if (isPinInput) {
-                PIN_IN = GPIO.provisionDigitalInputPin(RaspiPin.getPinByAddress(Integer.parseInt(PI4Jnumber)));
+                PIN_IN = GPIO.provisionDigitalInputPin(RaspiPin.getPinByAddress(Integer.parseInt(PI4Jnumber)), PinPullResistance.PULL_UP);
             } else {
                 PIN_OUT = GPIO.provisionDigitalOutputPin(RaspiPin.getPinByAddress(Integer.parseInt(PI4Jnumber)));
             }
@@ -35,12 +35,19 @@ public class PinsList {
                         break;
                     }
                 }
-                MCP23017GpioProvider Provider = new MCP23017GpioProvider(I2CBus.BUS_1, Integer.parseInt(MCP23017));
+
+                MCP23017GpioProvider Provider = new MCP23017GpioProvider(I2CBus.BUS_1, Integer.decode(MCP23017));
 
                 if (isPinInput) {
                     PIN_IN = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL[PinIndex], PinPullResistance.PULL_UP);
                 } else {
-                    PIN_OUT = GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL[PinIndex], PinState.LOW);
+                    if (MCP23017.equals("0x25") && PI4Jnumber.contains("A")) {
+                        PIN_OUT = GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL[PinIndex], PinState.HIGH);
+
+                    } else {
+                        PIN_OUT = GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL[PinIndex], PinState.LOW);
+
+                    }
                 }
             } catch (IOException ex) {
                 Logger.getLogger(PinsList.class.getName()).log(Level.SEVERE, null, ex);

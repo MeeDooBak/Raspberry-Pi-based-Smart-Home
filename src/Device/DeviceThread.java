@@ -39,6 +39,7 @@ public class DeviceThread extends Thread {
                 ps.setBoolean(1, isStatusChanged);
                 ps.setInt(2, DeviceID);
                 ps.executeUpdate();
+                ps.close();
             }
         } catch (SQLException ex) {
             Logger.getLogger(Device.class.getName()).log(Level.SEVERE, null, ex);

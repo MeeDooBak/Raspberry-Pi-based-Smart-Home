@@ -3,50 +3,40 @@ package Archives;
 import Device.Relay;
 import com.adventnet.snmp.snmp2.SnmpAPI;
 import com.pi4j.io.gpio.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main {
 
     public static int num = 0;
-    public static boolean change;
     public static Relay command;
-    public static GpioPinDigitalOutput pin18;
 
     public static void main(String[] args) {
         System.out.println("<--Pi4J--> GPIO Control Example ... started.");
 
         GpioController gpio = GpioFactory.getInstance();
-        GpioPinDigitalInput pin17 = gpio.provisionDigitalInputPin(RaspiPin.GPIO_00, "PIN 17");// IR Receiver PIN 17
-        GpioPinDigitalOutput pin18 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_01, "PIN 18");// LED PIN 18
+        GpioPinDigitalInput pin17 = gpio.provisionDigitalInputPin(RaspiPin.GPIO_27, "PIN 17");// IR Receiver PIN 17
 
-        command = new Relay("192.168.1.15", 161, "private");
+        command = new Relay("192.168.1.21", 161, "private");
         while (true) {
-            if (pin17.isLow()) {
+            if (pin17.isHigh()) {
                 if (num == 1) {
-                    System.out.println("Good");
-                    pin18.low();
-                    num = 0;
-                    change = true;
-                    new Thread(Change).start();
+                    try {
+                        System.out.println("Good");
+                        num = 0;
+                        command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.2." + 5 + ".0", SnmpAPI.INTEGER, "1");
+                        Thread.sleep(5000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             } else {
                 if (num == 0) {
                     System.out.println("Bad");
-                    pin18.high();
                     num = 1;
-                    change = false;
-                    new Thread(Change).start();
+                    command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.2." + 5 + ".0", SnmpAPI.INTEGER, "0");
                 }
             }
         }
     }
-    private static final Runnable Change = new Runnable() {
-        @Override
-        public void run() {
-            if (change) {
-                command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.1." + 1 + ".0", SnmpAPI.INTEGER, "0");
-            } else {
-                command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.1." + 1 + ".0", SnmpAPI.INTEGER, "1");
-            }
-        }
-    };
 }

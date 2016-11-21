@@ -49,7 +49,33 @@ public class DeviceList {
         this.DB = DB;
         this.command = command;
 
-        if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC")) {
+        if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC") || DeviceName.equals("Water Pump")) {
+            DeviceThread = new DeviceThread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB, command);
+
+            MotorThread = null;
+            AlarmThread = null;
+
+            DeviceThread.start();
+
+//        } else if (DeviceName.equals("Curtains") || DeviceName.equals("Garage Door")) {
+//            MotorThread = new MotorThread(DeviceID, DeviceState, GateNum1, GateNum2, GateNum3, GateNum4, isStatusChanged, DB, StepperMotorMoves);
+//
+//            DeviceThread = null;
+//            AlarmThread = null;
+//
+//            MotorThread.start();
+        } else if (DeviceName.equals("Alarm")) {
+            AlarmThread = new AlarmThread(DeviceID, DeviceState, GateNum1, isStatusChanged, AlarmDuration, AlarmInterval, DB);
+
+            DeviceThread = null;
+            MotorThread = null;
+
+            AlarmThread.start();
+        }
+    }
+
+    public void Start() {
+        if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC") || DeviceName.equals("Water Pump")) {
             DeviceThread = new DeviceThread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB, command);
 
             MotorThread = null;
@@ -66,27 +92,12 @@ public class DeviceList {
             MotorThread.start();
 
         } else if (DeviceName.equals("Alarm")) {
-            AlarmThread = new AlarmThread(DeviceID, DeviceState, GateNum1, isStatusChanged, AlarmDuration, AlarmInterval, DB, command);
+            AlarmThread = new AlarmThread(DeviceID, DeviceState, GateNum1, isStatusChanged, AlarmDuration, AlarmInterval, DB);
 
             DeviceThread = null;
             MotorThread = null;
 
             AlarmThread.start();
-        }
-    }
-
-    public void Start() {
-        if (DeviceThread == null) {
-            if (MotorThread == null) {
-                AlarmThread = new AlarmThread(DeviceID, DeviceState, GateNum1, isStatusChanged, AlarmDuration, AlarmInterval, DB, command);
-                AlarmThread.start();
-            } else {
-                MotorThread = new MotorThread(DeviceID, DeviceState, GateNum1, GateNum2, GateNum3, GateNum4, isStatusChanged, DB, StepperMotorMoves);
-                MotorThread.start();
-            }
-        } else {
-            DeviceThread = new DeviceThread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB, command);
-            DeviceThread.start();
         }
     }
 

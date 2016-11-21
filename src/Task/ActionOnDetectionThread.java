@@ -51,6 +51,7 @@ public class ActionOnDetectionThread extends Thread {
                     Device.getKey().setDeviceState(Device.getValue());
                     Device.getKey().setIsStatusChanged(true);
                     Device.getKey().Start();
+
                 }
             }
         }
@@ -64,23 +65,11 @@ public class ActionOnDetectionThread extends Thread {
                     execute();
                 } else {
 
-                    Calendar startOfToday = Calendar.getInstance();
-                    Calendar endOfToday = Calendar.getInstance();
-                    endOfToday.setTime(startOfToday.getTime());
+                    java.sql.Date CDate = new java.sql.Date(new java.util.Date().getTime());
 
-                    startOfToday.set(Calendar.HOUR_OF_DAY, 0);
-                    startOfToday.set(Calendar.MINUTE, 0);
-                    startOfToday.set(Calendar.SECOND, 0);
-                    startOfToday.set(Calendar.MILLISECOND, 0);
-
-                    endOfToday.set(Calendar.HOUR_OF_DAY, 23);
-                    endOfToday.set(Calendar.MINUTE, 59);
-                    endOfToday.set(Calendar.SECOND, 59);
-                    endOfToday.set(Calendar.MILLISECOND, 999);
-
-                    if (startOfToday.getTimeInMillis() <= ActionDate.getTime() && ActionDate.getTime() <= endOfToday.getTimeInMillis()) {
+                    if (("" + CDate).equals("" + ActionDate)) {
                         execute();
-                    } else if (startOfToday.getTimeInMillis() > ActionDate.getTime()) {
+                    } else if (CDate.after(ActionDate)) {
                         isDisabled = true;
 
                         PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);

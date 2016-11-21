@@ -269,7 +269,6 @@ public class IR extends Thread {
     @Override
     public void run() {
         try {
-            Lebar:
             while ((Line = client.readLine()) != null) {
                 if (Line.split(" ")[2].equals(Previous)) {
                     Previous = "";
@@ -288,18 +287,12 @@ public class IR extends Thread {
                                         while (true) {
                                             if (getDevice(RoomClass)) {
                                                 Execute(Integer.parseInt(DeviceID));
-                                            }
-                                            if (Line.equals("KEY_BACK")) {
+                                            } else {
                                                 break;
-                                            } else if (Line.equals("KEY_EXIT")) {
-                                                break Lebar;
                                             }
                                         }
-                                    }
-                                    if (Line.equals("KEY_BACK")) {
+                                    } else {
                                         break;
-                                    } else if (Line.equals("KEY_EXIT")) {
-                                        break Lebar;
                                     }
                                 }
                             }

@@ -60,7 +60,7 @@ public class Device extends Thread {
                     int index = indexof(DeviceID);
                     if (index > -1) {
                         if (isStatusChanged) {
-                            if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC") || DeviceName.equals("Alarm")) {
+                            if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC") || DeviceName.equals("Alarm") || DeviceName.equals("Water Pump")) {
                                 DeviceList.get(index).setDeviceState(DeviceState);
                                 DeviceList.get(index).setIsStatusChanged(isStatusChanged);
                                 DeviceList.get(index).Start();
@@ -87,9 +87,8 @@ public class Device extends Thread {
                             }
                         }
                     } else {
-                        if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC")) {
-                            DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, Pins.Get(GateNum), null, null, null, isStatusChanged, -1,
-                                    -1, -1, DB, command));
+                        if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC") || DeviceName.equals("Water Pump")) {
+                            DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, Pins.Get(GateNum), null, null, null, isStatusChanged, -1, -1, -1, DB, command));
                             System.out.println("Add Device : " + DeviceID + " " + DeviceName + " With State " + DeviceState);
 
                         } else if (DeviceName.equals("Curtains") || DeviceName.equals("Garage Door")) {

@@ -25,6 +25,19 @@ public class SensorList {
             UltrasonicThread = new UltrasonicThread(SensorID, SensorState, GateNum1, GateNum2, SensorValue, DB);
             SensorThread = null;
             UltrasonicThread.start();
+
+        } else if (SensorName.equals("Clock")) {
+            SensorThread = null;
+            UltrasonicThread = null;
+
+        } else if (SensorName.equals("Light Sensor")) {
+            SensorThread = null;
+            UltrasonicThread = null;
+
+        } else if (SensorID >= 1000) {
+            SensorThread = null;
+            UltrasonicThread = null;
+
         } else {
             SensorThread = new SensorThread(SensorID, SensorState, GateNum1, SensorValue, DB);
             UltrasonicThread = null;
