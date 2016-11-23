@@ -44,79 +44,81 @@ public class Device extends Thread {
     public void run() {
         try {
             while (true) {
-                Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                ResultSet Result = Statement.executeQuery("select * from device");
+                try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                        ResultSet Result = Statement.executeQuery("select * from device")) {
 
-                Result.beforeFirst();
-                while (Result.next()) {
+                    Result.beforeFirst();
+                    while (Result.next()) {
 
-                    int DeviceID = Result.getInt("DeviceID");
-                    int RoomID = Result.getInt("RoomID");
-                    String DeviceName = Result.getString("DeviceName");
-                    boolean DeviceState = Result.getBoolean("DeviceState");
-                    int GateNum = Result.getInt("GateNum");
-                    boolean isStatusChanged = Result.getBoolean("isStatusChanged");
+                        int DeviceID = Result.getInt("DeviceID");
+                        int RoomID = Result.getInt("RoomID");
+                        String DeviceName = Result.getString("DeviceName");
+                        boolean DeviceState = Result.getBoolean("DeviceState");
+                        int GateNum = Result.getInt("GateNum");
+                        boolean isStatusChanged = Result.getBoolean("isStatusChanged");
+                        Timestamp lastStatusChange = Result.getTimestamp("lastStatusChange");
 
-                    int index = indexof(DeviceID);
-                    if (index > -1) {
-                        if (isStatusChanged) {
-                            if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC") || DeviceName.equals("Alarm") || DeviceName.equals("Water Pump")) {
-                                DeviceList.get(index).setDeviceState(DeviceState);
-                                DeviceList.get(index).setIsStatusChanged(isStatusChanged);
-                                DeviceList.get(index).Start();
-                                System.out.println(DeviceName + " State Change to " + DeviceState);
+                        int index = indexof(DeviceID);
+                        if (index > -1) {
+                            if (isStatusChanged) {
+                                if (DeviceName.equals("Curtains") || DeviceName.equals("Garage Door")) {
+                                    DeviceList.get(index).setDeviceState(DeviceState);
+                                    DeviceList.get(index).setIsStatusChanged(isStatusChanged);
+                                    DeviceList.get(index).setLastStatusChange(lastStatusChange);
 
-                            } else if (DeviceName.equals("Curtains") || DeviceName.equals("Garage Door")) {
-                                DeviceList.get(index).setDeviceState(DeviceState);
-                                DeviceList.get(index).setIsStatusChanged(isStatusChanged);
+                                    try (Statement Statement2 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                                            ResultSet Result2 = Statement2.executeQuery("select * from device_stepper_motor where DeviceID = " + DeviceID)) {
+                                        Result2.next();
+                                        int StepperMotorMoves = Result2.getInt("StepperMotorMoves");
+                                        if (DeviceList.get(index).getStepperMotorMoves() != StepperMotorMoves) {
+                                            DeviceList.get(index).setStepperMotorMoves(StepperMotorMoves);
+                                        }
+                                    }
+                                    DeviceList.get(index).Start();
 
-                                Statement Statement2 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                                ResultSet Result2 = Statement2.executeQuery("select * from device_stepper_motor where DeviceID = " + DeviceID);
-                                Result2.next();
-
-                                int StepperMotorMoves = Result2.getInt("StepperMotorMoves");
-                                if (DeviceList.get(index).getStepperMotorMoves() != StepperMotorMoves) {
-                                    DeviceList.get(index).setStepperMotorMoves(StepperMotorMoves);
+                                } else {
+                                    DeviceList.get(index).setDeviceState(DeviceState);
+                                    DeviceList.get(index).setIsStatusChanged(isStatusChanged);
+                                    DeviceList.get(index).setLastStatusChange(lastStatusChange);
+                                    DeviceList.get(index).Start();
                                 }
-
-                                Result2.close();
-                                Statement2.close();
-
-                                DeviceList.get(index).Start();
                                 System.out.println(DeviceName + " State Change to " + DeviceState);
                             }
-                        }
-                    } else {
-                        if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC") || DeviceName.equals("Water Pump")) {
-                            DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, Pins.Get(GateNum), null, null, null, isStatusChanged, -1, -1, -1, DB, command));
-                            System.out.println("Add Device : " + DeviceID + " " + DeviceName + " With State " + DeviceState);
+                        } else {
+                            if (DeviceName.equals("Curtains") || DeviceName.equals("Garage Door")) {
+                                int GateNum1;
+                                int GateNum2;
+                                int GateNum3;
+                                int GateNum4;
+                                int StepperMotorMoves;
+                                int MaxValue;
+                                try (Statement Statement2 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                                        ResultSet Result2 = Statement2.executeQuery("select * from device_stepper_motor where DeviceID = " + DeviceID)) {
+                                    Result2.next();
+                                    GateNum1 = Result2.getInt("GateNum1");
+                                    GateNum2 = Result2.getInt("GateNum2");
+                                    GateNum3 = Result2.getInt("GateNum3");
+                                    GateNum4 = Result2.getInt("GateNum4");
+                                    StepperMotorMoves = Result2.getInt("StepperMotorMoves");
+                                    MaxValue = Result2.getInt("MaxValue");
+                                }
 
-                        } else if (DeviceName.equals("Curtains") || DeviceName.equals("Garage Door")) {
-                            Statement Statement2 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                            ResultSet Result2 = Statement2.executeQuery("select * from device_stepper_motor where DeviceID = " + DeviceID);
-                            Result2.next();
+                                DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, Pins.Get(GateNum1), Pins.Get(GateNum2), Pins.Get(GateNum3),
+                                        Pins.Get(GateNum4), isStatusChanged, StepperMotorMoves, -1, -1, DB, command, lastStatusChange, MaxValue));
+                                System.out.println("Add Device : " + DeviceID + " " + DeviceName + " With State " + DeviceState);
 
-                            int GateNum1 = Result2.getInt("GateNum1");
-                            int GateNum2 = Result2.getInt("GateNum2");
-                            int GateNum3 = Result2.getInt("GateNum3");
-                            int GateNum4 = Result2.getInt("GateNum4");
-                            int StepperMotorMoves = Result2.getInt("StepperMotorMoves");
-                            Result2.close();
-                            Statement2.close();
-
-                            DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, Pins.Get(GateNum1), Pins.Get(GateNum2),
-                                    Pins.Get(GateNum3), Pins.Get(GateNum4), isStatusChanged, StepperMotorMoves, -1, -1, DB, command));
-                            System.out.println("Add Device : " + DeviceID + " " + DeviceName + " With State " + DeviceState);
-
-                        } else if (DeviceName.equals("Alarm")) {
-                            DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, Pins.Get(GateNum), null, null, null, isStatusChanged, -1,
-                                    0, 0, DB, command));
-                            System.out.println("Add Device : " + DeviceID + " " + DeviceName + " With State " + DeviceState);
+                            } else if (DeviceName.equals("Alarm")) {
+                                DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, Pins.Get(GateNum), null, null, null, isStatusChanged, -1, 0,
+                                        0, DB, command, lastStatusChange, -1));
+                                System.out.println("Add Device : " + DeviceID + " " + DeviceName + " With State " + DeviceState);
+                            } else {
+                                DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, Pins.Get(GateNum), null, null, null, isStatusChanged, -1, -1,
+                                        -1, DB, command, lastStatusChange, -1));
+                                System.out.println("Add Device : " + DeviceID + " " + DeviceName + " With State " + DeviceState);
+                            }
                         }
                     }
                 }
-                Result.close();
-                Statement.close();
                 Thread.sleep(1000);
             }
         } catch (SQLException | InterruptedException ex) {

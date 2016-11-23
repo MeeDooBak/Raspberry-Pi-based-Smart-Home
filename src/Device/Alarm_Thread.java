@@ -4,7 +4,7 @@ import Pins.PinsList;
 import java.sql.*;
 import java.util.logging.*;
 
-public class AlarmThread extends Thread {
+public class Alarm_Thread extends Thread {
 
     private boolean isStatusChanged;
 
@@ -15,8 +15,7 @@ public class AlarmThread extends Thread {
     private final int DeviceID;
     private final Connection DB;
 
-    public AlarmThread(int DeviceID, boolean DeviceState, PinsList GateNum, boolean isStatusChanged, int AlarmDuration, int AlarmInterval, Connection DB) {
-
+    public Alarm_Thread(int DeviceID, boolean DeviceState, PinsList GateNum, boolean isStatusChanged, int AlarmDuration, int AlarmInterval, Connection DB) {
         this.DB = DB;
         this.DeviceID = DeviceID;
         this.DeviceState = DeviceState;
@@ -31,16 +30,20 @@ public class AlarmThread extends Thread {
         try {
             if (isStatusChanged) {
                 if (DeviceState) {
-//                    long currentTime = System.currentTimeMillis();
-//                    long end = currentTime + AlarmDuration * 1000;
-//                    while (currentTime < end) {
-//                        GateNum.getOutputPIN().high();
-//                        Thread.sleep(AlarmInterval * 1000);
-//                        GateNum.getOutputPIN().low();
-//                    }
-                    GateNum.getOutputPIN().high();
+                    if (AlarmDuration == 0 && AlarmInterval == 0) {
+                        GateNum.getOutputPIN().low();
+                    } else {
+                        long currentTime = System.currentTimeMillis();
+                        long end = currentTime + AlarmDuration * 1000;
+                        while (currentTime < end) {
+                            GateNum.getOutputPIN().low();
+                            Thread.sleep(AlarmInterval * 1000);
+                            GateNum.getOutputPIN().high();
+                        }
+                    }
+
                 } else {
-                    GateNum.getOutputPIN().low();
+                    GateNum.getOutputPIN().high();
                 }
                 isStatusChanged = false;
 
@@ -49,8 +52,8 @@ public class AlarmThread extends Thread {
                 ps.setInt(2, DeviceID);
                 ps.executeUpdate();
             }
-        } catch (SQLException ex) {
-            Logger.getLogger(AlarmThread.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException | InterruptedException ex) {
+            Logger.getLogger(Alarm_Thread.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

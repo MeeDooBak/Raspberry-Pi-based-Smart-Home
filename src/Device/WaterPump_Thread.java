@@ -5,7 +5,7 @@ import java.sql.*;
 import java.util.logging.*;
 import com.adventnet.snmp.snmp2.*;
 
-public class DeviceThread extends Thread {
+public class WaterPump_Thread extends Thread {
 
     private boolean isStatusChanged;
     private final PinsList GateNum;
@@ -14,8 +14,7 @@ public class DeviceThread extends Thread {
     private final Connection DB;
     private final Relay command;
 
-    public DeviceThread(int DeviceID, boolean DeviceState, PinsList GateNum, boolean isStatusChanged, Connection DB, Relay command) {
-
+    public WaterPump_Thread(int DeviceID, boolean DeviceState, PinsList GateNum, boolean isStatusChanged, Connection DB, Relay command) {
         this.DB = DB;
         this.command = command;
         this.DeviceID = DeviceID;
@@ -42,7 +41,7 @@ public class DeviceThread extends Thread {
                 ps.close();
             }
         } catch (SQLException ex) {
-            Logger.getLogger(Device.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(WaterPump_Thread.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

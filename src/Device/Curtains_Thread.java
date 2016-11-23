@@ -6,33 +6,31 @@ import com.pi4j.component.motor.impl.*;
 import com.pi4j.io.gpio.*;
 import java.util.logging.*;
 
-public class MotorThread extends Thread {
+public class Curtains_Thread extends Thread {
 
     private boolean isStatusChanged;
     private int StepperMotorMoves;
 
     private final boolean DeviceState;
     private final int DeviceID;
+    private final int MaxValue;
     private final Connection DB;
     private final GpioStepperMotorComponent Motor;
 
-    public MotorThread(int DeviceID, boolean DeviceState, PinsList GateNum1, PinsList GateNum2, PinsList GateNum3, PinsList GateNum4, boolean isStatusChanged, Connection DB, int StepperMotorMoves) {
+    public Curtains_Thread(int DeviceID, boolean DeviceState, PinsList GateNum1, PinsList GateNum2, PinsList GateNum3, PinsList GateNum4, boolean isStatusChanged, int MaxValue,
+            Connection DB, int StepperMotorMoves) {
 
         this.DB = DB;
         this.DeviceID = DeviceID;
         this.DeviceState = DeviceState;
         this.isStatusChanged = isStatusChanged;
         this.StepperMotorMoves = StepperMotorMoves;
+        this.MaxValue = MaxValue;
 
         GpioController gpio = GpioFactory.getInstance();
-        GpioPinDigitalOutput[] PINS = {
-            GateNum1.getOutputPIN(),
-            GateNum2.getOutputPIN(),
-            GateNum3.getOutputPIN(),
-            GateNum4.getOutputPIN(),};
+        GpioPinDigitalOutput[] PINS = {GateNum1.getOutputPIN(), GateNum2.getOutputPIN(), GateNum3.getOutputPIN(), GateNum4.getOutputPIN(),};
         gpio.setShutdownOptions(true, PinState.LOW, PINS);
         Motor = new GpioStepperMotorComponent(PINS);
-
         Motor.setStepInterval(2);
         Motor.setStepSequence(new byte[]{0b0001, 0b0010, 0b0100, 0b1000});
         Motor.setStepsPerRevolution(2038);
@@ -48,7 +46,7 @@ public class MotorThread extends Thread {
                         StepperMotorMoves = i;
                     }
                 } else {
-                    for (int i = StepperMotorMoves; i < 4410; i++) {
+                    for (int i = StepperMotorMoves; i < MaxValue; i++) {
                         Motor.step(-1);
                         StepperMotorMoves = i;
                     }
@@ -68,7 +66,7 @@ public class MotorThread extends Thread {
                 ps2.close();
             }
         } catch (SQLException ex) {
-            Logger.getLogger(Device.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Curtains_Thread.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

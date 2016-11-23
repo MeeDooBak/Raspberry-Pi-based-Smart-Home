@@ -4,12 +4,11 @@ import Pins.PinsList;
 import Rooms.*;
 import java.sql.*;
 
-public class DeviceList {
+public final class DeviceList {
 
     private boolean DeviceState;
     private boolean isStatusChanged;
     private int StepperMotorMoves;
-
     private int AlarmDuration;
     private int AlarmInterval;
 
@@ -20,16 +19,22 @@ public class DeviceList {
     private final PinsList GateNum2;
     private final PinsList GateNum3;
     private final PinsList GateNum4;
-
     private final Connection DB;
     private final Relay command;
+    private Timestamp lastStatusChange;
+    private final int MaxValue;
 
-    private DeviceThread DeviceThread;
-    private MotorThread MotorThread;
-    private AlarmThread AlarmThread;
+    private RoofLamp_Thread RoofLamp;
+    private AC_Thread AC;
+    private Curtains_Thread Curtains;
+    private Alarm_Thread Alarm;
+    private GarageDoor_Thread GarageDoor;
+    private SecurityCamera_Thread SecurityCamera;
+    private WaterPump_Thread WaterPump;
 
     public DeviceList(int DeviceID, RoomList Room, String DeviceName, boolean DeviceState, PinsList GateNum1, PinsList GateNum2, PinsList GateNum3,
-            PinsList GateNum4, boolean isStatusChanged, int StepperMotorMoves, int AlarmDuration, int AlarmInterval, Connection DB, Relay command) {
+            PinsList GateNum4, boolean isStatusChanged, int StepperMotorMoves, int AlarmDuration, int AlarmInterval, Connection DB, Relay command,
+            Timestamp lastStatusChange, int MaxValue) {
 
         this.DeviceID = DeviceID;
         this.Room = Room;
@@ -42,71 +47,129 @@ public class DeviceList {
         this.DeviceState = DeviceState;
         this.isStatusChanged = isStatusChanged;
         this.StepperMotorMoves = StepperMotorMoves;
-
         this.AlarmDuration = AlarmDuration;
         this.AlarmInterval = AlarmInterval;
-
         this.DB = DB;
         this.command = command;
-
-        if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC") || DeviceName.equals("Water Pump")) {
-            DeviceThread = new DeviceThread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB, command);
-
-            MotorThread = null;
-            AlarmThread = null;
-
-            DeviceThread.start();
-
-//        } else if (DeviceName.equals("Curtains") || DeviceName.equals("Garage Door")) {
-//            MotorThread = new MotorThread(DeviceID, DeviceState, GateNum1, GateNum2, GateNum3, GateNum4, isStatusChanged, DB, StepperMotorMoves);
-//
-//            DeviceThread = null;
-//            AlarmThread = null;
-//
-//            MotorThread.start();
-        } else if (DeviceName.equals("Alarm")) {
-            AlarmThread = new AlarmThread(DeviceID, DeviceState, GateNum1, isStatusChanged, AlarmDuration, AlarmInterval, DB);
-
-            DeviceThread = null;
-            MotorThread = null;
-
-            AlarmThread.start();
-        }
+        this.lastStatusChange = lastStatusChange;
+        this.MaxValue = MaxValue;
+        Start();
     }
 
     public void Start() {
-        if (DeviceName.equals("Roof Lamp") || DeviceName.equals("AC") || DeviceName.equals("Water Pump")) {
-            DeviceThread = new DeviceThread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB, command);
+        if (DeviceName.equals("Roof Lamp")) {
+            RoofLamp = new RoofLamp_Thread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB, command, getLastStatusChange());
+            RoofLamp.start();
 
-            MotorThread = null;
-            AlarmThread = null;
+            AC = null;
+            Curtains = null;
+            Alarm = null;
+            GarageDoor = null;
+            SecurityCamera = null;
+            WaterPump = null;
 
-            DeviceThread.start();
+        } else if (DeviceName.equals("AC")) {
+            AC = new AC_Thread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB, command, getLastStatusChange());
+            AC.start();
 
-        } else if (DeviceName.equals("Curtains") || DeviceName.equals("Garage Door")) {
-            MotorThread = new MotorThread(DeviceID, DeviceState, GateNum1, GateNum2, GateNum3, GateNum4, isStatusChanged, DB, StepperMotorMoves);
+            RoofLamp = null;
+            Curtains = null;
+            Alarm = null;
+            GarageDoor = null;
+            SecurityCamera = null;
+            WaterPump = null;
 
-            DeviceThread = null;
-            AlarmThread = null;
+        } else if (DeviceName.equals("Curtains")) {
+            Curtains = new Curtains_Thread(DeviceID, DeviceState, GateNum1, GateNum2, GateNum3, GateNum4, isStatusChanged, getMaxValue(), DB, StepperMotorMoves);
+            Curtains.start();
 
-            MotorThread.start();
+            RoofLamp = null;
+            AC = null;
+            Alarm = null;
+            GarageDoor = null;
+            SecurityCamera = null;
+            WaterPump = null;
 
         } else if (DeviceName.equals("Alarm")) {
-            AlarmThread = new AlarmThread(DeviceID, DeviceState, GateNum1, isStatusChanged, AlarmDuration, AlarmInterval, DB);
+            Alarm = new Alarm_Thread(DeviceID, DeviceState, GateNum1, isStatusChanged, AlarmDuration, AlarmInterval, DB);
+            Alarm.start();
 
-            DeviceThread = null;
-            MotorThread = null;
+            RoofLamp = null;
+            AC = null;
+            Curtains = null;
+            GarageDoor = null;
+            SecurityCamera = null;
+            WaterPump = null;
 
-            AlarmThread.start();
+        } else if (DeviceName.equals("Garage Door")) {
+            GarageDoor = new GarageDoor_Thread(DeviceID, DeviceState, GateNum1, GateNum2, GateNum3, GateNum4, isStatusChanged, getMaxValue(), DB, StepperMotorMoves);
+            GarageDoor.start();
+
+            RoofLamp = null;
+            AC = null;
+            Curtains = null;
+            Alarm = null;
+            SecurityCamera = null;
+            WaterPump = null;
+
+        } else if (DeviceName.equals("Security Camera")) {
+            SecurityCamera = new SecurityCamera_Thread();
+
+            RoofLamp = null;
+            AC = null;
+            Curtains = null;
+            Alarm = null;
+            GarageDoor = null;
+            WaterPump = null;
+
+        } else if (DeviceName.equals("Water Pump")) {
+            WaterPump = new WaterPump_Thread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB, command);
+            WaterPump.start();
+
+            RoofLamp = null;
+            AC = null;
+            Curtains = null;
+            Alarm = null;
+            GarageDoor = null;
+            SecurityCamera = null;
+
+        } else {
+            RoofLamp = null;
+            AC = null;
+            Curtains = null;
+            Alarm = null;
+            GarageDoor = null;
+            SecurityCamera = null;
+            WaterPump = null;
         }
     }
 
-    public DeviceThread getDeviceThread() {
-        return DeviceThread;
+    public RoofLamp_Thread getRoofLamp() {
+        return RoofLamp;
     }
 
-    public MotorThread getMotorThread() {
-        return MotorThread;
+    public AC_Thread getAC() {
+        return AC;
+    }
+
+    public Curtains_Thread getCurtains() {
+        return Curtains;
+    }
+
+    public Alarm_Thread getAlarm() {
+        return Alarm;
+    }
+
+    public GarageDoor_Thread getGarageDoor() {
+        return GarageDoor;
+    }
+
+    public SecurityCamera_Thread getSecurityCamera() {
+        return SecurityCamera;
+    }
+
+    public WaterPump_Thread getWaterPump() {
+        return WaterPump;
     }
 
     public int getDeviceID() {
@@ -175,5 +238,17 @@ public class DeviceList {
 
     public void setAlarmInterval(int AlarmInterval) {
         this.AlarmInterval = AlarmInterval;
+    }
+
+    public Timestamp getLastStatusChange() {
+        return lastStatusChange;
+    }
+
+    public void setLastStatusChange(Timestamp lastStatusChange) {
+        this.lastStatusChange = lastStatusChange;
+    }
+
+    public int getMaxValue() {
+        return MaxValue;
     }
 }
