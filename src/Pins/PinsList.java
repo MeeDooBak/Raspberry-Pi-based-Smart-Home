@@ -19,7 +19,6 @@ public class PinsList {
         this.PinID = PinID;
 
         GpioController GPIO = GpioFactory.getInstance();
-
         if (Type.equals("GPIO")) {
             if (isPinInput) {
                 PIN_IN = GPIO.provisionDigitalInputPin(RaspiPin.getPinByAddress(Integer.parseInt(PI4Jnumber)), PinPullResistance.PULL_UP);
@@ -35,9 +34,7 @@ public class PinsList {
                         break;
                     }
                 }
-
                 MCP23017GpioProvider Provider = new MCP23017GpioProvider(I2CBus.BUS_1, Integer.decode(MCP23017));
-
                 if (isPinInput) {
                     PIN_IN = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL[PinIndex], PinPullResistance.PULL_UP);
                 } else {
