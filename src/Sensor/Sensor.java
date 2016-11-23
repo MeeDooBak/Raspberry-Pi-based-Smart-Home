@@ -36,9 +36,8 @@ public class Sensor {
     }
 
     public void start() {
-        try {
-            Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-            ResultSet Result = Statement.executeQuery("select * from sensor");
+        try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                ResultSet Result = Statement.executeQuery("select * from sensor")) {
 
             Result.beforeFirst();
             while (Result.next()) {
@@ -47,25 +46,26 @@ public class Sensor {
                 int RoomID = Result.getInt("RoomID");
                 int SensorTypeID = Result.getInt("SensorTypeID");
                 boolean SenesorState = Result.getBoolean("SenesorState");
-                int GateNum = Result.getInt("GateNum");
                 int SensorValue = Result.getInt("SensorValue");
+                int GateNum = Result.getInt("GateNum");
 
-                Statement Statement2 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                ResultSet Result2 = Statement2.executeQuery("select * from sensor_type where SensorTypeID = " + SensorTypeID);
-                Result2.next();
-                String SensorName = Result2.getString("SensorName");
-                Result2.close();
-                Statement2.close();
+                String SensorName;
+                try (Statement Statement2 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                        ResultSet Result2 = Statement2.executeQuery("select * from sensor_type where SensorTypeID = " + SensorTypeID)) {
+                    Result2.next();
+                    SensorName = Result2.getString("SensorName");
+                }
 
                 if (SensorName.equals("Ultrasonic")) {
 
-                    Statement Statement3 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                    ResultSet Result3 = Statement3.executeQuery("select * from sensor_multi_gate where SensorID = " + SensorID);
-                    Result3.next();
-                    int GateNum1 = Result3.getInt("GateNum1");
-                    int GateNum2 = Result3.getInt("GateNum2");
-                    Result3.close();
-                    Statement3.close();
+                    int GateNum1;
+                    int GateNum2;
+                    try (Statement Statement3 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                            ResultSet Result3 = Statement3.executeQuery("select * from sensor_multi_gate where SensorID = " + SensorID)) {
+                        Result3.next();
+                        GateNum1 = Result3.getInt("GateNum1");
+                        GateNum2 = Result3.getInt("GateNum2");
+                    }
 
                     SensorList.add(new SensorList(SensorID, RoomID, SensorName, SenesorState, Pins.Get(GateNum1), Pins.Get(GateNum2), SensorValue, DB));
                 } else {
@@ -73,8 +73,6 @@ public class Sensor {
                 }
                 System.out.println("Add Sensor " + SensorID + " " + SensorName);
             }
-            Result.close();
-            Statement.close();
         } catch (SQLException ex) {
             Logger.getLogger(Sensor.class.getName()).log(Level.SEVERE, null, ex);
         }
