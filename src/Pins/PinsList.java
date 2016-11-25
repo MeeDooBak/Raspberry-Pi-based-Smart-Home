@@ -4,6 +4,10 @@ import com.pi4j.gpio.extension.mcp.*;
 import com.pi4j.io.gpio.*;
 import com.pi4j.io.i2c.*;
 import java.io.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.logging.*;
 
 public class PinsList {
@@ -14,8 +18,9 @@ public class PinsList {
     private GpioPinDigitalInput PIN_IN;
     private GpioPinDigitalOutput PIN_OUT;
     private String PIN_OUTRelay;
+    private String IP_Camera;
 
-    public PinsList(int PinID, boolean isPinInput, String Type, String PinNumber, String PI4Jnumber, String MCP23017, String DeviceName) {
+    public PinsList(int PinID, boolean isPinInput, String Type, String PinNumber, String PI4Jnumber, String MCP23017, String DeviceName, Connection DB) {
         this.PinID = PinID;
 
         GpioController GPIO = GpioFactory.getInstance();
@@ -53,6 +58,17 @@ public class PinsList {
             if (!isPinInput) {
                 PIN_OUTRelay = PI4Jnumber;
             }
+        } else if (Type.equals("Camera")) {
+            String IP = null;
+            try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    ResultSet Result = Statement.executeQuery("select * from ip_address where ID = " + PI4Jnumber)) {
+                Result.next();
+                IP = Result.getString("IPaddress");
+            } catch (SQLException ex) {
+                Logger.getLogger(PinsList.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            IP_Camera = IP;
         }
     }
 
@@ -66,6 +82,10 @@ public class PinsList {
 
     public String getOutputPINRelay() {
         return PIN_OUTRelay;
+    }
+
+    public String getIP_Camera() {
+        return IP_Camera;
     }
 
     public int getPinID() {

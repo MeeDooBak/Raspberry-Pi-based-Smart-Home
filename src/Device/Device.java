@@ -1,6 +1,6 @@
 package Device;
 
-import Pins.Pins;
+import Pins.*;
 import Rooms.*;
 import java.sql.*;
 import java.util.*;

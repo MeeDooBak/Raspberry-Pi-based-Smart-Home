@@ -1,4 +1,4 @@
-package Cam;
+package Archives;
 
 import com.github.sarxos.webcam.*;
 import com.github.sarxos.webcam.ds.ipcam.*;

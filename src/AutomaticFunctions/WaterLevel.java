@@ -21,7 +21,7 @@ public class WaterLevel extends Thread {
     public void run() {
         while (true) {
             try {
-                int Distance = Sensor.getUltrasonicThread().getSensorValue();
+                int Distance = Sensor.getUltrasonic().getSensorValue();
                 if (Distance <= 4) {
                     Device.setDeviceState(false);
                     Device.setIsStatusChanged(true);

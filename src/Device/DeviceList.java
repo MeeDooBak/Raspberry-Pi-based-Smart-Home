@@ -113,7 +113,7 @@ public final class DeviceList {
             WaterPump = null;
 
         } else if (DeviceName.equals("Security Camera")) {
-            SecurityCamera = new SecurityCamera_Thread();
+            SecurityCamera = new SecurityCamera_Thread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB);
 
             RoofLamp = null;
             AC = null;

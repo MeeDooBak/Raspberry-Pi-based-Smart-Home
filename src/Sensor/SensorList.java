@@ -81,6 +81,7 @@ public class SensorList {
             SmokeDetector = null;
             TemperatureSensor = null;
             LightSensor = null;
+            
         } else {
             Clock = null;
             MotionSensor = null;

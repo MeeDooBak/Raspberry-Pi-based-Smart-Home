@@ -1,6 +1,6 @@
 package SmartHome;
 
-import AutomaticFunctions.WaterLevel;
+import AutomaticFunctions.*;
 import Device.*;
 import Pins.*;
 import Rooms.*;
@@ -15,10 +15,7 @@ public class Main {
 
     private static Connection DB;
     private static Relay command;
-
     private static String RelayIP;
-    private static String Camera1IP;
-    private static String Camera2IP;
 
     private static ArrayList<RoomList> RoomList;
     private static ArrayList<UserList> UserList;
@@ -77,26 +74,19 @@ public class Main {
 
     public static void getIP() {
         try {
-            Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-            ResultSet Result = Statement.executeQuery("select * from ip_address");
+            try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    ResultSet Result = Statement.executeQuery("select * from ip_address")) {
 
-            Result.beforeFirst();
-            while (Result.next()) {
-                String DeviceName = Result.getString("DeviceName");
-                String IPaddress = Result.getString("IPaddress");
-                if (DeviceName.equals("Relay Switch")) {
-                    RelayIP = IPaddress;
-                    System.out.println("Relay Switch IP : " + RelayIP);
-                } else if (DeviceName.equals("Camera 1")) {
-                    Camera1IP = IPaddress;
-                    System.out.println("Camera 1 IP : " + Camera1IP);
-                } else if (DeviceName.equals("Camera 2")) {
-                    Camera2IP = IPaddress;
-                    System.out.println("Camera 2 IP : " + Camera2IP);
+                Result.beforeFirst();
+                while (Result.next()) {
+                    String DeviceName = Result.getString("DeviceName");
+                    String IPaddress = Result.getString("IPaddress");
+                    if (DeviceName.equals("Relay Switch")) {
+                        RelayIP = IPaddress;
+                        System.out.println("Relay Switch IP : " + RelayIP);
+                    }
                 }
             }
-            Result.close();
-            Statement.close();
         } catch (SQLException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }

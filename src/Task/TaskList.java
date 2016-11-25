@@ -5,7 +5,7 @@ import Sensor.SensorList;
 import java.sql.*;
 import java.util.Map;
 
-public class TaskList {
+public final class TaskList {
 
     private boolean isDisabled;
     private String TaskName;
@@ -15,21 +15,28 @@ public class TaskList {
     private int AlarmDuration;
     private int AlarmInterval;
     private int SelectedSensorValue;
-
     private SensorList Sensor;
     private Map<DeviceList, Boolean> List;
+    private boolean NotifyByEmail;
+    private Time EnableTaskOnTime;
+    private Time DisableTaskOnTime;
 
     private final int TaskID;
     private final int UserID;
     private final int RoomID;
     private final Connection DB;
 
-    private ActionOnDetectionThread ActionOnDetectionThread;
-    private ActionAfterNoDetection ActionAfterNoDetection;
-    private TimingThread TimingThread;
+    private ActionOnDetection_Thread ActionOnDetection;
+    private ActionAfterNoDetection_Thread ActionAfterNoDetection;
+    private SmokeDetector_Thread SmokeDetector;
+    private Temperature_Thread Temperature;
+    private Timing_Thread Timing;
+    private Light_Thread Light;
+    private ActionOnWaterLevel_Thread ActionOnWaterLevel;
 
-    public TaskList(int TaskID, int UserID, int RoomID, boolean isDisabled, String TaskName, Time ActionTime, boolean repeatDaily, Date ActionDate, int AlarmDuration,
-            int AlarmInterval, int SelectedSensorValue, SensorList Sensor, Map<DeviceList, Boolean> List, Connection DB) {
+    public TaskList(int TaskID, int UserID, int RoomID, boolean isDisabled, String TaskName, Time ActionTime, boolean repeatDaily,
+            Date ActionDate, int AlarmDuration, int AlarmInterval, int SelectedSensorValue, SensorList Sensor, Map<DeviceList, Boolean> List,
+            Connection DB, boolean NotifyByEmail, Time EnableTaskOnTime, Time DisableTaskOnTime) {
 
         this.TaskID = TaskID;
         this.UserID = UserID;
@@ -45,28 +52,130 @@ public class TaskList {
         this.Sensor = Sensor;
         this.List = List;
         this.DB = DB;
+        this.NotifyByEmail = NotifyByEmail;
+        this.EnableTaskOnTime = EnableTaskOnTime;
+        this.DisableTaskOnTime = DisableTaskOnTime;
+        Start();
+    }
 
-        if (Sensor.getSensorName().equals("Ultrasonic") && RoomID == 110) {
+    public void Start() {
+        if (Sensor.getSensorName().equals("Motion Sensor") && SelectedSensorValue == 0) {
+            ActionOnDetection = new ActionOnDetection_Thread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval,
+                    Sensor, List, DB, NotifyByEmail, EnableTaskOnTime, getDisableTaskOnTime());
+            ActionOnDetection.start();
 
-        } else if (Sensor.getSensorName().equals("Motion Sensor") && RoomID == 110) {
-
-        } else if (Sensor.getSensorName().equals("Motion Sensor") && SelectedSensorValue == 0) {
-            ActionOnDetectionThread = new ActionOnDetectionThread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, DB);
-            ActionOnDetectionThread.start();
+            ActionAfterNoDetection = null;
+            SmokeDetector = null;
+            Temperature = null;
+            Timing = null;
+            Light = null;
+            ActionOnWaterLevel = null;
 
         } else if (Sensor.getSensorName().equals("Motion Sensor") && SelectedSensorValue > 0) {
-            ActionAfterNoDetection = new ActionAfterNoDetection(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, SelectedSensorValue, Sensor, List, DB);
+            ActionAfterNoDetection = new ActionAfterNoDetection_Thread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval,
+                    SelectedSensorValue, Sensor, List, DB, NotifyByEmail, EnableTaskOnTime, DisableTaskOnTime);
             ActionAfterNoDetection.start();
 
-        } else if (Sensor.getSensorName().equals("Clock")) {
-            TimingThread = new TimingThread(TaskID, isDisabled, ActionDate, ActionTime, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, DB);
-            TimingThread.start();
+            ActionOnDetection = null;
+            SmokeDetector = null;
+            Temperature = null;
+            Timing = null;
+            Light = null;
+            ActionOnWaterLevel = null;
+
+        } else if (Sensor.getSensorName().equals("Smoke Detector")) {
+            SmokeDetector = new SmokeDetector_Thread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, DB,
+                    NotifyByEmail, EnableTaskOnTime, DisableTaskOnTime);
+            SmokeDetector.start();
+
+            ActionOnDetection = null;
+            ActionAfterNoDetection = null;
+            Temperature = null;
+            Timing = null;
+            Light = null;
+            ActionOnWaterLevel = null;
 
         } else if (Sensor.getSensorName().equals("Temperature Sensor")) {
+            Temperature = new Temperature_Thread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, SelectedSensorValue,
+                    Sensor, List, DB, NotifyByEmail, EnableTaskOnTime, DisableTaskOnTime);
+            Temperature.start();
+
+            ActionOnDetection = null;
+            ActionAfterNoDetection = null;
+            SmokeDetector = null;
+            Timing = null;
+            Light = null;
+            ActionOnWaterLevel = null;
 
         } else if (Sensor.getSensorName().equals("Light Sensor")) {
+            Light = new Light_Thread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, DB, NotifyByEmail,
+                    EnableTaskOnTime, DisableTaskOnTime);
+            Light.start();
 
+            ActionOnDetection = null;
+            ActionAfterNoDetection = null;
+            SmokeDetector = null;
+            Temperature = null;
+            Timing = null;
+            ActionOnWaterLevel = null;
+
+        } else if (Sensor.getSensorName().equals("Ultrasonic")) {
+            ActionOnWaterLevel = null;
+
+            ActionOnDetection = null;
+            ActionAfterNoDetection = null;
+            SmokeDetector = null;
+            Temperature = null;
+            Timing = null;
+            Light = null;
+
+        } else if (Sensor.getSensorName().equals("Clock")) {
+            Timing = new Timing_Thread(TaskID, isDisabled, ActionDate, ActionTime, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List,
+                    DB, NotifyByEmail, EnableTaskOnTime, DisableTaskOnTime);
+            Timing.start();
+
+            ActionOnDetection = null;
+            ActionAfterNoDetection = null;
+            SmokeDetector = null;
+            Temperature = null;
+            Light = null;
+            ActionOnWaterLevel = null;
+
+        } else {
+            ActionOnDetection = null;
+            ActionAfterNoDetection = null;
+            SmokeDetector = null;
+            Temperature = null;
+            Timing = null;
+            Light = null;
+            ActionOnWaterLevel = null;
         }
+    }
+
+    public void setIsDisabled(boolean isDisabled) {
+        this.isDisabled = isDisabled;
+        if (Sensor.getSensorName().equals("Motion Sensor") && SelectedSensorValue == 0) {
+            ActionOnDetection.setIsDisabled(isDisabled);
+
+        } else if (Sensor.getSensorName().equals("Motion Sensor") && SelectedSensorValue > 0) {
+            ActionAfterNoDetection.setIsDisabled(isDisabled);
+
+        } else if (Sensor.getSensorName().equals("Smoke Detector")) {
+            SmokeDetector.setIsDisabled(isDisabled);
+
+        } else if (Sensor.getSensorName().equals("Temperature Sensor")) {
+            Temperature.setIsDisabled(isDisabled);
+
+        } else if (Sensor.getSensorName().equals("Light Sensor")) {
+            Light = null;
+
+        } else if (Sensor.getSensorName().equals("Ultrasonic")) {
+            ActionOnWaterLevel = null;
+
+        } else if (Sensor.getSensorName().equals("Clock")) {
+            Timing.setIsDisabled(isDisabled);
+        }
+        Start();
     }
 
     public int getTaskID() {
@@ -83,35 +192,6 @@ public class TaskList {
 
     public boolean isIsDisabled() {
         return isDisabled;
-    }
-
-    public void setIsDisabled(boolean isDisabled) {
-        this.isDisabled = isDisabled;
-
-        if (Sensor.getSensorName().equals("Ultrasonic") && RoomID == 110) {
-
-        } else if (Sensor.getSensorName().equals("Motion Sensor") && RoomID == 110) {
-
-        } else if (Sensor.getSensorName().equals("Motion Sensor") && SelectedSensorValue == 0) {
-            ActionOnDetectionThread.setIsDisabled(isDisabled);
-            ActionOnDetectionThread = new ActionOnDetectionThread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, DB);
-            ActionOnDetectionThread.start();
-
-        } else if (Sensor.getSensorName().equals("Motion Sensor") && SelectedSensorValue > 0) {
-            ActionAfterNoDetection.setIsDisabled(isDisabled);
-            ActionAfterNoDetection = new ActionAfterNoDetection(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, SelectedSensorValue, Sensor, List, DB);
-            ActionAfterNoDetection.start();
-
-        } else if (Sensor.getSensorName().equals("Clock")) {
-            TimingThread.setIsDisabled(isDisabled);
-            TimingThread = new TimingThread(TaskID, isDisabled, ActionDate, ActionTime, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, DB);
-            TimingThread.start();
-
-        } else if (Sensor.getSensorName().equals("Temperature Sensor")) {
-
-        } else if (Sensor.getSensorName().equals("Light Sensor")) {
-
-        }
     }
 
     public String getTaskName() {
@@ -184,5 +264,29 @@ public class TaskList {
 
     public void setList(Map<DeviceList, Boolean> List) {
         this.List = List;
+    }
+
+    public boolean isNotifyByEmail() {
+        return NotifyByEmail;
+    }
+
+    public void setNotifyByEmail(boolean NotifyByEmail) {
+        this.NotifyByEmail = NotifyByEmail;
+    }
+
+    public Time getEnableTaskOnTime() {
+        return EnableTaskOnTime;
+    }
+
+    public void setEnableTaskOnTime(Time EnableTaskOnTime) {
+        this.EnableTaskOnTime = EnableTaskOnTime;
+    }
+
+    public Time getDisableTaskOnTime() {
+        return DisableTaskOnTime;
+    }
+
+    public void setDisableTaskOnTime(Time DisableTaskOnTime) {
+        this.DisableTaskOnTime = DisableTaskOnTime;
     }
 }

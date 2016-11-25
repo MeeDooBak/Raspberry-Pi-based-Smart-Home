@@ -51,11 +51,11 @@ public class Pins {
                     if (Type.equals("GPIO")) {
                         if (!"Blue".equals(Color) && !"04".equals(PinNumber) && !"Light Purple".equals(Color) && !"Dark Purple".equals(Color)) {
                             System.out.println("Add Pin : " + PinID + " " + Type);
-                            PinsList.add(new PinsList(PinID, isPinInput, Type, PinNumber, PI4Jnumber, MCP23017, DeviceName));
+                            PinsList.add(new PinsList(PinID, isPinInput, Type, PinNumber, PI4Jnumber, MCP23017, DeviceName, DB));
                         }
                     } else {
                         System.out.println("Add Pin : " + PinID + " " + Type);
-                        PinsList.add(new PinsList(PinID, isPinInput, Type, PinNumber, PI4Jnumber, MCP23017, DeviceName));
+                        PinsList.add(new PinsList(PinID, isPinInput, Type, PinNumber, PI4Jnumber, MCP23017, DeviceName, DB));
                     }
                 }
             }
