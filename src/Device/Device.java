@@ -56,7 +56,6 @@ public class Device extends Thread {
                         boolean DeviceState = Result.getBoolean("DeviceState");
                         int GateNum = Result.getInt("GateNum");
                         boolean isStatusChanged = Result.getBoolean("isStatusChanged");
-                        Timestamp lastStatusChange = Result.getTimestamp("lastStatusChange");
 
                         int index = indexof(DeviceID);
                         if (index > -1) {
@@ -64,7 +63,6 @@ public class Device extends Thread {
                                 if (DeviceName.equals("Curtains") || DeviceName.equals("Garage Door")) {
                                     DeviceList.get(index).setDeviceState(DeviceState);
                                     DeviceList.get(index).setIsStatusChanged(isStatusChanged);
-                                    DeviceList.get(index).setLastStatusChange(lastStatusChange);
 
                                     try (Statement Statement2 = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
                                             ResultSet Result2 = Statement2.executeQuery("select * from device_stepper_motor where DeviceID = " + DeviceID)) {
@@ -79,7 +77,6 @@ public class Device extends Thread {
                                 } else {
                                     DeviceList.get(index).setDeviceState(DeviceState);
                                     DeviceList.get(index).setIsStatusChanged(isStatusChanged);
-                                    DeviceList.get(index).setLastStatusChange(lastStatusChange);
                                     DeviceList.get(index).Start();
                                 }
                                 System.out.println(DeviceName + " State Change to " + DeviceState);
@@ -104,16 +101,16 @@ public class Device extends Thread {
                                 }
 
                                 DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, Pins.Get(GateNum1), Pins.Get(GateNum2), Pins.Get(GateNum3),
-                                        Pins.Get(GateNum4), isStatusChanged, StepperMotorMoves, -1, -1, DB, command, lastStatusChange, MaxValue));
+                                        Pins.Get(GateNum4), isStatusChanged, StepperMotorMoves, -1, -1, DB, command, MaxValue));
                                 System.out.println("Add Device : " + DeviceID + " " + DeviceName + " With State " + DeviceState);
 
                             } else if (DeviceName.equals("Alarm")) {
                                 DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, Pins.Get(GateNum), null, null, null, isStatusChanged, -1, 0,
-                                        0, DB, command, lastStatusChange, -1));
+                                        0, DB, command, -1));
                                 System.out.println("Add Device : " + DeviceID + " " + DeviceName + " With State " + DeviceState);
                             } else {
                                 DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, DeviceState, Pins.Get(GateNum), null, null, null, isStatusChanged, -1, -1,
-                                        -1, DB, command, lastStatusChange, -1));
+                                        -1, DB, command, -1));
                                 System.out.println("Add Device : " + DeviceID + " " + DeviceName + " With State " + DeviceState);
                             }
                         }

@@ -19,8 +19,8 @@ public class ActionOnDetection_Thread extends Thread {
     private final SensorList Sensor;
     private final Map<DeviceList, Boolean> List;
     private final boolean NotifyByEmail;
-    private final Time EnableTaskOnTime;
-    private final Time DisableTaskOnTime;
+//    private final Time EnableTaskOnTime;
+//    private final Time DisableTaskOnTime;
 
     public ActionOnDetection_Thread(int TaskID, boolean isDisabled, java.sql.Date ActionDate, boolean repeatDaily, int AlarmDuration, int AlarmInterval,
             SensorList Sensor, Map<DeviceList, Boolean> List, Connection DB, boolean NotifyByEmail, Time EnableTaskOnTime, Time DisableTaskOnTime) {
@@ -34,8 +34,8 @@ public class ActionOnDetection_Thread extends Thread {
         this.List = List;
         this.DB = DB;
         this.NotifyByEmail = NotifyByEmail;
-        this.EnableTaskOnTime = EnableTaskOnTime;
-        this.DisableTaskOnTime = DisableTaskOnTime;
+//        this.EnableTaskOnTime = EnableTaskOnTime;
+//        this.DisableTaskOnTime = DisableTaskOnTime;
     }
 
     public void setIsDisabled(boolean isDisabled) {
@@ -69,8 +69,9 @@ public class ActionOnDetection_Thread extends Thread {
     public void run() {
         while (!isDisabled) {
             try {
-                long CurrentTime = new java.util.Date().getTime();
-                if (EnableTaskOnTime.getTime() >= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime()) {
+//                long CurrentTime = new java.util.Date().getTime();
+//                System.out.println(EnableTaskOnTime.getTime());
+//                if (EnableTaskOnTime.getTime() <= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime()) {
                     if (repeatDaily) {
                         execute();
                     } else {
@@ -85,13 +86,13 @@ public class ActionOnDetection_Thread extends Thread {
                             ps.executeUpdate();
                         }
                     }
-                } else {
-                    isDisabled = true;
-                    PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-                    ps.setBoolean(1, isDisabled);
-                    ps.setInt(2, TaskID);
-                    ps.executeUpdate();
-                }
+//                } else {
+//                    isDisabled = true;
+//                    PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+//                    ps.setBoolean(1, isDisabled);
+//                    ps.setInt(2, TaskID);
+//                    ps.executeUpdate();
+//                }
                 Thread.sleep(2000);
             } catch (SQLException | InterruptedException ex) {
                 Logger.getLogger(ActionAfterNoDetection_Thread.class.getName()).log(Level.SEVERE, null, ex);

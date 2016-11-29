@@ -33,7 +33,7 @@ public class CamCapIP extends javax.swing.JFrame {
         initComponents();
         Stop.setVisible(false);
 
-        IpCamDeviceRegistry.register(new IpCamDevice("IP-Cam-1", "http://admin:@192.168.1.101/videostream.cgi", IpCamMode.PUSH));
+        IpCamDeviceRegistry.register(new IpCamDevice("IP-Cam-1", "http://admin:@192.168.1.100/videostream.cgi", IpCamMode.PUSH));
 
         wCam = Webcam.getWebcams();
         System.out.println(wCam.size());

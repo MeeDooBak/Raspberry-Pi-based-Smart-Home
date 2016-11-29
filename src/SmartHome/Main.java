@@ -1,6 +1,5 @@
 package SmartHome;
 
-import AutomaticFunctions.*;
 import Device.*;
 import Pins.*;
 import Rooms.*;
@@ -59,14 +58,13 @@ public class Main {
             Sensor Sensor = new Sensor(DB, SensorList, Pins);
             Sensor.start();
 
-            Thread.sleep(1000);
-
-            Task Task = new Task(DB, TaskList, Sensor, Device);
-            Task.start();
-
-            WaterLevel WaterLevel = new WaterLevel(Sensor.Get(1003), Device.Get(1005));
-            WaterLevel.start();
-
+//            Thread.sleep(1000);
+//
+//            Task Task = new Task(DB, TaskList, Sensor, Device);
+//            Task.start();
+//
+//            WaterLevel WaterLevel = new WaterLevel(Sensor.Get(1003), Device.Get(1005));
+//            WaterLevel.start();
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | InterruptedException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }

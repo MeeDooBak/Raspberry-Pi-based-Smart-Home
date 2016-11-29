@@ -21,7 +21,6 @@ public final class DeviceList {
     private final PinsList GateNum4;
     private final Connection DB;
     private final Relay command;
-    private Timestamp lastStatusChange;
     private final int MaxValue;
 
     private RoofLamp_Thread RoofLamp;
@@ -33,8 +32,7 @@ public final class DeviceList {
     private WaterPump_Thread WaterPump;
 
     public DeviceList(int DeviceID, RoomList Room, String DeviceName, boolean DeviceState, PinsList GateNum1, PinsList GateNum2, PinsList GateNum3,
-            PinsList GateNum4, boolean isStatusChanged, int StepperMotorMoves, int AlarmDuration, int AlarmInterval, Connection DB, Relay command,
-            Timestamp lastStatusChange, int MaxValue) {
+            PinsList GateNum4, boolean isStatusChanged, int StepperMotorMoves, int AlarmDuration, int AlarmInterval, Connection DB, Relay command, int MaxValue) {
 
         this.DeviceID = DeviceID;
         this.Room = Room;
@@ -51,14 +49,13 @@ public final class DeviceList {
         this.AlarmInterval = AlarmInterval;
         this.DB = DB;
         this.command = command;
-        this.lastStatusChange = lastStatusChange;
         this.MaxValue = MaxValue;
         Start();
     }
 
     public void Start() {
         if (DeviceName.equals("Roof Lamp")) {
-            RoofLamp = new RoofLamp_Thread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB, command, getLastStatusChange());
+            RoofLamp = new RoofLamp_Thread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB, command);
             RoofLamp.start();
 
             AC = null;
@@ -69,7 +66,7 @@ public final class DeviceList {
             WaterPump = null;
 
         } else if (DeviceName.equals("AC")) {
-            AC = new AC_Thread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB, command, getLastStatusChange());
+            AC = new AC_Thread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB, command);
             AC.start();
 
             RoofLamp = null;
@@ -113,7 +110,7 @@ public final class DeviceList {
             WaterPump = null;
 
         } else if (DeviceName.equals("Security Camera")) {
-            SecurityCamera = new SecurityCamera_Thread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB);
+//            SecurityCamera = new SecurityCamera_Thread(DeviceID, DeviceState, GateNum1, isStatusChanged, DB);
 
             RoofLamp = null;
             AC = null;
@@ -238,14 +235,6 @@ public final class DeviceList {
 
     public void setAlarmInterval(int AlarmInterval) {
         this.AlarmInterval = AlarmInterval;
-    }
-
-    public Timestamp getLastStatusChange() {
-        return lastStatusChange;
-    }
-
-    public void setLastStatusChange(Timestamp lastStatusChange) {
-        this.lastStatusChange = lastStatusChange;
     }
 
     public int getMaxValue() {

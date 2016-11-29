@@ -29,7 +29,7 @@ public class SensorList {
         this.DB = DB;
 
         if (SensorName.equals("Motion Sensor")) {
-            MotionSensor = new MotionSensor_Thread(SensorID, SensorState, GateNum2, SensorValue, DB);
+            MotionSensor = new MotionSensor_Thread(SensorID, SensorState, GateNum1, SensorValue, DB);
 
             Ultrasonic = null;
             SmokeDetector = null;
@@ -38,7 +38,7 @@ public class SensorList {
             Clock = null;
 
         } else if (SensorName.equals("Smoke Detector")) {
-            SmokeDetector = new SmokeDetector_Thread(SensorID, SensorState, GateNum2, SensorValue, DB);
+            SmokeDetector = new SmokeDetector_Thread(SensorID, SensorState, GateNum1, SensorValue, DB);
 
             MotionSensor = null;
             Ultrasonic = null;
@@ -47,7 +47,7 @@ public class SensorList {
             Clock = null;
 
         } else if (SensorName.equals("Temperature Sensor")) {
-            TemperatureSensor = new TemperatureSensor_Thread(SensorID, SensorState, GateNum2, SensorValue, DB);
+            TemperatureSensor = new TemperatureSensor_Thread(SensorID, SensorState, GateNum1, SensorValue, DB);
 
             MotionSensor = null;
             Ultrasonic = null;
@@ -56,7 +56,7 @@ public class SensorList {
             Clock = null;
 
         } else if (SensorName.equals("Light Sensor")) {
-            LightSensor = new LightSensor_Thread(SensorID, SensorState, GateNum2, SensorValue, DB);
+            LightSensor = new LightSensor_Thread(SensorID, SensorState, GateNum1, SensorValue, DB);
 
             MotionSensor = null;
             Ultrasonic = null;

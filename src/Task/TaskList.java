@@ -28,11 +28,11 @@ public final class TaskList {
 
     private ActionOnDetection_Thread ActionOnDetection;
     private ActionAfterNoDetection_Thread ActionAfterNoDetection;
-    private SmokeDetector_Thread SmokeDetector;
-    private Temperature_Thread Temperature;
+//    private SmokeDetector_Thread SmokeDetector;
+//    private Temperature_Thread Temperature;
     private Timing_Thread Timing;
-    private Light_Thread Light;
-    private ActionOnWaterLevel_Thread ActionOnWaterLevel;
+//    private Light_Thread Light;
+//    private ActionOnWaterLevel_Thread ActionOnWaterLevel;
 
     public TaskList(int TaskID, int UserID, int RoomID, boolean isDisabled, String TaskName, Time ActionTime, boolean repeatDaily,
             Date ActionDate, int AlarmDuration, int AlarmInterval, int SelectedSensorValue, SensorList Sensor, Map<DeviceList, Boolean> List,
@@ -65,11 +65,11 @@ public final class TaskList {
             ActionOnDetection.start();
 
             ActionAfterNoDetection = null;
-            SmokeDetector = null;
-            Temperature = null;
+//            SmokeDetector = null;
+//            Temperature = null;
             Timing = null;
-            Light = null;
-            ActionOnWaterLevel = null;
+//            Light = null;
+//            ActionOnWaterLevel = null;
 
         } else if (Sensor.getSensorName().equals("Motion Sensor") && SelectedSensorValue > 0) {
             ActionAfterNoDetection = new ActionAfterNoDetection_Thread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval,
@@ -77,57 +77,57 @@ public final class TaskList {
             ActionAfterNoDetection.start();
 
             ActionOnDetection = null;
-            SmokeDetector = null;
-            Temperature = null;
+//            SmokeDetector = null;
+//            Temperature = null;
             Timing = null;
-            Light = null;
-            ActionOnWaterLevel = null;
+//            Light = null;
+//            ActionOnWaterLevel = null;
 
-        } else if (Sensor.getSensorName().equals("Smoke Detector")) {
-            SmokeDetector = new SmokeDetector_Thread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, DB,
-                    NotifyByEmail, EnableTaskOnTime, DisableTaskOnTime);
-            SmokeDetector.start();
-
-            ActionOnDetection = null;
-            ActionAfterNoDetection = null;
-            Temperature = null;
-            Timing = null;
-            Light = null;
-            ActionOnWaterLevel = null;
-
-        } else if (Sensor.getSensorName().equals("Temperature Sensor")) {
-            Temperature = new Temperature_Thread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, SelectedSensorValue,
-                    Sensor, List, DB, NotifyByEmail, EnableTaskOnTime, DisableTaskOnTime);
-            Temperature.start();
-
-            ActionOnDetection = null;
-            ActionAfterNoDetection = null;
-            SmokeDetector = null;
-            Timing = null;
-            Light = null;
-            ActionOnWaterLevel = null;
-
-        } else if (Sensor.getSensorName().equals("Light Sensor")) {
-            Light = new Light_Thread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, DB, NotifyByEmail,
-                    EnableTaskOnTime, DisableTaskOnTime);
-            Light.start();
-
-            ActionOnDetection = null;
-            ActionAfterNoDetection = null;
-            SmokeDetector = null;
-            Temperature = null;
-            Timing = null;
-            ActionOnWaterLevel = null;
-
-        } else if (Sensor.getSensorName().equals("Ultrasonic")) {
-            ActionOnWaterLevel = null;
-
-            ActionOnDetection = null;
-            ActionAfterNoDetection = null;
-            SmokeDetector = null;
-            Temperature = null;
-            Timing = null;
-            Light = null;
+//        } else if (Sensor.getSensorName().equals("Smoke Detector")) {
+//            SmokeDetector = new SmokeDetector_Thread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, DB,
+//                    NotifyByEmail, EnableTaskOnTime, DisableTaskOnTime);
+//            SmokeDetector.start();
+//
+//            ActionOnDetection = null;
+//            ActionAfterNoDetection = null;
+//            Temperature = null;
+//            Timing = null;
+//            Light = null;
+//            ActionOnWaterLevel = null;
+//
+//        } else if (Sensor.getSensorName().equals("Temperature Sensor")) {
+//            Temperature = new Temperature_Thread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, SelectedSensorValue,
+//                    Sensor, List, DB, NotifyByEmail, EnableTaskOnTime, DisableTaskOnTime);
+//            Temperature.start();
+//
+//            ActionOnDetection = null;
+//            ActionAfterNoDetection = null;
+//            SmokeDetector = null;
+//            Timing = null;
+//            Light = null;
+//            ActionOnWaterLevel = null;
+//
+//        } else if (Sensor.getSensorName().equals("Light Sensor")) {
+//            Light = new Light_Thread(TaskID, isDisabled, ActionDate, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, DB, NotifyByEmail,
+//                    EnableTaskOnTime, DisableTaskOnTime);
+//            Light.start();
+//
+//            ActionOnDetection = null;
+//            ActionAfterNoDetection = null;
+//            SmokeDetector = null;
+//            Temperature = null;
+//            Timing = null;
+//            ActionOnWaterLevel = null;
+//
+//        } else if (Sensor.getSensorName().equals("Ultrasonic")) {
+//            ActionOnWaterLevel = null;
+//
+//            ActionOnDetection = null;
+//            ActionAfterNoDetection = null;
+//            SmokeDetector = null;
+//            Temperature = null;
+//            Timing = null;
+//            Light = null;
 
         } else if (Sensor.getSensorName().equals("Clock")) {
             Timing = new Timing_Thread(TaskID, isDisabled, ActionDate, ActionTime, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List,
@@ -136,19 +136,19 @@ public final class TaskList {
 
             ActionOnDetection = null;
             ActionAfterNoDetection = null;
-            SmokeDetector = null;
-            Temperature = null;
-            Light = null;
-            ActionOnWaterLevel = null;
+//            SmokeDetector = null;
+//            Temperature = null;
+//            Light = null;
+//            ActionOnWaterLevel = null;
 
         } else {
             ActionOnDetection = null;
             ActionAfterNoDetection = null;
-            SmokeDetector = null;
-            Temperature = null;
+//            SmokeDetector = null;
+//            Temperature = null;
             Timing = null;
-            Light = null;
-            ActionOnWaterLevel = null;
+//            Light = null;
+//            ActionOnWaterLevel = null;
         }
     }
 
@@ -160,17 +160,17 @@ public final class TaskList {
         } else if (Sensor.getSensorName().equals("Motion Sensor") && SelectedSensorValue > 0) {
             ActionAfterNoDetection.setIsDisabled(isDisabled);
 
-        } else if (Sensor.getSensorName().equals("Smoke Detector")) {
-            SmokeDetector.setIsDisabled(isDisabled);
-
-        } else if (Sensor.getSensorName().equals("Temperature Sensor")) {
-            Temperature.setIsDisabled(isDisabled);
-
-        } else if (Sensor.getSensorName().equals("Light Sensor")) {
-            Light = null;
-
-        } else if (Sensor.getSensorName().equals("Ultrasonic")) {
-            ActionOnWaterLevel = null;
+//        } else if (Sensor.getSensorName().equals("Smoke Detector")) {
+//            SmokeDetector.setIsDisabled(isDisabled);
+//
+//        } else if (Sensor.getSensorName().equals("Temperature Sensor")) {
+//            Temperature.setIsDisabled(isDisabled);
+//
+//        } else if (Sensor.getSensorName().equals("Light Sensor")) {
+//            Light = null;
+//
+//        } else if (Sensor.getSensorName().equals("Ultrasonic")) {
+//            ActionOnWaterLevel = null;
 
         } else if (Sensor.getSensorName().equals("Clock")) {
             Timing.setIsDisabled(isDisabled);

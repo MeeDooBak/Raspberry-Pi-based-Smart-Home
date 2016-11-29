@@ -68,7 +68,7 @@ public class SmokeDetector_Thread extends Thread {
         while (!isDisabled) {
             try {
                 long CurrentTime = new java.util.Date().getTime();
-                if (EnableTaskOnTime.getTime() >= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime()) {
+                if (EnableTaskOnTime.getTime() <= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime()) {
                     if (repeatDaily) {
                         execute();
                     } else {

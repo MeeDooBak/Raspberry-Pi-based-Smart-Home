@@ -54,26 +54,35 @@ public class DistanceMonitor {
     }
 
     public static void main(String[] args) {
-        Pin echoPin = RaspiPin.GPIO_28; // PI4J custom numbering (pin 20)
-        Pin trigPin = RaspiPin.GPIO_29; // PI4J custom numbering (pin 21)
+        Pin echoPin = RaspiPin.GPIO_01; // PI4J custom numbering (pin 20)
+        Pin trigPin = RaspiPin.GPIO_02; // PI4J custom numbering (pin 21)
         DistanceMonitor monitor = new DistanceMonitor(echoPin, trigPin);
-
-        command = new Relay("192.168.1.21", 161, "private");
 
         while (true) {
             try {
-                int Distance = (int) Math.ceil(monitor.measureDistance());
-                if (Distance <= 4) {
-                    command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.2." + 8 + ".0", SnmpAPI.INTEGER, "0");
-                } else if (Distance >= 15) {
-                    command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.2." + 8 + ".0", SnmpAPI.INTEGER, "1");
-                }
-                System.out.println(Distance);
+                System.out.println((int) Math.ceil(monitor.measureDistance()));
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {
-                command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.2." + 8 + ".0", SnmpAPI.INTEGER, "0");
                 Logger.getLogger(DistanceMonitor.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
+//        command = new Relay("192.168.1.21", 161, "private");
+//
+//        while (true) {
+//            try {
+//                int Distance = (int) Math.ceil(monitor.measureDistance());
+//                if (Distance <= 4) {
+//                    command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.2." + 8 + ".0", SnmpAPI.INTEGER, "0");
+//                } else if (Distance >= 15) {
+//                    command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.2." + 8 + ".0", SnmpAPI.INTEGER, "1");
+//                }
+//                System.out.println(Distance);
+//                Thread.sleep(1000);
+//            } catch (InterruptedException ex) {
+//                command.SNMP_SET(".1.3.6.1.4.1.19865.1.2.2." + 8 + ".0", SnmpAPI.INTEGER, "0");
+//                Logger.getLogger(DistanceMonitor.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        }
     }
 }

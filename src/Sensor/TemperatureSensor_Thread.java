@@ -26,7 +26,7 @@ public class TemperatureSensor_Thread {
         this.SensorState = SensorState;
         this.SensorValue = SensorValue;
 
-        PIN = GateNum.getInputPIN().getPin().getAddress();
+        PIN = GateNum.getPin();
         GpioUtil.export(PIN, GpioUtil.DIRECTION_OUT);
     }
 

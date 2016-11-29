@@ -15,6 +15,7 @@ public class PinsList {
     private final int PinID;
 
     private int PinIndex = 0;
+    private int Pin = 0;
     private GpioPinDigitalInput PIN_IN;
     private GpioPinDigitalOutput PIN_OUT;
     private String PIN_OUTRelay;
@@ -24,7 +25,11 @@ public class PinsList {
         this.PinID = PinID;
 
         GpioController GPIO = GpioFactory.getInstance();
-        if (Type.equals("GPIO")) {
+
+        if (PI4Jnumber.equals("4") || PI4Jnumber.equals("21") || PI4Jnumber.equals("24") || PI4Jnumber.equals("26")) {
+            Pin = Integer.parseInt(PinNumber);
+            
+        } else if (Type.equals("GPIO")) {
             if (isPinInput) {
                 PIN_IN = GPIO.provisionDigitalInputPin(RaspiPin.getPinByAddress(Integer.parseInt(PI4Jnumber)), PinPullResistance.PULL_UP);
             } else {
@@ -67,7 +72,6 @@ public class PinsList {
             } catch (SQLException ex) {
                 Logger.getLogger(PinsList.class.getName()).log(Level.SEVERE, null, ex);
             }
-
             IP_Camera = IP;
         }
     }
@@ -86,6 +90,10 @@ public class PinsList {
 
     public String getIP_Camera() {
         return IP_Camera;
+    }
+
+    public int getPin() {
+        return Pin;
     }
 
     public int getPinID() {

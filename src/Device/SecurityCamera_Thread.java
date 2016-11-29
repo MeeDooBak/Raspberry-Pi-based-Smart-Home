@@ -72,8 +72,8 @@ public final class SecurityCamera_Thread extends Thread {
     public void Capture() {
         try {
             java.util.Date Date = new java.util.Date();
-            File Image = new File("C:\\Users\\mkb_2\\Documents\\NetBeansProjects\\RaspberryPITest\\Cameras\\Camera " + DeviceID
-                    + " _ " + new SimpleDateFormat("dd-MM-yyyy HH-mm-ss").format(Date) + ".jpg");
+            File Image = new File("C:\\Users\\mkb_2\\Documents\\NetBeansProjects\\RaspberryPITest\\Cameras\\Camera_" + DeviceID
+                    + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss").format(Date) + ".jpg");
             ImageIO.write(WebCam.getImage(), "JPG", Image);
 
             PreparedStatement ps = DB.prepareStatement("INSERT INTO DBUSER (cameraID, isImage, imgDate, imgPath) VALUES (?, ?, ?, ?)");
@@ -91,8 +91,8 @@ public final class SecurityCamera_Thread extends Thread {
 
     public void Record(int Minute) {
         java.util.Date Date = new java.util.Date();
-        File Video = new File("C:\\Users\\mkb_2\\Documents\\NetBeansProjects\\RaspberryPITest\\Cameras\\Camera " + DeviceID
-                + " _ " + new SimpleDateFormat("dd-MM-yyyy HH-mm-ss").format(Date) + ".mp4");
+        File Video = new File("C:\\Users\\mkb_2\\Documents\\NetBeansProjects\\RaspberryPITest\\Cameras\\Camera_" + DeviceID
+                + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss").format(Date) + ".mp4");
 
         writer = ToolFactory.makeWriter(Video.getName());
         writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264, cs.width, cs.height);
