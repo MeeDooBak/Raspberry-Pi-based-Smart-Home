@@ -24,7 +24,7 @@ public class DeviceTest {
             Room = new Room(DB, RoomList);
             Room.start();
             Device = new Device(DB, DeviceList, Room, null, null);
-            Device.start();
+            Device.Start();
             Thread.sleep(1000);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | InterruptedException ex) {
             Logger.getLogger(DeviceTest.class.getName()).log(Level.SEVERE, null, ex);

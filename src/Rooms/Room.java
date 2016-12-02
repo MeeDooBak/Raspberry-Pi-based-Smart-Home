@@ -32,21 +32,21 @@ public class Room {
         return null;
     }
 
-    public void start() {
+    public void Start() {
         try {
-            Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-            ResultSet Result = Statement.executeQuery("select * from room");
+            try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    ResultSet Result = Statement.executeQuery("select * from room")) {
 
-            Result.beforeFirst();
-            while (Result.next()) {
-                int RoomID = Result.getInt("RoomID");
-                String RoomName = Result.getString("RoomName");
-                System.out.println("Add Room : " + RoomID + " " + RoomName);
-                RoomList.add(new RoomList(RoomID, RoomName, new ArrayList()));
+                Result.beforeFirst();
+                while (Result.next()) {
+                    int RoomID = Result.getInt("RoomID");
+                    String RoomName = Result.getString("RoomName");
+                    System.out.println("Add Room : " + RoomID + ", with Name : " + RoomName);
+                    RoomList.add(new RoomList(RoomID, RoomName, new ArrayList()));
+                }
             }
-            Result.close();
-            Statement.close();
         } catch (SQLException ex) {
+            System.out.println("Room Class, Error In DataBase");
             Logger.getLogger(Room.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

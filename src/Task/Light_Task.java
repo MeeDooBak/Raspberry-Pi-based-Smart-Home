@@ -6,13 +6,13 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.*;
 
-public class Temperature_Thread extends Thread {
+public class Light_Task extends Thread {
 
     private boolean isDisabled;
+    private int SelectedSensorValue;
 
     private final int AlarmDuration;
     private final int AlarmInterval;
-    private final int SelectedSensorValue;
     private final java.sql.Date ActionDate;
     private final boolean repeatDaily;
     private final int TaskID;
@@ -23,22 +23,21 @@ public class Temperature_Thread extends Thread {
     private final Time EnableTaskOnTime;
     private final Time DisableTaskOnTime;
 
-    public Temperature_Thread(int TaskID, boolean isDisabled, java.sql.Date ActionDate, boolean repeatDaily, int AlarmDuration, int AlarmInterval,
-            int SelectedSensorValue, SensorList Sensor, Map<DeviceList, Boolean> List, Connection DB, boolean NotifyByEmail, Time EnableTaskOnTime, Time DisableTaskOnTime) {
-
+    public Light_Task(int TaskID, boolean isDisabled, java.sql.Date ActionDate, boolean repeatDaily, int AlarmDuration, int AlarmInterval, int SelectedSensorValue,
+            SensorList Sensor, Map<DeviceList, Boolean> List, Connection DB, boolean NotifyByEmail, Time EnableTaskOnTime, Time DisableTaskOnTime) {
         this.TaskID = TaskID;
         this.isDisabled = isDisabled;
         this.ActionDate = ActionDate;
         this.repeatDaily = repeatDaily;
         this.AlarmDuration = AlarmDuration;
         this.AlarmInterval = AlarmInterval;
-        this.SelectedSensorValue = SelectedSensorValue;
         this.Sensor = Sensor;
         this.List = List;
         this.DB = DB;
         this.NotifyByEmail = NotifyByEmail;
         this.EnableTaskOnTime = EnableTaskOnTime;
         this.DisableTaskOnTime = DisableTaskOnTime;
+        this.SelectedSensorValue = SelectedSensorValue;
     }
 
     public void setIsDisabled(boolean isDisabled) {
@@ -46,7 +45,7 @@ public class Temperature_Thread extends Thread {
     }
 
     public void execute() {
-        if (Sensor.getTemperatureSensor().getSensorValue() == SelectedSensorValue) {
+        if (((LightSensor_Thread) Sensor.GetSensor()).getSensorValue() == SelectedSensorValue) {
             for (Map.Entry<DeviceList, Boolean> Device : List.entrySet()) {
                 if (Device.getKey().getDeviceName().equals("Alarm")) {
                     Device.getKey().setDeviceState(Device.getValue());
@@ -59,7 +58,6 @@ public class Temperature_Thread extends Thread {
                     Device.getKey().setDeviceState(Device.getValue());
                     Device.getKey().setIsStatusChanged(true);
                     Device.getKey().Start();
-
                 }
             }
             if (NotifyByEmail) {
@@ -73,7 +71,7 @@ public class Temperature_Thread extends Thread {
         while (!isDisabled) {
             try {
                 long CurrentTime = new java.util.Date().getTime();
-                if (EnableTaskOnTime.getTime() <= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime()) {
+                if ((EnableTaskOnTime == null && DisableTaskOnTime == null) || (EnableTaskOnTime.getTime() <= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime())) {
                     if (repeatDaily) {
                         execute();
                     } else {
@@ -97,7 +95,7 @@ public class Temperature_Thread extends Thread {
                 }
                 Thread.sleep(2000);
             } catch (SQLException | InterruptedException ex) {
-                Logger.getLogger(ActionAfterNoDetection_Thread.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Light_Task.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

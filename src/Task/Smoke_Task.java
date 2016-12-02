@@ -6,10 +6,9 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.*;
 
-public class Timing_Thread extends Thread {
+public class Smoke_Task extends Thread {
 
     private boolean isDisabled;
-    private boolean isexecute;
 
     private final int AlarmDuration;
     private final int AlarmInterval;
@@ -20,12 +19,11 @@ public class Timing_Thread extends Thread {
     private final SensorList Sensor;
     private final Map<DeviceList, Boolean> List;
     private final boolean NotifyByEmail;
-//    private final Time EnableTaskOnTime;
-//    private final Time DisableTaskOnTime;
+    private final Time EnableTaskOnTime;
+    private final Time DisableTaskOnTime;
 
-    public Timing_Thread(int TaskID, boolean isDisabled, java.sql.Date ActionDate, Time ActionTime, boolean repeatDaily, int AlarmDuration, int AlarmInterval,
+    public Smoke_Task(int TaskID, boolean isDisabled, java.sql.Date ActionDate, boolean repeatDaily, int AlarmDuration, int AlarmInterval,
             SensorList Sensor, Map<DeviceList, Boolean> List, Connection DB, boolean NotifyByEmail, Time EnableTaskOnTime, Time DisableTaskOnTime) {
-
         this.TaskID = TaskID;
         this.isDisabled = isDisabled;
         this.ActionDate = ActionDate;
@@ -33,13 +31,11 @@ public class Timing_Thread extends Thread {
         this.AlarmDuration = AlarmDuration;
         this.AlarmInterval = AlarmInterval;
         this.Sensor = Sensor;
-        this.Sensor.setClock(ActionTime);
         this.List = List;
         this.DB = DB;
         this.NotifyByEmail = NotifyByEmail;
-//        this.EnableTaskOnTime = EnableTaskOnTime;
-//        this.DisableTaskOnTime = DisableTaskOnTime;
-        this.isexecute = false;
+        this.EnableTaskOnTime = EnableTaskOnTime;
+        this.DisableTaskOnTime = DisableTaskOnTime;
     }
 
     public void setIsDisabled(boolean isDisabled) {
@@ -47,7 +43,7 @@ public class Timing_Thread extends Thread {
     }
 
     public void execute() {
-        if (Sensor.getClock().getSensorState() && !isexecute) {
+        if (((SmokeSensor_Thread) Sensor.GetSensor()).getSensorState()) {
             for (Map.Entry<DeviceList, Boolean> Device : List.entrySet()) {
                 if (Device.getKey().getDeviceName().equals("Alarm")) {
                     Device.getKey().setDeviceState(Device.getValue());
@@ -55,7 +51,6 @@ public class Timing_Thread extends Thread {
                     Device.getKey().setAlarmInterval(AlarmInterval);
                     Device.getKey().setIsStatusChanged(true);
                     Device.getKey().Start();
-
                 } else if (!Device.getKey().getDeviceState() == Device.getValue()) {
                     Device.getKey().setDeviceState(Device.getValue());
                     Device.getKey().setIsStatusChanged(true);
@@ -65,7 +60,6 @@ public class Timing_Thread extends Thread {
             if (NotifyByEmail) {
                 System.out.println("Send Email To User");
             }
-            isexecute = true;
         }
     }
 
@@ -73,8 +67,8 @@ public class Timing_Thread extends Thread {
     public void run() {
         while (!isDisabled) {
             try {
-//                long CurrentTime = new java.util.Date().getTime();
-//                if (EnableTaskOnTime.getTime() <= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime()) {
+                long CurrentTime = new java.util.Date().getTime();
+                if ((EnableTaskOnTime == null && DisableTaskOnTime == null) || (EnableTaskOnTime.getTime() <= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime())) {
                     if (repeatDaily) {
                         execute();
                     } else {
@@ -89,16 +83,16 @@ public class Timing_Thread extends Thread {
                             ps.executeUpdate();
                         }
                     }
-//                } else {
-//                    isDisabled = true;
-//                    PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-//                    ps.setBoolean(1, isDisabled);
-//                    ps.setInt(2, TaskID);
-//                    ps.executeUpdate();
-//                }
+                } else {
+                    isDisabled = true;
+                    PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+                    ps.setBoolean(1, isDisabled);
+                    ps.setInt(2, TaskID);
+                    ps.executeUpdate();
+                }
                 Thread.sleep(2000);
             } catch (SQLException | InterruptedException ex) {
-                Logger.getLogger(ActionAfterNoDetection_Thread.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Smoke_Task.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

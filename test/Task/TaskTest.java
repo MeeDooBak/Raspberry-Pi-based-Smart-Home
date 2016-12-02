@@ -30,13 +30,13 @@ public class TaskTest {
             Room.start();
             Thread.sleep(1000);
             Device Device = new Device(DB, DeviceList, Room, null, null);
-            Device.start();
+            Device.Start();
             Thread.sleep(1000);
             Sensor Sensor = new Sensor(DB, SensorList, null);
             Sensor.start();
             Thread.sleep(1000);
             Task = new Task(DB, TaskList, Sensor, Device);
-            Task.start();
+            Task.Start();
             Thread.sleep(1000);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
                 | SQLException | InterruptedException ex) {

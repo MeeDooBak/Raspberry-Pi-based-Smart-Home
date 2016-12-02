@@ -13,7 +13,7 @@ public class DHT11_New {
             System.out.println(" ==>> GPIO SETUP FAILED");
             return;
         }
-        GpioUtil.export(3, GpioUtil.DIRECTION_OUT);
+        GpioUtil.export(8, GpioUtil.DIRECTION_OUT);
     }
 
     public void getTemperature() {
@@ -21,16 +21,16 @@ public class DHT11_New {
         int j = 0;
         dht11_dat[0] = dht11_dat[1] = dht11_dat[2] = dht11_dat[3] = dht11_dat[4] = 0;
 
-        Gpio.pinMode(3, Gpio.OUTPUT);
-        Gpio.digitalWrite(3, Gpio.LOW);
+        Gpio.pinMode(10, Gpio.OUTPUT);
+        Gpio.digitalWrite(10, Gpio.LOW);
         Gpio.delay(18);
 
-        Gpio.digitalWrite(3, Gpio.HIGH);
-        Gpio.pinMode(3, Gpio.INPUT);
+        Gpio.digitalWrite(10, Gpio.HIGH);
+        Gpio.pinMode(10, Gpio.INPUT);
 
         for (int i = 0; i < MAXTIMINGS; i++) {
             int counter = 0;
-            while (Gpio.digitalRead(3) == laststate) {
+            while (Gpio.digitalRead(10) == laststate) {
                 counter++;
                 Gpio.delayMicroseconds(1);
                 if (counter == 255) {
@@ -38,7 +38,7 @@ public class DHT11_New {
                 }
             }
 
-            laststate = Gpio.digitalRead(3);
+            laststate = Gpio.digitalRead(10);
 
             if (counter == 255) {
                 break;

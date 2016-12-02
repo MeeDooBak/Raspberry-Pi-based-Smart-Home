@@ -29,7 +29,7 @@ public class MCP23017GpioExample {
 //        final MCP23017GpioProvider Provider22 = new MCP23017GpioProvider(I2CBus.BUS_1, 0x24);
 //        final MCP23017GpioProvider Provider23 = new MCP23017GpioProvider(I2CBus.BUS_1, 0x25);
 //        GpioPinDigitalInput myInput = gpio.provisionDigitalInputPin(Provider20, MCP23017Pin.GPIO_A0, "MyInput-A0", PinPullResistance.PULL_UP);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             myOutput.high();
             Thread.sleep(1000);
             myOutput.low();

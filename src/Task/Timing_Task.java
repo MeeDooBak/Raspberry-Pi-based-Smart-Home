@@ -6,9 +6,10 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.*;
 
-public class Light_Thread extends Thread {
+public class Timing_Task extends Thread {
 
     private boolean isDisabled;
+    private boolean isexecute;
 
     private final int AlarmDuration;
     private final int AlarmInterval;
@@ -22,8 +23,9 @@ public class Light_Thread extends Thread {
     private final Time EnableTaskOnTime;
     private final Time DisableTaskOnTime;
 
-    public Light_Thread(int TaskID, boolean isDisabled, java.sql.Date ActionDate, boolean repeatDaily, int AlarmDuration, int AlarmInterval,
+    public Timing_Task(int TaskID, boolean isDisabled, java.sql.Date ActionDate, Time ActionTime, boolean repeatDaily, int AlarmDuration, int AlarmInterval,
             SensorList Sensor, Map<DeviceList, Boolean> List, Connection DB, boolean NotifyByEmail, Time EnableTaskOnTime, Time DisableTaskOnTime) {
+
         this.TaskID = TaskID;
         this.isDisabled = isDisabled;
         this.ActionDate = ActionDate;
@@ -31,11 +33,13 @@ public class Light_Thread extends Thread {
         this.AlarmDuration = AlarmDuration;
         this.AlarmInterval = AlarmInterval;
         this.Sensor = Sensor;
+        this.Sensor.setClock(ActionTime);
         this.List = List;
         this.DB = DB;
         this.NotifyByEmail = NotifyByEmail;
         this.EnableTaskOnTime = EnableTaskOnTime;
         this.DisableTaskOnTime = DisableTaskOnTime;
+        this.isexecute = false;
     }
 
     public void setIsDisabled(boolean isDisabled) {
@@ -43,7 +47,7 @@ public class Light_Thread extends Thread {
     }
 
     public void execute() {
-        if (Sensor.getLightSensor().getSensorState()) {
+        if (((Clock_Thread) Sensor.GetSensor()).getSensorState() && !isexecute) {
             for (Map.Entry<DeviceList, Boolean> Device : List.entrySet()) {
                 if (Device.getKey().getDeviceName().equals("Alarm")) {
                     Device.getKey().setDeviceState(Device.getValue());
@@ -61,6 +65,7 @@ public class Light_Thread extends Thread {
             if (NotifyByEmail) {
                 System.out.println("Send Email To User");
             }
+            isexecute = true;
         }
     }
 
@@ -69,7 +74,7 @@ public class Light_Thread extends Thread {
         while (!isDisabled) {
             try {
                 long CurrentTime = new java.util.Date().getTime();
-                if (EnableTaskOnTime.getTime() <= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime()) {
+                if ((EnableTaskOnTime == null && DisableTaskOnTime == null) || (EnableTaskOnTime.getTime() <= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime())) {
                     if (repeatDaily) {
                         execute();
                     } else {
@@ -93,7 +98,7 @@ public class Light_Thread extends Thread {
                 }
                 Thread.sleep(2000);
             } catch (SQLException | InterruptedException ex) {
-                Logger.getLogger(ActionAfterNoDetection_Thread.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Timing_Task.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

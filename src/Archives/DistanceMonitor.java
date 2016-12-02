@@ -1,7 +1,5 @@
 package Archives;
 
-import Device.Relay;
-import com.adventnet.snmp.snmp2.*;
 import com.pi4j.io.gpio.*;
 import java.util.logging.*;
 
@@ -10,7 +8,6 @@ public class DistanceMonitor {
     private final static GpioController gpio = GpioFactory.getInstance();
     private final GpioPinDigitalInput echoPin;
     private final GpioPinDigitalOutput trigPin;
-    public static Relay command;
 
     private DistanceMonitor(Pin echoPin, Pin trigPin) {
         this.echoPin = gpio.provisionDigitalInputPin(echoPin);

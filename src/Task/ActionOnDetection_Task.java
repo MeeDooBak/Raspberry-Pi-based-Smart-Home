@@ -6,7 +6,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.*;
 
-public class SmokeDetector_Thread extends Thread {
+public class ActionOnDetection_Task extends Thread {
 
     private boolean isDisabled;
 
@@ -22,7 +22,7 @@ public class SmokeDetector_Thread extends Thread {
     private final Time EnableTaskOnTime;
     private final Time DisableTaskOnTime;
 
-    public SmokeDetector_Thread(int TaskID, boolean isDisabled, java.sql.Date ActionDate, boolean repeatDaily, int AlarmDuration, int AlarmInterval,
+    public ActionOnDetection_Task(int TaskID, boolean isDisabled, java.sql.Date ActionDate, boolean repeatDaily, int AlarmDuration, int AlarmInterval,
             SensorList Sensor, Map<DeviceList, Boolean> List, Connection DB, boolean NotifyByEmail, Time EnableTaskOnTime, Time DisableTaskOnTime) {
         this.TaskID = TaskID;
         this.isDisabled = isDisabled;
@@ -43,7 +43,7 @@ public class SmokeDetector_Thread extends Thread {
     }
 
     public void execute() {
-        if (Sensor.getSmokeDetector().getSensorState()) {
+        if (((MotionSensor_Thread) Sensor.GetSensor()).getSensorState()) {
             for (Map.Entry<DeviceList, Boolean> Device : List.entrySet()) {
                 if (Device.getKey().getDeviceName().equals("Alarm")) {
                     Device.getKey().setDeviceState(Device.getValue());
@@ -51,10 +51,12 @@ public class SmokeDetector_Thread extends Thread {
                     Device.getKey().setAlarmInterval(AlarmInterval);
                     Device.getKey().setIsStatusChanged(true);
                     Device.getKey().Start();
+
                 } else if (!Device.getKey().getDeviceState() == Device.getValue()) {
                     Device.getKey().setDeviceState(Device.getValue());
                     Device.getKey().setIsStatusChanged(true);
                     Device.getKey().Start();
+
                 }
             }
             if (NotifyByEmail) {
@@ -68,7 +70,7 @@ public class SmokeDetector_Thread extends Thread {
         while (!isDisabled) {
             try {
                 long CurrentTime = new java.util.Date().getTime();
-                if (EnableTaskOnTime.getTime() <= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime()) {
+                if ((EnableTaskOnTime == null && DisableTaskOnTime == null) || (EnableTaskOnTime.getTime() <= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime())) {
                     if (repeatDaily) {
                         execute();
                     } else {
@@ -92,7 +94,7 @@ public class SmokeDetector_Thread extends Thread {
                 }
                 Thread.sleep(2000);
             } catch (SQLException | InterruptedException ex) {
-                Logger.getLogger(SmokeDetector_Thread.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ActionOnDetection_Task.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

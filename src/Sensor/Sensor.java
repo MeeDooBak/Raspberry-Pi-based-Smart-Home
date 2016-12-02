@@ -1,6 +1,6 @@
 package Sensor;
 
-import Pins.Pins;
+import Pins.*;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.*;
@@ -35,7 +35,7 @@ public class Sensor {
         return null;
     }
 
-    public void start() {
+    public void Start() {
         try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
                 ResultSet Result = Statement.executeQuery("select * from sensor")) {
 
@@ -71,9 +71,10 @@ public class Sensor {
                 } else {
                     SensorList.add(new SensorList(SensorID, RoomID, SensorName, SenesorState, Pins.Get(GateNum), null, SensorValue, DB));
                 }
-                System.out.println("Add Sensor " + SensorID + " " + SensorName);
+                System.out.println("Add Sensor " + SensorID + ", with Name : " + SensorName);
             }
         } catch (SQLException ex) {
+            System.out.println("Sensor Class, Error In DataBase");
             Logger.getLogger(Sensor.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

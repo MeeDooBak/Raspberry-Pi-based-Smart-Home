@@ -6,7 +6,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.*;
 
-public class ActionAfterNoDetection_Thread extends Thread {
+public class ActionAfterNoDetection_Task extends Thread {
 
     private boolean isDisabled;
     private long CouyntingDate;
@@ -22,10 +22,10 @@ public class ActionAfterNoDetection_Thread extends Thread {
     private final SensorList Sensor;
     private final Map<DeviceList, Boolean> List;
     private final boolean NotifyByEmail;
-//    private final Time EnableTaskOnTime;
-//    private final Time DisableTaskOnTime;
+    private final Time EnableTaskOnTime;
+    private final Time DisableTaskOnTime;
 
-    public ActionAfterNoDetection_Thread(int TaskID, boolean isDisabled, java.sql.Date ActionDate, boolean repeatDaily, int AlarmDuration, int AlarmInterval,
+    public ActionAfterNoDetection_Task(int TaskID, boolean isDisabled, java.sql.Date ActionDate, boolean repeatDaily, int AlarmDuration, int AlarmInterval,
             int SelectedSensorValue, SensorList Sensor, Map<DeviceList, Boolean> List, Connection DB, boolean NotifyByEmail, Time EnableTaskOnTime, Time DisableTaskOnTime) {
 
         this.TaskID = TaskID;
@@ -39,8 +39,8 @@ public class ActionAfterNoDetection_Thread extends Thread {
         this.List = List;
         this.DB = DB;
         this.NotifyByEmail = NotifyByEmail;
-//        this.EnableTaskOnTime = EnableTaskOnTime;
-//        this.DisableTaskOnTime = DisableTaskOnTime;
+        this.EnableTaskOnTime = EnableTaskOnTime;
+        this.DisableTaskOnTime = DisableTaskOnTime;
 
         CouyntingDate = new java.util.Date().getTime() + (SelectedSensorValue * 60000);
         new Thread(Timer).start();
@@ -71,7 +71,7 @@ public class ActionAfterNoDetection_Thread extends Thread {
     }
 
     private void Check() {
-        if (Sensor.getMotionSensor().getSensorState()) {
+        if (((MotionSensor_Thread) Sensor.GetSensor()).getSensorState()) {
             CouyntingDate = new java.util.Date().getTime() + (SelectedSensorValue * 60000);
         } else {
             if (TimeFinish) {
@@ -85,8 +85,8 @@ public class ActionAfterNoDetection_Thread extends Thread {
     public void run() {
         while (!isDisabled) {
             try {
-//                long CurrentTime = new java.util.Date().getTime();
-//                if (EnableTaskOnTime.getTime() <= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime()) {
+                long CurrentTime = new java.util.Date().getTime();
+                if ((EnableTaskOnTime == null && DisableTaskOnTime == null) || (EnableTaskOnTime.getTime() <= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime())) {
                     Check();
                     if (TimeFinish) {
                         if (repeatDaily) {
@@ -104,16 +104,16 @@ public class ActionAfterNoDetection_Thread extends Thread {
                             }
                         }
                     }
-//                } else {
-//                    isDisabled = true;
-//                    PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-//                    ps.setBoolean(1, isDisabled);
-//                    ps.setInt(2, TaskID);
-//                    ps.executeUpdate();
-//                }
+                } else {
+                    isDisabled = true;
+                    PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+                    ps.setBoolean(1, isDisabled);
+                    ps.setInt(2, TaskID);
+                    ps.executeUpdate();
+                }
                 Thread.sleep(2000);
             } catch (SQLException | InterruptedException ex) {
-                Logger.getLogger(ActionAfterNoDetection_Thread.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ActionAfterNoDetection_Task.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

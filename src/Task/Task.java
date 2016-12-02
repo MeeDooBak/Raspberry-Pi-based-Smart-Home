@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.*;
 
-public class Task extends Thread {
+public class Task {
 
     private final Connection DB;
     private final ArrayList<TaskList> TaskList;
@@ -31,52 +31,48 @@ public class Task extends Thread {
         return -1;
     }
 
-    @Override
-    public void run() {
+    public void Start() {
         try {
-            while (true) {
-                try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                        ResultSet Result = Statement.executeQuery("select * from task")) {
+            try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    ResultSet Result = Statement.executeQuery("select * from task")) {
 
-                    Result.beforeFirst();
-                    while (Result.next()) {
+                Result.beforeFirst();
+                while (Result.next()) {
 
-                        int TaskID = Result.getInt("TaskID");
-                        int UserID = Result.getInt("UserID");
-                        int RoomID = Result.getInt("RoomID");
-                        int SensorID = Result.getInt("SensorID");
-                        boolean isDisabled = Result.getBoolean("isDisabled");
-                        String TaskName = Result.getString("TaskName");
-                        Time ActionTime = Result.getTime("ActionTime");
-                        boolean repeatDaily = Result.getBoolean("repeatDaily");
-                        Date ActionDate = Result.getDate("ActionDate");
-                        int AlarmDuration = Result.getInt("AlarmDuration");
-                        int AlarmInterval = Result.getInt("AlarmInterval");
-                        int SelectedSensorValue = Result.getInt("SelectedSensorValue");
-                        boolean NotifyByEmail = Result.getBoolean("NotifyByEmail");
-                        Time EnableTaskOnTime = Result.getTime("EnableTaskOnTime");
-                        Time DisableTaskOnTime = Result.getTime("DisableTaskOnTime");
+                    int TaskID = Result.getInt("TaskID");
+                    int UserID = Result.getInt("UserID");
+                    int RoomID = Result.getInt("RoomID");
+                    int SensorID = Result.getInt("SensorID");
+                    boolean isDisabled = Result.getBoolean("isDisabled");
+                    String TaskName = Result.getString("TaskName");
+                    Time ActionTime = Result.getTime("ActionTime");
+                    boolean repeatDaily = Result.getBoolean("repeatDaily");
+                    Date ActionDate = Result.getDate("ActionDate");
+                    int AlarmDuration = Result.getInt("AlarmDuration");
+                    int AlarmInterval = Result.getInt("AlarmInterval");
+                    int SelectedSensorValue = Result.getInt("SelectedSensorValue");
+                    boolean NotifyByEmail = Result.getBoolean("NotifyByEmail");
+                    Time EnableTaskOnTime = Result.getTime("EnableTaskOnTime");
+                    Time DisableTaskOnTime = Result.getTime("DisableTaskOnTime");
 
-                        int index = indexof(TaskID);
-                        if (index > -1) {
-                            if (isChange(index, TaskID, SensorID, isDisabled, TaskName, ActionTime, repeatDaily, ActionDate, AlarmDuration, AlarmInterval,
-                                    SelectedSensorValue, NotifyByEmail, EnableTaskOnTime, DisableTaskOnTime)) {
-                                TaskList.get(index).setIsDisabled(isDisabled);
-                                System.out.println("Task ID :" + TaskID + " Changed ");
-                            }
-                        } else {
-                            Map<DeviceList, Boolean> List = getDevices(TaskID);
-                            SensorList Sensor = Sensors.Get(SensorID);
-
-                            TaskList.add(new TaskList(TaskID, UserID, RoomID, isDisabled, TaskName, ActionTime, repeatDaily, ActionDate, AlarmDuration,
-                                    AlarmInterval, SelectedSensorValue, Sensor, List, DB, NotifyByEmail, EnableTaskOnTime, DisableTaskOnTime));
-                            System.out.println("Add Task " + TaskID + " ");
+                    int index = indexof(TaskID);
+                    if (index > -1) {
+                        if (isChange(index, TaskID, SensorID, isDisabled, TaskName, ActionTime, repeatDaily, ActionDate, AlarmDuration, AlarmInterval,
+                                SelectedSensorValue, NotifyByEmail, EnableTaskOnTime, DisableTaskOnTime)) {
+                            TaskList.get(index).setIsDisabled(isDisabled);
+                            System.out.println("Task ID :" + TaskID + " Changed ");
                         }
+                    } else {
+                        Map<DeviceList, Boolean> List = getDevices(TaskID);
+                        SensorList Sensor = Sensors.Get(SensorID);
+
+                        TaskList.add(new TaskList(TaskID, UserID, RoomID, isDisabled, TaskName, ActionTime, repeatDaily, ActionDate, AlarmDuration,
+                                AlarmInterval, SelectedSensorValue, Sensor, List, DB, NotifyByEmail, EnableTaskOnTime, DisableTaskOnTime));
+                        System.out.println("Add Task " + TaskID + " ");
                     }
                 }
-                Thread.sleep(2000);
             }
-        } catch (SQLException | InterruptedException ex) {
+        } catch (SQLException ex) {
             Logger.getLogger(Task.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -133,13 +129,30 @@ public class Task extends Thread {
             isChange = true;
         }
 
-        if (!TaskList.get(index).getEnableTaskOnTime().equals(EnableTaskOnTime)) {
+        if (TaskList.get(index).getEnableTaskOnTime() != null && EnableTaskOnTime == null) {
             TaskList.get(index).setEnableTaskOnTime(EnableTaskOnTime);
             isChange = true;
+        } else if (TaskList.get(index).getEnableTaskOnTime() == null && EnableTaskOnTime != null) {
+            TaskList.get(index).setEnableTaskOnTime(EnableTaskOnTime);
+            isChange = true;
+        } else if (TaskList.get(index).getEnableTaskOnTime() != null && EnableTaskOnTime != null) {
+            if (!TaskList.get(index).getEnableTaskOnTime().equals(EnableTaskOnTime)) {
+                TaskList.get(index).setEnableTaskOnTime(EnableTaskOnTime);
+                isChange = true;
+            }
         }
-        if (!TaskList.get(index).getDisableTaskOnTime().equals(DisableTaskOnTime)) {
+
+        if (TaskList.get(index).getDisableTaskOnTime() != null && DisableTaskOnTime == null) {
             TaskList.get(index).setDisableTaskOnTime(DisableTaskOnTime);
             isChange = true;
+        } else if (TaskList.get(index).getDisableTaskOnTime() == null && DisableTaskOnTime != null) {
+            TaskList.get(index).setDisableTaskOnTime(DisableTaskOnTime);
+            isChange = true;
+        } else if (TaskList.get(index).getDisableTaskOnTime() != null && DisableTaskOnTime != null) {
+            if (!TaskList.get(index).getDisableTaskOnTime().equals(DisableTaskOnTime)) {
+                TaskList.get(index).setDisableTaskOnTime(DisableTaskOnTime);
+                isChange = true;
+            }
         }
 
         Map<DeviceList, Boolean> NewList = getDevices(TaskID);
@@ -150,7 +163,7 @@ public class Task extends Thread {
         for (Map.Entry<DeviceList, Boolean> NewDevice : NewList.entrySet()) {
             Found = false;
             for (Map.Entry<DeviceList, Boolean> OldDevice : OldList.entrySet()) {
-                if ((NewDevice.getKey().getDeviceID() == OldDevice.getKey().getDeviceID()) && (NewDevice.getValue() == OldDevice.getValue())) {
+                if ((NewDevice.getKey().getDeviceID() == OldDevice.getKey().getDeviceID()) && NewDevice.getValue().booleanValue() == OldDevice.getValue().booleanValue()) {
                     Found = true;
                     break;
                 }

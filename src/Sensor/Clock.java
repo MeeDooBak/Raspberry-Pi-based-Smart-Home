@@ -1,23 +1,26 @@
 package Sensor;
 
 import java.sql.*;
-import java.text.SimpleDateFormat;
+import java.text.*;
 import java.util.logging.*;
 
-public class Clock_Thread {
+public class Clock {
 
     private boolean SensorState;
     private int SensorValue;
+    private Time ActionTime;
 
     private final int SensorID;
     private final Connection DB;
-    private final Time ActionTime;
 
-    public Clock_Thread(int SensorID, boolean SensorState, int SensorValue, Time ActionTime, Connection DB) {
+    public Clock(int SensorID, boolean SensorState, int SensorValue, Connection DB) {
         this.DB = DB;
         this.SensorID = SensorID;
         this.SensorState = SensorState;
         this.SensorValue = SensorValue;
+    }
+
+    public void setTime(Time ActionTime) {
         this.ActionTime = ActionTime;
     }
 
@@ -41,15 +44,14 @@ public class Clock_Thread {
                 SensorValue = 0;
             }
 
-            PreparedStatement ps = DB.prepareStatement("update sensor set SenesorState = ? and SensorValue = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-            ps.setBoolean(1, SensorState);
-            ps.setInt(2, SensorValue);
-            ps.setInt(3, SensorID);
-            ps.executeUpdate();
-            ps.close();
-
+            try (PreparedStatement ps = DB.prepareStatement("update sensor set SenesorState = ? and SensorValue = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+                ps.setBoolean(1, SensorState);
+                ps.setInt(2, SensorValue);
+                ps.setInt(3, SensorID);
+                ps.executeUpdate();
+            }
         } catch (SQLException ex) {
-            Logger.getLogger(MotionSensor_Thread.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Clock.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

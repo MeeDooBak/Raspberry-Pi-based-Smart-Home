@@ -15,7 +15,6 @@ public class UserList {
     private ArrayList<RoomList> RoomList;
 
     public UserList(int UserID, String UserName, String UserEmail, String Description, String Password, boolean isAdmin, boolean isDisabled, ArrayList<RoomList> RoomList) {
-
         this.UserID = UserID;
         this.UserName = UserName;
         this.UserEmail = UserEmail;
