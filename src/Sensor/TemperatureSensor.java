@@ -84,10 +84,9 @@ public class TemperatureSensor implements Runnable {
 
                     SensorValue = (int) Math.ceil(Celsius);
 
-                    try (PreparedStatement ps = DB.prepareStatement("update sensor set SenesorState = ? and SensorValue = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
-                        ps.setBoolean(1, true);
-                        ps.setInt(2, SensorValue);
-                        ps.setInt(3, SensorID);
+                    try (PreparedStatement ps = DB.prepareStatement("update sensor set SensorValue = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+                        ps.setInt(1, SensorValue);
+                        ps.setInt(2, SensorID);
                         ps.executeUpdate();
                     }
                 }

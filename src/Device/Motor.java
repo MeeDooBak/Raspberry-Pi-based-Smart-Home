@@ -6,8 +6,6 @@ import java.util.logging.*;
 import com.pi4j.component.motor.impl.*;
 import com.pi4j.gpio.extension.mcp.*;
 import com.pi4j.io.gpio.*;
-import com.pi4j.io.i2c.*;
-import java.io.*;
 
 public class Motor implements Runnable {
 
@@ -34,44 +32,26 @@ public class Motor implements Runnable {
     }
 
     private void getPin(PinsList GateNum1, PinsList GateNum2, PinsList GateNum3, PinsList GateNum4) {
-        try {
-            GpioController GPIO = GpioFactory.getInstance();
-            GpioPinDigitalOutput[] PINS;
-
-            if (GateNum1.getMCP23017().equals("0x20")) {
-                MCP23017GpioProvider Provider = new MCP23017GpioProvider(I2CBus.BUS_1, 0x20);
-                if (GateNum1.getPI4Jnumber().contains("A")) {
-                    PINS = new GpioPinDigitalOutput[]{
-                        GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum1.getPI4Jnumber().substring(1))], PinState.LOW),
-                        GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum2.getPI4Jnumber().substring(1))], PinState.LOW),
-                        GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum3.getPI4Jnumber().substring(1))], PinState.LOW),
-                        GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum4.getPI4Jnumber().substring(1))], PinState.LOW)};
-                } else {
-                    PINS = new GpioPinDigitalOutput[]{
-                        GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum1.getPI4Jnumber().substring(1))], PinState.LOW),
-                        GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum2.getPI4Jnumber().substring(1))], PinState.LOW),
-                        GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum3.getPI4Jnumber().substring(1))], PinState.LOW),
-                        GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum4.getPI4Jnumber().substring(1))], PinState.LOW)};
-                }
-            } else {
-                MCP23017GpioProvider Provider = new MCP23017GpioProvider(I2CBus.BUS_1, 0x25);
-                PINS = new GpioPinDigitalOutput[]{
-                    GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum1.getPI4Jnumber().substring(1))], PinState.LOW),
-                    GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum2.getPI4Jnumber().substring(1))], PinState.LOW),
-                    GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum3.getPI4Jnumber().substring(1))], PinState.LOW),
-                    GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum4.getPI4Jnumber().substring(1))], PinState.LOW)};
-            }
-            GPIO.setShutdownOptions(true, PinState.LOW, PINS);
-
-            Motor = new GpioStepperMotorComponent(PINS);
-            Motor.setStepInterval(2);
-            Motor.setStepSequence(new byte[]{0b0001, 0b0010, 0b0100, 0b1000});
-            Motor.setStepsPerRevolution(2038);
-
-        } catch (IOException ex) {
-            System.out.println("Motor " + DeviceID + ", Error In Getting Pin");
-            Logger.getLogger(Motor.class.getName()).log(Level.SEVERE, null, ex);
+        GpioPinDigitalOutput[] PINS;
+        if (GateNum1.getPI4Jnumber().contains("A")) {
+            PINS = new GpioPinDigitalOutput[]{
+                GateNum1.getGPIO().provisionDigitalOutputPin(GateNum1.getMCP23017(), MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum1.getPI4Jnumber().substring(1))], PinState.LOW),
+                GateNum2.getGPIO().provisionDigitalOutputPin(GateNum2.getMCP23017(), MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum2.getPI4Jnumber().substring(1))], PinState.LOW),
+                GateNum3.getGPIO().provisionDigitalOutputPin(GateNum3.getMCP23017(), MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum3.getPI4Jnumber().substring(1))], PinState.LOW),
+                GateNum4.getGPIO().provisionDigitalOutputPin(GateNum4.getMCP23017(), MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum4.getPI4Jnumber().substring(1))], PinState.LOW)};
+        } else {
+            PINS = new GpioPinDigitalOutput[]{
+                GateNum1.getGPIO().provisionDigitalOutputPin(GateNum1.getMCP23017(), MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum1.getPI4Jnumber().substring(1))], PinState.LOW),
+                GateNum2.getGPIO().provisionDigitalOutputPin(GateNum2.getMCP23017(), MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum2.getPI4Jnumber().substring(1))], PinState.LOW),
+                GateNum3.getGPIO().provisionDigitalOutputPin(GateNum3.getMCP23017(), MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum3.getPI4Jnumber().substring(1))], PinState.LOW),
+                GateNum4.getGPIO().provisionDigitalOutputPin(GateNum4.getMCP23017(), MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum4.getPI4Jnumber().substring(1))], PinState.LOW)};
         }
+        GateNum1.getGPIO().setShutdownOptions(true, PinState.LOW, PINS);
+
+        Motor = new GpioStepperMotorComponent(PINS);
+        Motor.setStepInterval(2);
+        Motor.setStepSequence(new byte[]{0b0001, 0b0010, 0b0100, 0b1000});
+        Motor.setStepsPerRevolution(2038);
     }
 
     public final void ChangeState(boolean DeviceState, int StepperMotorMoves, boolean isStatusChanged) {

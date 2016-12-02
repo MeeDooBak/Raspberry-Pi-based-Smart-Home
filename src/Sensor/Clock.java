@@ -44,11 +44,17 @@ public class Clock {
                 SensorValue = 0;
             }
 
-            try (PreparedStatement ps = DB.prepareStatement("update sensor set SenesorState = ? and SensorValue = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+            try (PreparedStatement ps = DB.prepareStatement("update sensor set SenesorState = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
                 ps.setBoolean(1, SensorState);
-                ps.setInt(2, SensorValue);
-                ps.setInt(3, SensorID);
+                ps.setInt(2, SensorID);
                 ps.executeUpdate();
+                System.out.println("OK");
+            }
+            try (PreparedStatement ps = DB.prepareStatement("update sensor set SensorValue = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+                ps.setInt(1, SensorValue);
+                ps.setInt(2, SensorID);
+                ps.executeUpdate();
+                System.out.println("OK");
             }
         } catch (SQLException ex) {
             Logger.getLogger(Clock.class.getName()).log(Level.SEVERE, null, ex);

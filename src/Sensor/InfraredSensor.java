@@ -6,9 +6,6 @@ import java.sql.*;
 import java.util.logging.*;
 import com.pi4j.io.gpio.*;
 import com.pi4j.io.gpio.event.*;
-import com.pi4j.io.i2c.*;
-
-import java.io.*;
 
 public class InfraredSensor implements Runnable {
 
@@ -17,7 +14,6 @@ public class InfraredSensor implements Runnable {
 
     private final int SensorID;
     private final Connection DB;
-    private final GpioController GPIO;
     private GpioPinDigitalInput PIN1;
     private GpioPinDigitalInput PIN2;
     private GpioPinDigitalInput PIN3;
@@ -32,56 +28,33 @@ public class InfraredSensor implements Runnable {
         this.SensorID = SensorID;
         this.SensorState = SensorState;
         this.SensorValue = SensorValue;
-        this.GPIO = GpioFactory.getInstance();
 
         getPin(GateNum);
-        GPIO.addListener(Pin1Listener, PIN1);
-        GPIO.addListener(Pin2Listener, PIN2);
-        GPIO.addListener(Pin3Listener, PIN3);
-        GPIO.addListener(Pin4Listener, PIN4);
+        GateNum.getGPIO().addListener(Pin1Listener, PIN1);
+        GateNum.getGPIO().addListener(Pin2Listener, PIN2);
+        GateNum.getGPIO().addListener(Pin3Listener, PIN3);
+        GateNum.getGPIO().addListener(Pin4Listener, PIN4);
         new Thread(this).start();
     }
 
     private void getPin(PinsList GateNum) {
-        try {
-            if (GateNum.getType().equals("GPIO")) {
-                PIN1 = GPIO.provisionDigitalInputPin(RaspiPin.getPinByAddress(Integer.parseInt(GateNum.getPI4Jnumber())), PinPullResistance.PULL_UP);
-                PIN2 = GPIO.provisionDigitalInputPin(RaspiPin.getPinByAddress(Integer.parseInt(GateNum.getPI4Jnumber()) + 1), PinPullResistance.PULL_UP);
-                PIN3 = GPIO.provisionDigitalInputPin(RaspiPin.getPinByAddress(Integer.parseInt(GateNum.getPI4Jnumber()) + 2), PinPullResistance.PULL_UP);
-                PIN4 = GPIO.provisionDigitalInputPin(RaspiPin.getPinByAddress(Integer.parseInt(GateNum.getPI4Jnumber()) + 3), PinPullResistance.PULL_UP);
+        if (GateNum.getType().equals("GPIO")) {
+            PIN1 = GateNum.getGPIO().provisionDigitalInputPin(RaspiPin.getPinByAddress(Integer.parseInt(GateNum.getPI4Jnumber())), PinPullResistance.PULL_UP);
+            PIN2 = GateNum.getGPIO().provisionDigitalInputPin(RaspiPin.getPinByAddress(Integer.parseInt(GateNum.getPI4Jnumber()) + 1), PinPullResistance.PULL_UP);
+            PIN3 = GateNum.getGPIO().provisionDigitalInputPin(RaspiPin.getPinByAddress(Integer.parseInt(GateNum.getPI4Jnumber()) + 2), PinPullResistance.PULL_UP);
+            PIN4 = GateNum.getGPIO().provisionDigitalInputPin(RaspiPin.getPinByAddress(Integer.parseInt(GateNum.getPI4Jnumber()) + 3), PinPullResistance.PULL_UP);
+        } else {
+            if (GateNum.getPI4Jnumber().contains("A")) {
+                PIN1 = GateNum.getGPIO().provisionDigitalInputPin(GateNum.getMCP23017(), MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1))], PinPullResistance.PULL_UP);
+                PIN2 = GateNum.getGPIO().provisionDigitalInputPin(GateNum.getMCP23017(), MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 1], PinPullResistance.PULL_UP);
+                PIN3 = GateNum.getGPIO().provisionDigitalInputPin(GateNum.getMCP23017(), MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 2], PinPullResistance.PULL_UP);
+                PIN4 = GateNum.getGPIO().provisionDigitalInputPin(GateNum.getMCP23017(), MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 3], PinPullResistance.PULL_UP);
             } else {
-                if (GateNum.getMCP23017().equals("0x21")) {
-                    MCP23017GpioProvider Provider = new MCP23017GpioProvider(I2CBus.BUS_1, 0x21);
-                    if (GateNum.getPI4Jnumber().contains("A")) {
-                        PIN1 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1))], PinPullResistance.PULL_UP);
-                        PIN2 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 1], PinPullResistance.PULL_UP);
-                        PIN3 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 2], PinPullResistance.PULL_UP);
-                        PIN4 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 3], PinPullResistance.PULL_UP);
-                    } else {
-                        PIN1 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1))], PinPullResistance.PULL_UP);
-                        PIN2 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 1], PinPullResistance.PULL_UP);
-                        PIN3 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 2], PinPullResistance.PULL_UP);
-                        PIN4 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 3], PinPullResistance.PULL_UP);
-                    }
-                } else {
-                    MCP23017GpioProvider Provider = new MCP23017GpioProvider(I2CBus.BUS_1, 0x24);
-                    if (GateNum.getPI4Jnumber().contains("A")) {
-                        PIN1 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1))], PinPullResistance.PULL_UP);
-                        PIN2 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 1], PinPullResistance.PULL_UP);
-                        PIN3 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 2], PinPullResistance.PULL_UP);
-                        PIN4 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 3], PinPullResistance.PULL_UP);
-                    } else {
-                        System.out.println(MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 3].getName());
-                        PIN1 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1))], PinPullResistance.PULL_UP);
-                        PIN2 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 1], PinPullResistance.PULL_UP);
-                        PIN3 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 2], PinPullResistance.PULL_UP);
-                        PIN4 = GPIO.provisionDigitalInputPin(Provider, MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 3], PinPullResistance.PULL_UP);
-                    }
-                }
+                PIN1 = GateNum.getGPIO().provisionDigitalInputPin(GateNum.getMCP23017(), MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1))], PinPullResistance.PULL_UP);
+                PIN2 = GateNum.getGPIO().provisionDigitalInputPin(GateNum.getMCP23017(), MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 1], PinPullResistance.PULL_UP);
+                PIN3 = GateNum.getGPIO().provisionDigitalInputPin(GateNum.getMCP23017(), MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 2], PinPullResistance.PULL_UP);
+                PIN4 = GateNum.getGPIO().provisionDigitalInputPin(GateNum.getMCP23017(), MCP23017Pin.ALL_B_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1)) + 3], PinPullResistance.PULL_UP);
             }
-        } catch (IOException ex) {
-            System.out.println("InfraredSensor " + SensorID + ", Error In Getting Pin");
-            Logger.getLogger(InfraredSensor.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -97,7 +70,7 @@ public class InfraredSensor implements Runnable {
     public void run() {
         while (true) {
             try {
-                if ((ChackPIN1 || ChackPIN2) && (ChackPIN3 || ChackPIN4)) {
+                if ((ChackPIN1 || ChackPIN3) && (ChackPIN2 || ChackPIN4)) {
                     SensorState = true;
                     SensorValue = 1;
                     System.out.println("InfraredSensor " + SensorID + ", State = true");
@@ -107,10 +80,14 @@ public class InfraredSensor implements Runnable {
                     SensorValue = 0;
                 }
 
-                try (PreparedStatement ps = DB.prepareStatement("update sensor set SenesorState = ? and SensorValue = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+                try (PreparedStatement ps = DB.prepareStatement("update sensor set SenesorState = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
                     ps.setBoolean(1, SensorState);
-                    ps.setInt(2, SensorValue);
-                    ps.setInt(3, SensorID);
+                    ps.setInt(2, SensorID);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = DB.prepareStatement("update sensor set SensorValue = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+                    ps.setInt(1, SensorValue);
+                    ps.setInt(2, SensorID);
                     ps.executeUpdate();
                 }
 

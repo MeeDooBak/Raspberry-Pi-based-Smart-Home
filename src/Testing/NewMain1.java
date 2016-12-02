@@ -1,14 +1,7 @@
 package Testing;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.sql.*;
+import java.util.logging.*;
 
 public class NewMain1 {
 
@@ -19,15 +12,25 @@ public class NewMain1 {
             Connection DB = DriverManager.getConnection("jdbc:mysql://localhost:3306/smarthome", "root", "");
 
             try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                    ResultSet Result = Statement.executeQuery("select * from gpio_pins")) {
+                    ResultSet Result = Statement.executeQuery("select * from sensor")) {
 
                 Result.beforeFirst();
                 while (Result.next()) {
-                    int PinID = Result.getInt("PinID");
-                    int isPinInput = Result.getInt("isPinInput");
-                    String Type = Result.getString("Type");
+                    int SensorID = Result.getInt("SensorID");
 
-                    System.out.println(PinID + " " + Type + " " + isPinInput);
+                    try (PreparedStatement ps = DB.prepareStatement("update sensor set SenesorState = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+                        ps.setBoolean(1, true);
+                        ps.setInt(2, SensorID);
+                        ps.executeUpdate();
+                        System.out.println("OK");
+                    }
+                    try (PreparedStatement ps = DB.prepareStatement("update sensor set SensorValue = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+                        ps.setInt(1, 1);
+                        ps.setInt(2, SensorID);
+                        ps.executeUpdate();
+                        System.out.println("OK");
+                    }
+
                 }
             }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException ex) {

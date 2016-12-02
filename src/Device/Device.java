@@ -158,7 +158,7 @@ public class Device implements Runnable {
                     }
                 }
             }
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             System.out.println("Device Class, Error In DataBase");
             Logger.getLogger(Device.class.getName()).log(Level.SEVERE, null, ex);
         }
