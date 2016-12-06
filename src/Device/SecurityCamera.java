@@ -3,6 +3,7 @@ package Device;
 import Pins.*;
 import com.github.sarxos.webcam.*;
 import com.github.sarxos.webcam.ds.ipcam.*;
+import com.github.sarxos.webcam.util.jh.*;
 import com.xuggle.mediatool.*;
 import com.xuggle.xuggler.*;
 import com.xuggle.xuggler.video.*;
@@ -17,9 +18,13 @@ import java.util.logging.*;
 import javax.imageio.*;
 import javax.swing.*;
 
-public final class SecurityCamera implements Runnable {
+public final class SecurityCamera implements Runnable, WebcamImageTransformer {
 
-    private final PinsList GateNum;
+    private final BufferedImageOp FLIP_90 = new JHFlipFilter(JHFlipFilter.FLIP_90CW);
+    private final BufferedImageOp FLIP_180 = new JHFlipFilter(JHFlipFilter.FLIP_180);
+    private final BufferedImageOp FLIP_270 = new JHFlipFilter(JHFlipFilter.FLIP_90CCW);
+    private int FLIP;
+
     private final int DeviceID;
     private final Connection DB;
 
@@ -28,13 +33,13 @@ public final class SecurityCamera implements Runnable {
     private boolean ImageBusy;
     private boolean RecordBusy;
 
-    private final Dimension ds = new Dimension(640, 480);
-    private final Dimension cs = WebcamResolution.VGA.getSize();
+    private final Dimension DS = new Dimension(640, 480);
+    private final Dimension CS = WebcamResolution.VGA.getSize();
     private Webcam WebCam;
     private WebcamPanel WebCamPanel;
     private IMediaWriter writer;
     private long count = 0;
-    private Thread Thread;
+    private Thread SecurityCameraThread;
 
     static {
         Webcam.setDriver(new IpCamDriver());
@@ -43,41 +48,59 @@ public final class SecurityCamera implements Runnable {
     public SecurityCamera(int DeviceID, PinsList GateNum, Connection DB) {
         this.DB = DB;
         this.DeviceID = DeviceID;
-        this.GateNum = GateNum;
-        Start();
+
+        try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                ResultSet Result = Statement.executeQuery("select * from ip_address where ID = " + GateNum.getPI4Jnumber())) {
+            Result.next();
+
+            IpCamDeviceRegistry.register(new IpCamDevice(("SecurityCamera " + DeviceID), "http://admin:@" + Result.getString("IPaddress") + "/videostream.cgi", IpCamMode.PUSH));
+            this.FLIP = Result.getInt("FLIP");
+
+        } catch (SQLException | MalformedURLException ex) {
+            Logger.getLogger(SecurityCamera.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    private void Start() {
-        try {
-            try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                    ResultSet Result = Statement.executeQuery("select * from ip_address where ID = " + GateNum.getPI4Jnumber())) {
-                Result.next();
-                IpCamDeviceRegistry.register(new IpCamDevice((DeviceID + ""), "http://admin:@" + Result.getString("IPaddress") + "/videostream.cgi", IpCamMode.PUSH));
+    public void Start() {
 
-                List<Webcam> wCam = Webcam.getWebcams();
-                WebCamPanel = new WebcamPanel(wCam.get(0), ds, false);
-                WebCamPanel.setFillArea(true);
-                WebCamPanel.setBorder(BorderFactory.createEmptyBorder());
-
-                for (int i = 0; i < wCam.size(); i++) {
-                    if (wCam.get(i).getName().equals(DeviceID + "")) {
-                        WebCam = wCam.get(i);
-                        WebCam.setViewSize(cs);
-                        break;
-                    }
-                }
-                new Thread(this).start();
+        List<Webcam> wCam = Webcam.getWebcams();
+        for (int i = 0; i < wCam.size(); i++) {
+            if (wCam.get(i).getName().equals("SecurityCamera " + DeviceID)) {
+                WebCam = wCam.get(i);
+                break;
             }
-        } catch (MalformedURLException | SQLException ex) {
-            Logger.getLogger(SecurityCamera.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        WebCam.setViewSize(CS);
+        WebCam.setImageTransformer(this);
+
+        WebCamPanel = new WebcamPanel(WebCam, DS, false);
+        WebCamPanel.setFillArea(true);
+        WebCamPanel.setBorder(BorderFactory.createEmptyBorder());
+
+        SecurityCameraThread = new Thread(this);
+        SecurityCameraThread.setDaemon(true);
+        SecurityCameraThread.start();
+    }
+
+    @Override
+    public BufferedImage transform(BufferedImage Image) {
+        switch (FLIP) {
+            case 0:
+                return Image;
+            case 90:
+                return FLIP_90.filter(Image, null);
+            case 180:
+                return FLIP_180.filter(Image, null);
+            case 270:
+                return FLIP_270.filter(Image, null);
+            default:
+                return Image;
         }
     }
 
     @Override
     public void run() {
-        while (true) {
-            WebCamPanel.start();
-        }
+        WebCamPanel.start();
     }
 
     public boolean Capture(int TakeImage) {
@@ -137,7 +160,7 @@ public final class SecurityCamera implements Runnable {
                         + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss").format(Date) + ".mp4");
 
                 writer = ToolFactory.makeWriter(Video.getName());
-                writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264, cs.width, cs.height);
+                writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264, CS.width, CS.height);
 
                 long start = System.currentTimeMillis();
                 long end = start + Minute * 60000;

@@ -18,7 +18,7 @@ public class SensorTest {
             DB = DriverManager.getConnection("jdbc:mysql://localhost:3306/smarthome", "root", "");
             SensorList = new ArrayList();
             Sensor = new Sensor(DB, SensorList, null);
-            Sensor.start();
+            Sensor.Start();
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException ex) {
             Logger.getLogger(SensorTest.class.getName()).log(Level.SEVERE, null, ex);
         }

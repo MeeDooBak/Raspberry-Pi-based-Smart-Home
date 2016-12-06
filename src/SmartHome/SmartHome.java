@@ -70,13 +70,20 @@ public class SmartHome {
                     SensorList = new ArrayList();
                     Sensor = new Sensor(DB, SensorList, Pins);
                     Sensor.Start();
+
+                    TaskList = new ArrayList();
+                    Task = new Task(DB, TaskList, Sensor, Device, Room, User, null);
+                    Thread TaskThread = new Thread(Task);
+                    TaskThread.start();
+
+                    while (true) {
+                        if (!TaskThread.isAlive()) {
+                            break;
+                        }
+                    }
                     break;
                 }
             }
-
-//            TaskList = new ArrayList();
-//            Task = new Task(DB, TaskList, Sensor, Device);
-//            Task.Start();
             new Thread(Status).start();
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | InterruptedException ex) {
             Logger.getLogger(SmartHome.class.getName()).log(Level.SEVERE, null, ex);
@@ -102,7 +109,7 @@ public class SmartHome {
                             if (TableName.equals("Device")) {
                                 new Thread(Device).start();
                             } else if (TableName.equals("Task")) {
-//                                Task.Start();
+                                new Thread(Task).start();
                             }
                             try (PreparedStatement ps2 = DB.prepareStatement("update table_status set isTableUpdated = ? where TableID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
                                 ps2.setBoolean(1, false);

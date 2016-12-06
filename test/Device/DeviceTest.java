@@ -22,9 +22,10 @@ public class DeviceTest {
             DeviceList = new ArrayList();
             RoomList = new ArrayList();
             Room = new Room(DB, RoomList);
-            Room.start();
+            Room.Start();
             Device = new Device(DB, DeviceList, Room, null, null);
-            Device.Start();
+            Thread DeviceThread = new Thread(Device);
+            DeviceThread.start();
             Thread.sleep(1000);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | InterruptedException ex) {
             Logger.getLogger(DeviceTest.class.getName()).log(Level.SEVERE, null, ex);

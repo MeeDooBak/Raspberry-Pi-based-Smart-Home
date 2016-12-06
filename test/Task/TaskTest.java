@@ -1,8 +1,10 @@
 package Task;
 
 import Device.*;
+import Pins.*;
 import Rooms.*;
 import Sensor.*;
+import Users.*;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.*;
@@ -13,9 +15,12 @@ public class TaskTest {
 
     private Connection DB;
     private ArrayList<RoomList> RoomList;
+    private ArrayList<UserList> UserList;
     private ArrayList<SensorList> SensorList;
     private ArrayList<DeviceList> DeviceList;
     private ArrayList<TaskList> TaskList;
+    private ArrayList<PinsList> PinsList;
+
     private Task Task;
 
     public TaskTest() {
@@ -23,21 +28,39 @@ public class TaskTest {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             DB = DriverManager.getConnection("jdbc:mysql://localhost:3306/smarthome", "root", "");
             RoomList = new ArrayList();
+            UserList = new ArrayList();
             SensorList = new ArrayList();
             DeviceList = new ArrayList();
             TaskList = new ArrayList();
+            PinsList = new ArrayList();
+
+            Pins Pins = new Pins(DB, PinsList);
+            Pins.Start();
+
             Room Room = new Room(DB, RoomList);
-            Room.start();
+            Room.Start();
+
+            User User = new User(DB, UserList, Room);
+            new Thread(User).start();
             Thread.sleep(1000);
+
             Device Device = new Device(DB, DeviceList, Room, null, null);
-            Device.Start();
-            Thread.sleep(1000);
-            Sensor Sensor = new Sensor(DB, SensorList, null);
-            Sensor.start();
-            Thread.sleep(1000);
-            Task = new Task(DB, TaskList, Sensor, Device);
-            Task.Start();
-            Thread.sleep(1000);
+            Thread DeviceThread = new Thread(Device);
+            DeviceThread.start();
+
+            while (true) {
+                if (!DeviceThread.isAlive()) {
+                    SensorList = new ArrayList();
+                    Sensor Sensor = new Sensor(DB, SensorList, Pins);
+                    Sensor.Start();
+
+                    TaskList = new ArrayList();
+                    Task = new Task(DB, TaskList, Sensor, Device, Room, User, null);
+                    new Thread(Task).start();
+
+                    break;
+                }
+            }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
                 | SQLException | InterruptedException ex) {
             Logger.getLogger(TaskTest.class.getName()).log(Level.SEVERE, null, ex);

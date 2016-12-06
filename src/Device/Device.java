@@ -15,12 +15,16 @@ public class Device implements Runnable {
     private final Room Rooms;
     private final Pins Pins;
 
+    private int CameraCount;
+
     public Device(Connection DB, ArrayList<DeviceList> DeviceList, Room Rooms, Pins Pins, Relay RelayQueue) {
         this.DB = DB;
         this.RelayQueue = RelayQueue;
         this.DeviceList = DeviceList;
         this.Rooms = Rooms;
         this.Pins = Pins;
+
+        this.CameraCount = 0;
     }
 
     public int indexof(int DeviceID) {
@@ -144,6 +148,7 @@ public class Device implements Runnable {
                             case "Security Camera":
                                 DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, false, Pins.Get(GateNum),
                                         null, null, null, false, -1, -1, -1, DB, null, -1, null));
+                                CameraCount++;
                                 break;
 
                             case "Water Pump":
@@ -155,6 +160,15 @@ public class Device implements Runnable {
                                 break;
                         }
                         System.out.println("Add Device : " + DeviceID + ", with Name : " + DeviceName + ", in Room : " + Rooms.Get(RoomID).getRoomName());
+                    }
+                }
+            }
+            if (CameraCount > 0) {
+                CameraCount = 0;
+                for (int i = 0; i < DeviceList.size(); i++) {
+                    if (DeviceList.get(i).getDeviceName().equals("Security Camera")) {
+                        ((SecurityCamera) DeviceList.get(i).GetDevice()).Start();
+                        System.out.println("SecurityCamera " + DeviceList.get(i).getDeviceID() + ", Is Live Now");
                     }
                 }
             }
