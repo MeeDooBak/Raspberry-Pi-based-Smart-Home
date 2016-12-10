@@ -9,12 +9,14 @@ public class WaterLevelUpTask implements Runnable {
 
     private final ArrayList<SensorList> Sensor;
     private final DeviceList Device;
-    private boolean check;
+    private boolean isUpperWaterTankFull;
+    private boolean isDownWaterTankLow;
 
     public WaterLevelUpTask(ArrayList<SensorList> Sensor, DeviceList Device) {
         this.Sensor = Sensor;
         this.Device = Device;
-        this.check = false;
+        this.isUpperWaterTankFull = false;
+        this.isDownWaterTankLow = false;
     }
 
     @Override
@@ -29,16 +31,24 @@ public class WaterLevelUpTask implements Runnable {
 
                     if (Distance <= Min) {
                         ((WaterPump) Device.GetDevice()).ChangeState(false, true);
-                        if (check) {
+                        if (isUpperWaterTankFull) {
                             System.out.println("The Upper Water Tank is Full");
-                            check = false;
+                            isUpperWaterTankFull = false;
+                            isDownWaterTankLow = true;
                         }
                     } else if (Distance >= Max) {
                         ((WaterPump) Device.GetDevice()).ChangeState(true, true);
-                        if (!check) {
+                        if (!isUpperWaterTankFull) {
                             System.out.println("Fill in The Upper Water Tank");
-                            check = true;
+                            isUpperWaterTankFull = true;
+                            isDownWaterTankLow = true;
                         }
+                    }
+                } else {
+                    ((WaterPump) Device.GetDevice()).ChangeState(false, true);
+                    if (isDownWaterTankLow) {
+                        System.out.println("The Down Water Tank is Low");
+                        isDownWaterTankLow = false;
                     }
                 }
                 Thread.sleep(1000);

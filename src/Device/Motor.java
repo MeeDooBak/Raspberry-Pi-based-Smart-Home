@@ -109,13 +109,6 @@ public class Motor implements Runnable {
                 ps.executeUpdate();
             }
 
-            try (PreparedStatement ps = DB.prepareStatement("update device set lastStatusChange = ? where DeviceID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
-                Timestamp NewStatusChange = new Timestamp(new java.util.Date().getTime());
-                ps.setTimestamp(1, NewStatusChange);
-                ps.setInt(2, DeviceID);
-                ps.executeUpdate();
-            }
-
             try (PreparedStatement ps = DB.prepareStatement("update device set DeviceState = ? where DeviceID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
                 ps.setBoolean(1, DeviceState);
                 ps.setInt(2, DeviceID);

@@ -44,6 +44,10 @@ public class AC implements Runnable {
         }
     }
 
+    public boolean getDeviceState() {
+        return DeviceState;
+    }
+
     @Override
     public void run() {
         try {

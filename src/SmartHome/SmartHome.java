@@ -10,6 +10,7 @@ import Sensor.*;
 import Device.*;
 import java.sql.*;
 import java.util.*;
+import RemoteControl.*;
 import java.util.logging.*;
 import com.adventnet.snmp.snmp2.*;
 
@@ -26,6 +27,7 @@ public class SmartHome {
     private static Sensor Sensor;
     private static Task Task;
     private static WaterLevelUpTask WaterLevelUpTask;
+    private static RemoteControl RemoteControl;
 
     private static ArrayList<RoomList> RoomList;
     private static ArrayList<UserList> UserList;
@@ -85,6 +87,10 @@ public class SmartHome {
             WaterLevelUpTask = new WaterLevelUpTask(Sensor.GetUltrasonic(), Device.GetWaterPump());
             Thread WaterLevelUpTaskThread = new Thread(WaterLevelUpTask);
             WaterLevelUpTaskThread.start();
+
+            RemoteControl = new RemoteControl(User, Room, Device);
+            Thread RemoteControlThread = new Thread(RemoteControl);
+            RemoteControlThread.start();
 
             new Thread(Status).start();
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | InterruptedException ex) {

@@ -58,6 +58,10 @@ public class Alarm implements Runnable {
         }
     }
 
+    public boolean getDeviceState() {
+        return DeviceState;
+    }
+
     @Override
     public void run() {
         try {
