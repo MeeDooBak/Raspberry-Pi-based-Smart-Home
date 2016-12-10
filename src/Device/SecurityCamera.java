@@ -1,6 +1,7 @@
 package Device;
 
 import Pins.*;
+import Testing.Rotation90;
 import com.github.sarxos.webcam.*;
 import com.github.sarxos.webcam.ds.ipcam.*;
 import com.github.sarxos.webcam.util.jh.*;
@@ -13,17 +14,18 @@ import java.io.*;
 import java.net.*;
 import java.sql.*;
 import java.text.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.*;
 import javax.imageio.*;
 import javax.swing.*;
 
-public final class SecurityCamera implements Runnable, WebcamImageTransformer {
+public final class SecurityCamera implements WebcamImageTransformer {
 
     private final BufferedImageOp FLIP_90 = new JHFlipFilter(JHFlipFilter.FLIP_90CW);
     private final BufferedImageOp FLIP_180 = new JHFlipFilter(JHFlipFilter.FLIP_180);
     private final BufferedImageOp FLIP_270 = new JHFlipFilter(JHFlipFilter.FLIP_90CCW);
-    private int FLIP;
+    private int RotationBy;
 
     private final int DeviceID;
     private final Connection DB;
@@ -39,7 +41,6 @@ public final class SecurityCamera implements Runnable, WebcamImageTransformer {
     private WebcamPanel WebCamPanel;
     private IMediaWriter writer;
     private long count = 0;
-    private Thread SecurityCameraThread;
 
     static {
         Webcam.setDriver(new IpCamDriver());
@@ -53,8 +54,10 @@ public final class SecurityCamera implements Runnable, WebcamImageTransformer {
                 ResultSet Result = Statement.executeQuery("select * from ip_address where ID = " + GateNum.getPI4Jnumber())) {
             Result.next();
 
-            IpCamDeviceRegistry.register(new IpCamDevice(("SecurityCamera " + DeviceID), "http://admin:@" + Result.getString("IPaddress") + "/videostream.cgi", IpCamMode.PUSH));
-            this.FLIP = Result.getInt("FLIP");
+            String IP = Result.getString("IPaddress");
+            this.RotationBy = Result.getInt("RotationBy");
+
+            IpCamDeviceRegistry.register(new IpCamDevice(("SecurityCamera " + DeviceID), "http://admin:@" + IP + "/videostream.cgi", IpCamMode.PUSH));
 
         } catch (SQLException | MalformedURLException ex) {
             Logger.getLogger(SecurityCamera.class.getName()).log(Level.SEVERE, null, ex);
@@ -71,20 +74,22 @@ public final class SecurityCamera implements Runnable, WebcamImageTransformer {
             }
         }
         WebCam.setViewSize(CS);
-        WebCam.setImageTransformer(this);
+        WebCam.setImageTransformer((WebcamImageTransformer) this);
 
         WebCamPanel = new WebcamPanel(WebCam, DS, false);
         WebCamPanel.setFillArea(true);
         WebCamPanel.setBorder(BorderFactory.createEmptyBorder());
-
-        SecurityCameraThread = new Thread(this);
-        SecurityCameraThread.setDaemon(true);
-        SecurityCameraThread.start();
+        WebCamPanel.start();
     }
 
     @Override
     public BufferedImage transform(BufferedImage Image) {
-        switch (FLIP) {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Rotation90.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        switch (RotationBy) {
             case 0:
                 return Image;
             case 90:
@@ -96,11 +101,6 @@ public final class SecurityCamera implements Runnable, WebcamImageTransformer {
             default:
                 return Image;
         }
-    }
-
-    @Override
-    public void run() {
-        WebCamPanel.start();
     }
 
     public boolean Capture(int TakeImage) {
@@ -117,22 +117,32 @@ public final class SecurityCamera implements Runnable, WebcamImageTransformer {
         @Override
         public void run() {
             ImageBusy = true;
+            ArrayList<String> ImageList = new ArrayList();
+            ArrayList<java.util.Date> ImageTime = new ArrayList();
             for (int i = 0; i < TakeImage; i++) {
                 try {
                     java.util.Date Date = new java.util.Date();
-                    File Image = new File("C:\\Users\\mkb_2\\Documents\\NetBeansProjects\\RaspberryPITest\\Cameras\\Camera_" + DeviceID
-                            + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss").format(Date) + ".jpg");
+                    File Image = new File("Camera_" + DeviceID + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SS").format(Date) + ".jpg");
                     ImageIO.write(WebCam.getImage(), "JPG", Image);
 
-                    try (PreparedStatement ps = DB.prepareStatement("INSERT INTO DBUSER (cameraID, isImage, imgDate, imgPath) VALUES (?, ?, ?, ?)")) {
-                        ps.setInt(1, DeviceID);
-                        ps.setBoolean(2, true);
-                        ps.setTimestamp(3, new Timestamp(Date.getTime()));
-                        ps.setString(4, Image.getAbsolutePath());
-                        ps.executeUpdate();
-                    }
+                    ImageList.add(Image.getName());
+                    ImageTime.add(Date);
+                    System.out.println("Capture : " + Image.getName());
 
-                } catch (IOException | SQLException ex) {
+                    Thread.sleep(50);
+                } catch (IOException | InterruptedException ex) {
+                    Logger.getLogger(SecurityCamera.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
+            for (int i = 0; i < ImageList.size(); i++) {
+                try (PreparedStatement ps = DB.prepareStatement("INSERT INTO camera_gallery (cameraID, isImage, imgDate, imgPath) VALUES (?, ?, ?, ?)")) {
+                    ps.setInt(1, DeviceID);
+                    ps.setBoolean(2, true);
+                    ps.setTimestamp(3, new Timestamp(ImageTime.get(i).getTime()));
+                    ps.setString(4, ImageList.get(i));
+                    ps.executeUpdate();
+                } catch (SQLException ex) {
                     Logger.getLogger(SecurityCamera.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -153,11 +163,10 @@ public final class SecurityCamera implements Runnable, WebcamImageTransformer {
     private final Runnable Record_Thread = new Runnable() {
         @Override
         public void run() {
+            RecordBusy = true;
             try {
-                RecordBusy = true;
                 java.util.Date Date = new java.util.Date();
-                File Video = new File("C:\\Users\\mkb_2\\Documents\\NetBeansProjects\\RaspberryPITest\\Cameras\\Camera_" + DeviceID
-                        + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss").format(Date) + ".mp4");
+                File Video = new File("Camera_" + DeviceID + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss").format(Date) + ".mp4");
 
                 writer = ToolFactory.makeWriter(Video.getName());
                 writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264, CS.width, CS.height);
@@ -182,16 +191,16 @@ public final class SecurityCamera implements Runnable, WebcamImageTransformer {
                     }
                 }
 
-                try (PreparedStatement ps = DB.prepareStatement("INSERT INTO DBUSER (cameraID, isImage, imgDate, imgPath) VALUES (?, ?, ?, ?)")) {
+                try (PreparedStatement ps = DB.prepareStatement("INSERT INTO camera_gallery (cameraID, isImage, imgDate, imgPath) VALUES (?, ?, ?, ?)")) {
                     ps.setInt(1, DeviceID);
                     ps.setBoolean(2, false);
                     ps.setTimestamp(3, new Timestamp(Date.getTime()));
-                    ps.setString(4, Video.getAbsolutePath());
+                    ps.setString(4, Video.getName());
                     ps.executeUpdate();
                 }
-                RecordBusy = false;
             } catch (SQLException ex) {
                 Logger.getLogger(SecurityCamera.class.getName()).log(Level.SEVERE, null, ex);
+                RecordBusy = false;
             }
         }
     };

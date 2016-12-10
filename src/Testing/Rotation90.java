@@ -12,7 +12,6 @@ public class Rotation90 implements WebcamImageTransformer {
     private final BufferedImageOp filter = new JHFlipFilter(JHFlipFilter.FLIP_90CCW);
 
     private Webcam webcam;
-    private WebcamPanel panel;
     private String Name;
 
     static {
@@ -38,17 +37,19 @@ public class Rotation90 implements WebcamImageTransformer {
         }
         webcam.setViewSize(WebcamResolution.VGA.getSize());
         webcam.setImageTransformer(this);
-
-        panel = new WebcamPanel(webcam);
-        panel.setFitArea(true);
     }
 
     public WebcamPanel getPanel() {
-        return panel;
+        return new WebcamPanel(webcam);
     }
 
     @Override
     public BufferedImage transform(BufferedImage image) {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Rotation90.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return filter.filter(image, null);
     }
 }

@@ -1,7 +1,6 @@
 package Users;
 
-import Rooms.Room;
-import Rooms.RoomList;
+import Rooms.*;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.*;

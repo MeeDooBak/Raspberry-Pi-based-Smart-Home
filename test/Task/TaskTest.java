@@ -1,6 +1,7 @@
 package Task;
 
 import Device.*;
+import Email.Mail;
 import Pins.*;
 import Rooms.*;
 import Sensor.*;
@@ -34,6 +35,8 @@ public class TaskTest {
             TaskList = new ArrayList();
             PinsList = new ArrayList();
 
+            Mail Mail = new Mail("smart.home.msgs@gmail.com", "PiSmartHome");
+
             Pins Pins = new Pins(DB, PinsList);
             Pins.Start();
 
@@ -55,7 +58,7 @@ public class TaskTest {
                     Sensor.Start();
 
                     TaskList = new ArrayList();
-                    Task = new Task(DB, TaskList, Sensor, Device, Room, User, null);
+                    Task = new Task(DB, TaskList, Sensor, Device, Room, User, Mail, null);
                     new Thread(Task).start();
 
                     break;

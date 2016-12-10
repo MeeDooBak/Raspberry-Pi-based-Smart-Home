@@ -1,160 +1,127 @@
 package Testing;
 
 import com.github.sarxos.webcam.*;
+import com.github.sarxos.webcam.ds.ipcam.*;
+import com.github.sarxos.webcam.util.jh.JHFlipFilter;
+import com.xuggle.mediatool.*;
+import com.xuggle.xuggler.*;
+import com.xuggle.xuggler.video.*;
 import java.awt.*;
+import java.awt.image.*;
+import java.io.*;
 import java.net.*;
 import java.util.logging.*;
 
-public class CamCapIP extends javax.swing.JFrame {
+public class CamCapIP implements WebcamImageTransformer {
 
-    private final WebcamPanel panel1;
-    private final WebcamPanel panel2;
+    private final BufferedImageOp FLIP_90 = new JHFlipFilter(JHFlipFilter.FLIP_90CW);
+    private final BufferedImageOp FLIP_180 = new JHFlipFilter(JHFlipFilter.FLIP_180);
+    private final BufferedImageOp FLIP_270 = new JHFlipFilter(JHFlipFilter.FLIP_90CCW);
+    private int RotationBy;
 
-    public CamCapIP() throws MalformedURLException {
-        initComponents();
+    private final Dimension ds = new Dimension(640, 480);
+    private final Dimension cs = WebcamResolution.VGA.getSize();
+    private Webcam webcam;
+    private WebcamPanel CamPanel;
+    private IMediaWriter writer;
+    private int count = 0;
+    private Thread Thread2;
+    private boolean StopRecord;
 
-        NoRotation NoRotation = new NoRotation("Cam_1", "192.168.1.101");
-        Rotation90 Rotation90 = new Rotation90("Cam_2", "192.168.1.100");
-
-        NoRotation.Start();
-        Rotation90.Start();
-
-        panel1 = NoRotation.getPanel();
-        panel2 = Rotation90.getPanel();
-
-        panelCam1.setLayout(new FlowLayout());
-        panelCam1.add(panel1);
-
-        panelCam1.setLayout(new FlowLayout());
-        panelCam1.add(panel2);
+    static {
+        Webcam.setDriver(new IpCamDriver());
     }
 
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        btStart = new javax.swing.JButton();
-        panelCam1 = new javax.swing.JPanel();
-        panelCam2 = new javax.swing.JPanel();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(1012, 291));
-        setResizable(false);
-        setSize(new java.awt.Dimension(1012, 291));
-
-        btStart.setText("Start");
-        btStart.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btStartActionPerformed(evt);
-            }
-        });
-
-        panelCam1.setBackground(new java.awt.Color(0, 0, 0));
-
-        javax.swing.GroupLayout panelCam1Layout = new javax.swing.GroupLayout(panelCam1);
-        panelCam1.setLayout(panelCam1Layout);
-        panelCam1Layout.setHorizontalGroup(
-            panelCam1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 640, Short.MAX_VALUE)
-        );
-        panelCam1Layout.setVerticalGroup(
-            panelCam1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-
-        panelCam2.setBackground(new java.awt.Color(0, 0, 0));
-
-        javax.swing.GroupLayout panelCam2Layout = new javax.swing.GroupLayout(panelCam2);
-        panelCam2.setLayout(panelCam2Layout);
-        panelCam2Layout.setHorizontalGroup(
-            panelCam2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 640, Short.MAX_VALUE)
-        );
-        panelCam2Layout.setVerticalGroup(
-            panelCam2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 480, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btStart, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(panelCam1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(panelCam2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(btStart)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(panelCam2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(panelCam1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void btStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btStartActionPerformed
-        Thread t = new Thread() {
-
-            @Override
-            public void run() {
-                panel1.start();
-                panel2.start();
-            }
-        };
-        t.setDaemon(true);
-        t.start();
-    }//GEN-LAST:event_btStartActionPerformed
-
-    public static void main(String args[]) {
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
+    public CamCapIP() {
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+            IpCamDeviceRegistry.register(new IpCamDevice("IP-Cam-1", "http://admin:@192.168.1.100/videostream.cgi", IpCamMode.PUSH));
+            RotationBy = 270;
+
+            java.util.List<Webcam> wCam = Webcam.getWebcams();
+            for (int i = 0; i < wCam.size(); i++) {
+                if (wCam.get(i).getName().equals("IP-Cam-1")) {
+                    webcam = wCam.get(i);
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(CamCapIP.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CamCapIP.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CamCapIP.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(CamCapIP.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-        //</editor-fold>
 
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    new CamCapIP().setVisible(true);
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger(CamCapIP.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
+            webcam.setImageTransformer((WebcamImageTransformer) this);
+            webcam.setViewSize(cs);
+
+            CamPanel = new WebcamPanel(webcam, ds, false);
+            CamPanel.setFitArea(true);
+            CamPanel.start();
+
+            Thread.sleep(1000);
+            Record();
+//            for (int i = 0; i < 1000; i++) {
+//                StopRecord = false;
+//            }
+        } catch (MalformedURLException | InterruptedException ex) {
+            Logger.getLogger(CamCapIP.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btStart;
-    private javax.swing.JPanel panelCam1;
-    private javax.swing.JPanel panelCam2;
-    // End of variables declaration//GEN-END:variables
+    @Override
+    public BufferedImage transform(BufferedImage Image) {
+        switch (RotationBy) {
+            case 0:
+                return Image;
+            case 90:
+                return FLIP_90.filter(Image, null);
+            case 180:
+                return FLIP_180.filter(Image, null);
+            case 270:
+                return FLIP_270.filter(Image, null);
+            default:
+                return Image;
+        }
+    }
+
+    private void Record() {
+
+        File file = new File("output.mp4");
+
+        writer = ToolFactory.makeWriter(file.getName());
+        writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264, ds.height, ds.width);
+
+        long start = System.currentTimeMillis();
+        count = 0;
+        StopRecord = true;
+
+        Thread2 = new Thread() {
+
+            @Override
+            public void run() {
+                while (StopRecord) {
+                    try {
+                        System.out.println("Capture frame " + count);
+
+                        BufferedImage image = ConverterFactory.convertToType(webcam.getImage(), BufferedImage.TYPE_3BYTE_BGR);
+                        IConverter converter = ConverterFactory.createConverter(image, IPixelFormat.Type.YUV420P);
+
+                        IVideoPicture frame = converter.toPicture(image, (System.currentTimeMillis() - start) * 1000);
+                        frame.setKeyFrame(count == 0);
+                        frame.setQuality(0);
+
+                        writer.encodeVideo(0, frame);
+
+                        count++;
+                        if (count == 100) {
+                            writer.close();
+                            Thread2.stop();
+                        }
+                        Thread.sleep(10);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(CamCapIP.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        };
+        Thread2.start();
+    }
+
+    public static void main(String args[]) {
+        CamCapIP camCapIP = new CamCapIP();
+    }
 }

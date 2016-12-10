@@ -1,6 +1,7 @@
 package SmartHome;
 
 import Device.*;
+import Email.*;
 import Pins.*;
 import Relay.*;
 import Rooms.*;
@@ -17,6 +18,7 @@ public class SmartHome {
     private static Connection DB;
     private static Relay RelayQueue;
 
+    private static Mail Mail;
     private static Pins Pins;
     private static Room Room;
     private static User User;
@@ -47,6 +49,8 @@ public class SmartHome {
                 Logger.getLogger(Device.class.getName()).log(Level.SEVERE, null, ex);
             }
 
+            Mail = new Mail("smart.home.msgs@gmail.com", "PiSmartHome");
+
             PinsList = new ArrayList();
             Pins = new Pins(DB, PinsList);
             Pins.Start();
@@ -57,33 +61,26 @@ public class SmartHome {
 
             UserList = new ArrayList();
             User = new User(DB, UserList, Room);
-            new Thread(User).start();
+            Thread UserThread = new Thread(User);
+            UserThread.start();
             Thread.sleep(1000);
 
             DeviceList = new ArrayList();
             Device = new Device(DB, DeviceList, Room, Pins, RelayQueue);
             Thread DeviceThread = new Thread(Device);
             DeviceThread.start();
+            DeviceThread.join();
 
-            while (true) {
-                if (!DeviceThread.isAlive()) {
-                    SensorList = new ArrayList();
-                    Sensor = new Sensor(DB, SensorList, Pins);
-                    Sensor.Start();
+            SensorList = new ArrayList();
+            Sensor = new Sensor(DB, SensorList, Pins);
+            Sensor.Start();
 
-                    TaskList = new ArrayList();
-                    Task = new Task(DB, TaskList, Sensor, Device, Room, User, null);
-                    Thread TaskThread = new Thread(Task);
-                    TaskThread.start();
+            TaskList = new ArrayList();
+            Task = new Task(DB, TaskList, Sensor, Device, Room, User, Mail, Sensor.Get("Smoke Detector"));
+            Thread TaskThread = new Thread(Task);
+            TaskThread.start();
+            TaskThread.join();
 
-                    while (true) {
-                        if (!TaskThread.isAlive()) {
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
             new Thread(Status).start();
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | InterruptedException ex) {
             Logger.getLogger(SmartHome.class.getName()).log(Level.SEVERE, null, ex);
@@ -109,6 +106,7 @@ public class SmartHome {
                             if (TableName.equals("Device")) {
                                 new Thread(Device).start();
                             } else if (TableName.equals("Task")) {
+                                System.out.println("Task work");
                                 new Thread(Task).start();
                             }
                             try (PreparedStatement ps2 = DB.prepareStatement("update table_status set isTableUpdated = ? where TableID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
@@ -120,7 +118,8 @@ public class SmartHome {
                     }
                     Thread.sleep(1000);
                 } catch (SQLException | InterruptedException ex) {
-                    Logger.getLogger(SmartHome.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(SmartHome.class
+                            .getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }

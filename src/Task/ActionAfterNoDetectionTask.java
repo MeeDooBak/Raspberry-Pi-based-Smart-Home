@@ -1,6 +1,7 @@
 package Task;
 
 import Device.*;
+import Email.*;
 import Rooms.*;
 import Sensor.*;
 import Users.*;
@@ -13,17 +14,19 @@ public class ActionAfterNoDetectionTask implements Runnable {
     private boolean isDisabled;
     private long CouyntingDate;
     private boolean TimeFinish;
+    private boolean isBusy;
 
     private final int TaskID;
     private final String TaskName;
     private final UserList User;
     private final RoomList Room;
+    private final Mail Mail;
     private final SensorList SmokeSensor;
     private final boolean repeatDaily;
     private final int AlarmDuration;
     private final int AlarmInterval;
     private final SensorList Sensor;
-    private final Map<DeviceList, Boolean> List;
+    private final ArrayList<TaskDevicesList> List;
     private final int SelectedSensorValue;
     private final boolean NotifyByEmail;
     private final java.sql.Date ActionDate;
@@ -32,13 +35,15 @@ public class ActionAfterNoDetectionTask implements Runnable {
     private final Connection DB;
     private final Thread Thread;
 
-    public ActionAfterNoDetectionTask(int TaskID, String TaskName, UserList User, RoomList Room, SensorList SmokeSensor, boolean isDisabled, boolean repeatDaily, int AlarmDuration, int AlarmInterval,
-            SensorList Sensor, Map<DeviceList, Boolean> List, int SelectedSensorValue, boolean NotifyByEmail, java.sql.Date ActionDate, Time EnableTaskOnTime, Time DisableTaskOnTime, Connection DB) {
+    public ActionAfterNoDetectionTask(int TaskID, String TaskName, UserList User, RoomList Room, Mail Mail, SensorList SmokeSensor, boolean isDisabled, boolean repeatDaily,
+            int AlarmDuration, int AlarmInterval, SensorList Sensor, ArrayList<TaskDevicesList> List, int SelectedSensorValue, boolean NotifyByEmail, java.sql.Date ActionDate,
+            Time EnableTaskOnTime, Time DisableTaskOnTime, Connection DB) {
 
         this.TaskID = TaskID;
         this.TaskName = TaskName;
         this.User = User;
         this.Room = Room;
+        this.Mail = Mail;
         this.SmokeSensor = SmokeSensor;
         this.isDisabled = isDisabled;
         this.repeatDaily = repeatDaily;
@@ -52,6 +57,8 @@ public class ActionAfterNoDetectionTask implements Runnable {
         this.EnableTaskOnTime = EnableTaskOnTime;
         this.DisableTaskOnTime = DisableTaskOnTime;
         this.DB = DB;
+
+        this.isBusy = false;
 
         this.CouyntingDate = new java.util.Date().getTime() + (SelectedSensorValue * 60000);
         new Thread(Timer).start();
@@ -75,36 +82,37 @@ public class ActionAfterNoDetectionTask implements Runnable {
     }
 
     private void Execute() {
+        isBusy = true;
         if (((SmokeSensor) SmokeSensor.GetSensor()).getSensorState()) {
-            System.out.println("The Task : " + TaskID + "Has been Deactivate, Because the Gas Sensor is Activated");
+            System.out.println("The Task : " + TaskID + " Has been Deactivate, Because the Gas Sensor is Activated");
         } else {
-            for (Map.Entry<DeviceList, Boolean> Device : List.entrySet()) {
-                switch (Device.getKey().getDeviceName()) {
+            for (int i = 0; i < List.size(); i++) {
+                switch (List.get(i).getDeviceID().getDeviceName()) {
                     case "Roof Lamp":
-                        ((Light) Device.getKey().GetDevice()).ChangeState(Device.getValue(), true);
+                        ((Light) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), true);
                         break;
                     case "AC":
-                        ((AC) Device.getKey().GetDevice()).ChangeState(Device.getValue(), true);
+                        ((AC) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), true);
                         break;
                     case "Curtains":
                         try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                                ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + Device.getKey().getDeviceID())) {
+                                ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + List.get(i).getDeviceID().getDeviceID())) {
                             Result.next();
-                            ((Motor) Device.getKey().GetDevice()).ChangeState(Device.getValue(), Result.getInt("StepperMotorMoves"), true);
+                            ((Motor) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), Result.getInt("StepperMotorMoves"), true);
                         } catch (SQLException ex) {
-                            Logger.getLogger(ActionAfterNoDetectionTask.class.getName()).log(Level.SEVERE, null, ex);
+                            Logger.getLogger(ActionOnDetectionTask.class.getName()).log(Level.SEVERE, null, ex);
                         }
                         break;
                     case "Alarm":
-                        ((Alarm) Device.getKey().GetDevice()).ChangeState(Device.getValue(), AlarmDuration, AlarmInterval, true);
+                        ((Alarm) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval, true);
                         break;
                     case "Garage Door":
                         try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                                ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + Device.getKey().getDeviceID())) {
+                                ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + List.get(i).getDeviceID().getDeviceID())) {
                             Result.next();
-                            ((Motor) Device.getKey().GetDevice()).ChangeState(Device.getValue(), Result.getInt("StepperMotorMoves"), true);
+                            ((Motor) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), Result.getInt("StepperMotorMoves"), true);
                         } catch (SQLException ex) {
-                            Logger.getLogger(ActionAfterNoDetectionTask.class.getName()).log(Level.SEVERE, null, ex);
+                            Logger.getLogger(ActionOnDetectionTask.class.getName()).log(Level.SEVERE, null, ex);
                         }
                         break;
                     default:
@@ -112,11 +120,10 @@ public class ActionAfterNoDetectionTask implements Runnable {
                 }
             }
             if (NotifyByEmail) {
-                System.out.println("Send Email To " + User.getUserName());
-                System.out.println("Task Name : " + TaskName + " in Room : " + Room.getRoomName());
-                System.out.println("Has Been Activated");
+                Mail.SendMail("Notification", TaskName, User, Room, List);
             }
         }
+        isBusy = false;
     }
 
     private void Check() {
@@ -138,11 +145,11 @@ public class ActionAfterNoDetectionTask implements Runnable {
                 if ((EnableTaskOnTime == null && DisableTaskOnTime == null) || (EnableTaskOnTime.getTime() <= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime())) {
                     Check();
                     if (TimeFinish) {
-                        if (repeatDaily) {
+                        if (repeatDaily && !isBusy) {
                             Execute();
                         } else {
                             java.sql.Date CDate = new java.sql.Date(new java.util.Date().getTime());
-                            if (("" + CDate).equals("" + ActionDate)) {
+                            if (("" + CDate).equals("" + ActionDate) && !isBusy) {
                                 Execute();
                             } else if (CDate.after(ActionDate)) {
                                 isDisabled = true;
@@ -171,11 +178,16 @@ public class ActionAfterNoDetectionTask implements Runnable {
         @Override
         public void run() {
             while (true) {
-                if (CouyntingDate == new java.util.Date().getTime()) {
-                    TimeFinish = true;
-                    break;
-                } else {
-                    TimeFinish = false;
+                try {
+                    if (CouyntingDate <= new java.util.Date().getTime()) {
+                        TimeFinish = true;
+                        break;
+                    } else {
+                        TimeFinish = false;
+                    }
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ActionAfterNoDetectionTask.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }

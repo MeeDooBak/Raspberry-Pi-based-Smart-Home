@@ -1,11 +1,11 @@
 package Task;
 
-import Device.*;
+import Email.*;
 import Rooms.*;
 import Sensor.*;
 import Users.*;
 import java.sql.*;
-import java.util.Map;
+import java.util.ArrayList;
 
 public final class TaskList {
 
@@ -20,9 +20,10 @@ public final class TaskList {
     private TimingTask Timing;
     private LightTask Light;
     private ActionOnWaterLevelTask ActionOnWaterLevel;
+    private InfraredTask InfraredTask;
 
-    public TaskList(int TaskID, String TaskName, UserList User, RoomList Room, SensorList SmokeSensor, boolean isDisabled, boolean repeatDaily,
-            int AlarmDuration, int AlarmInterval, SensorList Sensor, Map<DeviceList, Boolean> List, int SelectedSensorValue, boolean NotifyByEmail,
+    public TaskList(int TaskID, String TaskName, UserList User, RoomList Room, Mail Mail, SensorList SmokeSensor, boolean isDisabled, boolean repeatDaily,
+            int AlarmDuration, int AlarmInterval, SensorList Sensor, ArrayList<TaskDevicesList> List, int SelectedSensorValue, boolean NotifyByEmail,
             Date ActionDate, Time ActionTime, Time EnableTaskOnTime, Time DisableTaskOnTime, Connection DB) {
 
         this.TaskID = TaskID;
@@ -31,35 +32,41 @@ public final class TaskList {
 
         switch (Sensor.getSensorName()) {
             case "Motion Sensor":
-                if (SelectedSensorValue == 0) {
-                    ActionOnDetection = new ActionOnDetectionTask(TaskID, TaskName, User, Room, SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval,
+                if (SelectedSensorValue == -1) {
+                    ActionOnDetection = new ActionOnDetectionTask(TaskID, TaskName, User, Room, Mail, SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval,
                             Sensor, List, NotifyByEmail, ActionDate, EnableTaskOnTime, DisableTaskOnTime, DB);
+
                 } else if (SelectedSensorValue > 0) {
-                    ActionAfterNoDetection = new ActionAfterNoDetectionTask(TaskID, TaskName, User, Room, SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval,
+                    ActionAfterNoDetection = new ActionAfterNoDetectionTask(TaskID, TaskName, User, Room, Mail, SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval,
                             Sensor, List, SelectedSensorValue, NotifyByEmail, ActionDate, EnableTaskOnTime, DisableTaskOnTime, DB);
                 }
                 break;
             case "Smoke Detector":
-                SmokeDetector = new SmokeTask(TaskID, TaskName, User, Room, isDisabled, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, NotifyByEmail, ActionDate,
+                SmokeDetector = new SmokeTask(TaskID, TaskName, User, Room, Mail, isDisabled, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, NotifyByEmail, ActionDate,
                         EnableTaskOnTime, DisableTaskOnTime, DB);
                 break;
             case "Temperature Sensor":
-                Temperature = new TemperatureTask(TaskID, TaskName, User, Room, SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List,
+                Temperature = new TemperatureTask(TaskID, TaskName, User, Room, Mail, SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List,
                         SelectedSensorValue, NotifyByEmail, ActionDate, EnableTaskOnTime, DisableTaskOnTime, DB);
                 break;
             case "Light Sensor":
-                Light = new LightTask(TaskID, TaskName, User, Room, SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, SelectedSensorValue,
+                Light = new LightTask(TaskID, TaskName, User, Room, Mail, SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, SelectedSensorValue,
                         NotifyByEmail, ActionDate, EnableTaskOnTime, DisableTaskOnTime, DB);
                 break;
             case "Ultrasonic":
-                ActionOnWaterLevel = new ActionOnWaterLevelTask(TaskID, TaskName, User, Room, SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List,
+                ActionOnWaterLevel = new ActionOnWaterLevelTask(TaskID, TaskName, User, Room, Mail, SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List,
                         SelectedSensorValue, NotifyByEmail, ActionDate, EnableTaskOnTime, DisableTaskOnTime, DB);
                 break;
             case "Clock":
-                Timing = new TimingTask(TaskID, TaskName, User, Room, SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval, ActionTime, Sensor, List, NotifyByEmail,
+                Timing = new TimingTask(TaskID, TaskName, User, Room, Mail, SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval, ActionTime, Sensor, List, NotifyByEmail,
                         ActionDate, EnableTaskOnTime, DisableTaskOnTime, DB);
                 break;
+            case "Infrared Sensor":
+                InfraredTask = new InfraredTask(TaskID, TaskName, User, Room, Mail, isDisabled, repeatDaily, AlarmDuration, AlarmInterval, Sensor, List, NotifyByEmail, ActionDate,
+                        EnableTaskOnTime, DisableTaskOnTime, DB);
+                break;
             default:
+                System.out.println("There is No Sensor");
                 break;
         }
     }
@@ -72,7 +79,7 @@ public final class TaskList {
                 } else if (SelectedSensorValue > 0) {
                     return ActionAfterNoDetection.setisDisabled(true);
                 } else {
-                    return false;
+                    return true;
                 }
             case "Smoke Detector":
                 return SmokeDetector.setisDisabled(true);
@@ -84,8 +91,10 @@ public final class TaskList {
                 return ActionOnWaterLevel.setisDisabled(true);
             case "Clock":
                 return Timing.setisDisabled(true);
+            case "Infrared Sensor":
+                return InfraredTask.setisDisabled(true);
             default:
-                return false;
+                return true;
         }
     }
 

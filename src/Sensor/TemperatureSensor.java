@@ -8,9 +8,6 @@ import com.pi4j.wiringpi.*;
 public class TemperatureSensor implements Runnable {
 
     private int SensorValue;
-    private float Humidity;
-    private float Celsius;
-    private float Fahrenheit;
 
     private final int[] Data = {0, 0, 0, 0, 0};
     private final int SensorID;
@@ -24,6 +21,8 @@ public class TemperatureSensor implements Runnable {
         this.SensorValue = SensorValue;
 
         PIN = Integer.parseInt(GateNum.getPI4Jnumber());
+
+        // setup wiringPi
         GpioUtil.export(PIN, GpioUtil.DIRECTION_OUT);
         new Thread(this).start();
     }
@@ -40,12 +39,18 @@ public class TemperatureSensor implements Runnable {
                 int j = 0;
                 Data[0] = Data[1] = Data[2] = Data[3] = Data[4] = 0;
 
+                // pull pin down for 18 milliseconds
                 Gpio.pinMode(PIN, Gpio.OUTPUT);
                 Gpio.digitalWrite(PIN, Gpio.LOW);
                 Gpio.delay(18);
+
+                // then pull it up
                 Gpio.digitalWrite(PIN, Gpio.HIGH);
+
+                // prepare to read the pin
                 Gpio.pinMode(PIN, Gpio.INPUT);
 
+                // detect change and read data
                 for (int i = 0; i < MAXTIMINGS; i++) {
                     int counter = 0;
                     while (Gpio.digitalRead(PIN) == laststate) {
@@ -56,9 +61,12 @@ public class TemperatureSensor implements Runnable {
                         }
                     }
                     laststate = Gpio.digitalRead(PIN);
+
                     if (counter == 255) {
                         break;
                     }
+
+                    // ignore first 3 transitions
                     if ((i >= 4) && (i % 2 == 0)) {
                         Data[j / 8] <<= 1;
                         if (counter > 16) {
@@ -68,21 +76,10 @@ public class TemperatureSensor implements Runnable {
                     }
                 }
 
+                // check we read 40 bits (8bit x 5 ) + verify checksum in the last byte
+                // print it out if data is good
                 if ((j >= 40) && (Data[4] == ((Data[0] + Data[1] + Data[2] + Data[3]) & 0xFF))) {
-                    Humidity = (float) ((Data[0] << 8) + Data[1]) / 10;
-                    if (Humidity > 100) {
-                        Humidity = Data[0];
-                    }
-                    Celsius = (float) (((Data[2] & 0x7F) << 8) + Data[3]) / 10;
-                    if (Celsius > 125) {
-                        Celsius = Data[2];
-                    }
-                    if ((Data[2] & 0x80) != 0) {
-                        Celsius = -Celsius;
-                    }
-                    Fahrenheit = Celsius * 1.8f + 32;
-
-                    SensorValue = (int) Math.ceil(Celsius);
+                    SensorValue = (int) Math.ceil(Data[2] + 0.1f * Data[3]);
 
                     try (PreparedStatement ps = DB.prepareStatement("update sensor set SensorValue = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
                         ps.setInt(1, SensorValue);
@@ -90,10 +87,11 @@ public class TemperatureSensor implements Runnable {
                         ps.executeUpdate();
                     }
                 }
-                Thread.sleep(500);
-            } catch (SQLException | InterruptedException ex) {
+                Thread.sleep(2000);
+            } catch (Exception ex) {
                 System.out.println("TemperatureSensor " + SensorID + ", Error In DataBase");
                 Logger.getLogger(TemperatureSensor.class.getName()).log(Level.SEVERE, null, ex);
+                new Thread(this).start();
             }
         }
     }

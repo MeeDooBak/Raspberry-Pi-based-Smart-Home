@@ -39,7 +39,7 @@ public class Alarm implements Runnable {
     }
 
     public final void ChangeState(boolean DeviceState, int AlarmDuration, int AlarmInterval, boolean isStatusChanged) {
-        if (isStatusChanged) {
+        if (this.DeviceState != DeviceState && isStatusChanged) {
             try (PreparedStatement ps2 = DB.prepareStatement("update device set isStatusChanged = ? where DeviceID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
                 ps2.setBoolean(1, false);
                 ps2.setInt(2, DeviceID);

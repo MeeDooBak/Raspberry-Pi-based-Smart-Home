@@ -15,7 +15,7 @@ public class DeviceList {
     private AC AC;
     private Motor Motor;
     private Alarm Alarm;
-//    private SecurityCamera SecurityCamera;
+    private SecurityCamera SecurityCamera;
     private WaterPump WaterPump;
 
     public DeviceList(int DeviceID, RoomList Room, String DeviceName, boolean DeviceState, PinsList GateNum1, PinsList GateNum2, PinsList GateNum3, PinsList GateNum4,
@@ -43,7 +43,7 @@ public class DeviceList {
                 Motor = new Motor(DeviceID, DeviceName, GateNum1, GateNum2, GateNum3, GateNum4, MaxValue, DeviceState, isStatusChanged, StepperMotorMoves, DB);
                 break;
             case "Security Camera":
-//                SecurityCamera = new SecurityCamera(DeviceID, GateNum1, DB);
+                SecurityCamera = new SecurityCamera(DeviceID, GateNum1, DB);
                 break;
             case "Water Pump":
                 WaterPump = new WaterPump(DeviceID, GateNum1, DeviceState, isStatusChanged, DB, RelayQueue);
@@ -66,7 +66,7 @@ public class DeviceList {
             case "Garage Door":
                 return (T) Motor;
             case "Security Camera":
-//                return (T) SecurityCamera;
+                return (T) SecurityCamera;
             case "Water Pump":
                 return (T) WaterPump;
             default:
