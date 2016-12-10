@@ -33,6 +33,8 @@ public class ActionOnWaterLevelTask implements Runnable {
     private final Connection DB;
     private final Thread Thread;
 
+    private final int MaxValue;
+    private final int MinValue;
     private final int[][] Levels;
 
     public ActionOnWaterLevelTask(int TaskID, String TaskName, UserList User, RoomList Room, Mail Mail, SensorList SmokeSensor, boolean isDisabled, boolean repeatDaily,
@@ -60,7 +62,16 @@ public class ActionOnWaterLevelTask implements Runnable {
 
         this.isBusy = false;
 
-        this.Levels = new int[][]{{1, 100}, {2, 90}, {3, 80}, {4, 70}, {5, 60}, {6, 50}, {7, 40}, {8, 30}, {9, 20}, {10, 10}};
+        this.MaxValue = ((Ultrasonic) Sensor.GetSensor()).getMaxValue();
+        this.MinValue = ((Ultrasonic) Sensor.GetSensor()).getMinValue();
+        this.Levels = new int[MaxValue - MinValue + 1][2];
+        int count = 100;
+
+        for (int j = 0, i = this.MinValue; i <= this.MaxValue; i++, j++) {
+            this.Levels[j][0] = i;
+            this.Levels[j][1] = count;
+            count -= 10;
+        }
 
         this.Thread = new Thread(this);
         this.Thread.start();

@@ -1,17 +1,17 @@
 package SmartHome;
 
-import Device.*;
-import Email.*;
 import Pins.*;
-import Relay.*;
-import Rooms.*;
-import Sensor.*;
 import Task.*;
 import Users.*;
-import com.adventnet.snmp.snmp2.*;
+import Relay.*;
+import Rooms.*;
+import Email.*;
+import Sensor.*;
+import Device.*;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.*;
+import com.adventnet.snmp.snmp2.*;
 
 public class SmartHome {
 
@@ -25,6 +25,7 @@ public class SmartHome {
     private static Device Device;
     private static Sensor Sensor;
     private static Task Task;
+    private static WaterLevelUpTask WaterLevelUpTask;
 
     private static ArrayList<RoomList> RoomList;
     private static ArrayList<UserList> UserList;
@@ -80,6 +81,10 @@ public class SmartHome {
             Thread TaskThread = new Thread(Task);
             TaskThread.start();
             TaskThread.join();
+
+            WaterLevelUpTask = new WaterLevelUpTask(Sensor.GetUltrasonic(), Device.GetWaterPump());
+            Thread WaterLevelUpTaskThread = new Thread(WaterLevelUpTask);
+            WaterLevelUpTaskThread.start();
 
             new Thread(Status).start();
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | InterruptedException ex) {

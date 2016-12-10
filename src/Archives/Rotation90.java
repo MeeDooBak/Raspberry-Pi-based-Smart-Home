@@ -1,12 +1,15 @@
-package Testing;
+package Archives;
 
 import java.awt.image.*;
 import com.github.sarxos.webcam.*;
 import com.github.sarxos.webcam.ds.ipcam.*;
+import com.github.sarxos.webcam.util.jh.*;
 import java.net.*;
 import java.util.logging.*;
 
-public class NoRotation implements WebcamImageTransformer {
+public class Rotation90 implements WebcamImageTransformer {
+
+    private final BufferedImageOp filter = new JHFlipFilter(JHFlipFilter.FLIP_90CCW);
 
     private Webcam webcam;
     private String Name;
@@ -15,7 +18,7 @@ public class NoRotation implements WebcamImageTransformer {
         Webcam.setDriver(new IpCamDriver());
     }
 
-    public NoRotation(String Name, String IP) {
+    public Rotation90(String Name, String IP) {
         try {
             this.Name = Name;
             IpCamDeviceRegistry.register(new IpCamDevice(Name, "http://admin:@" + IP + "/videostream.cgi", IpCamMode.PUSH));
@@ -34,7 +37,6 @@ public class NoRotation implements WebcamImageTransformer {
         }
         webcam.setViewSize(WebcamResolution.VGA.getSize());
         webcam.setImageTransformer(this);
-
     }
 
     public WebcamPanel getPanel() {
@@ -48,6 +50,6 @@ public class NoRotation implements WebcamImageTransformer {
         } catch (InterruptedException ex) {
             Logger.getLogger(Rotation90.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return image;
+        return filter.filter(image, null);
     }
 }

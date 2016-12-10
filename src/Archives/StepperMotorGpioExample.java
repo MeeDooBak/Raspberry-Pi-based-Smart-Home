@@ -1,10 +1,9 @@
 package Archives;
 
 import com.pi4j.component.motor.impl.*;
-import com.pi4j.gpio.extension.mcp.MCP23017GpioProvider;
-import com.pi4j.gpio.extension.mcp.MCP23017Pin;
+import com.pi4j.gpio.extension.mcp.*;
 import com.pi4j.io.gpio.*;
-import com.pi4j.io.i2c.I2CBus;
+import com.pi4j.io.i2c.*;
 import java.io.*;
 
 public class StepperMotorGpioExample {

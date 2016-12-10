@@ -17,7 +17,7 @@ public class SensorList {
     private InfraredSensor InfraredSensor;
     private Clock Clock;
 
-    public SensorList(int SensorID, int RoomID, String SensorName, boolean SensorState, PinsList GateNum1, PinsList GateNum2, int SensorValue, Connection DB) {
+    public SensorList(int SensorID, int RoomID, String SensorName, boolean SensorState, PinsList GateNum1, PinsList GateNum2, int SensorValue, int MaxValue, int MinValue, Connection DB) {
 
         this.SensorID = SensorID;
         this.RoomID = RoomID;
@@ -37,7 +37,7 @@ public class SensorList {
                 LightSensor = new LightSensor(SensorID, SensorState, GateNum1, SensorValue, DB);
                 break;
             case "Ultrasonic":
-                Ultrasonic = new Ultrasonic(SensorID, GateNum1, GateNum2, SensorValue, DB);
+                Ultrasonic = new Ultrasonic(SensorID, GateNum1, GateNum2, SensorValue, MaxValue, MinValue, DB);
                 break;
             case "Clock":
                 Clock = new Clock(SensorID, SensorState, SensorValue, DB);

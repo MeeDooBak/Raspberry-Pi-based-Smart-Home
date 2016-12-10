@@ -10,15 +10,20 @@ public class Ultrasonic implements Runnable {
     private int SensorValue;
 
     private final int SensorID;
+    private final int MaxValue;
+    private final int MinValue;
     private final Connection DB;
+
     private GpioPinDigitalInput EchoPin;
     private GpioPinDigitalOutput TrigPin;
 
-    public Ultrasonic(int SensorID, PinsList GateNum1, PinsList GateNum2, int SensorValue, Connection DB) {
+    public Ultrasonic(int SensorID, PinsList GateNum1, PinsList GateNum2, int SensorValue, int MaxValue, int MinValue, Connection DB) {
 
         this.DB = DB;
         this.SensorID = SensorID;
         this.SensorValue = SensorValue;
+        this.MaxValue = MaxValue;
+        this.MinValue = MinValue;
 
         getPin(GateNum1, GateNum2);
         new Thread(this).start();
@@ -33,6 +38,22 @@ public class Ultrasonic implements Runnable {
 
     public int getSensorValue() {
         return SensorValue;
+    }
+
+    public int getMaxValue() {
+        return MaxValue;
+    }
+
+    public int getMinValue() {
+        return MinValue;
+    }
+
+    public boolean IsValed() {
+        if (MaxValue > SensorValue && SensorValue > MinValue) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override

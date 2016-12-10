@@ -1,4 +1,4 @@
-package Testing;
+package Archives;
 
 import com.github.sarxos.webcam.*;
 import com.github.sarxos.webcam.ds.ipcam.*;
@@ -12,7 +12,7 @@ import java.io.*;
 import java.net.*;
 import java.util.logging.*;
 
-public class CamCapIP implements WebcamImageTransformer {
+public class CamCapIP_WithNoF implements WebcamImageTransformer {
 
     private final BufferedImageOp FLIP_90 = new JHFlipFilter(JHFlipFilter.FLIP_90CW);
     private final BufferedImageOp FLIP_180 = new JHFlipFilter(JHFlipFilter.FLIP_180);
@@ -32,7 +32,7 @@ public class CamCapIP implements WebcamImageTransformer {
         Webcam.setDriver(new IpCamDriver());
     }
 
-    public CamCapIP() {
+    public CamCapIP_WithNoF() {
         try {
             IpCamDeviceRegistry.register(new IpCamDevice("IP-Cam-1", "http://admin:@192.168.1.100/videostream.cgi", IpCamMode.PUSH));
             RotationBy = 270;
@@ -54,11 +54,8 @@ public class CamCapIP implements WebcamImageTransformer {
 
             Thread.sleep(1000);
             Record();
-//            for (int i = 0; i < 1000; i++) {
-//                StopRecord = false;
-//            }
         } catch (MalformedURLException | InterruptedException ex) {
-            Logger.getLogger(CamCapIP.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CamCapIP_WithNoF.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -113,7 +110,7 @@ public class CamCapIP implements WebcamImageTransformer {
                         }
                         Thread.sleep(10);
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(CamCapIP.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(CamCapIP_WithNoF.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }
@@ -122,6 +119,6 @@ public class CamCapIP implements WebcamImageTransformer {
     }
 
     public static void main(String args[]) {
-        CamCapIP camCapIP = new CamCapIP();
+        CamCapIP_WithNoF camCapIP = new CamCapIP_WithNoF();
     }
 }

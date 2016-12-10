@@ -45,6 +45,15 @@ public class Device implements Runnable {
         return null;
     }
 
+    public DeviceList GetWaterPump() {
+        for (int i = 0; i < DeviceList.size(); i++) {
+            if (DeviceList.get(i).getDeviceName().equals("Water Pump")) {
+                return DeviceList.get(i);
+            }
+        }
+        return null;
+    }
+
     @Override
     public void run() {
         try {
