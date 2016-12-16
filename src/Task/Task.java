@@ -1,7 +1,6 @@
 package Task;
 
 import Device.*;
-import Email.*;
 import Rooms.*;
 import Sensor.*;
 import Users.*;
@@ -17,17 +16,15 @@ public class Task implements Runnable {
     private final Sensor Sensors;
     private final Room Room;
     private final User User;
-    private final Mail Mail;
     private final SensorList SmokeSensor;
 
-    public Task(Connection DB, ArrayList<TaskList> TaskList, Sensor Sensors, Device Devices, Room Room, User User, Mail Mail, SensorList SmokeSensor) {
+    public Task(Connection DB, ArrayList<TaskList> TaskList, Sensor Sensors, Device Devices, Room Room, User User, SensorList SmokeSensor) {
         this.DB = DB;
         this.TaskList = TaskList;
         this.Sensors = Sensors;
         this.Devices = Devices;
         this.Room = Room;
         this.User = User;
-        this.Mail = Mail;
         this.SmokeSensor = SmokeSensor;
     }
 
@@ -86,7 +83,7 @@ public class Task implements Runnable {
 
                     } else {
                         if (!isDisabled) {
-                            TaskList.add(new TaskList(TaskID, TaskName, User.Get(UserID), Room.Get(RoomID), Mail, SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval,
+                            TaskList.add(new TaskList(TaskID, TaskName, User.Get(UserID), Room.Get(RoomID), SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval,
                                     Sensors.Get(SensorID), getDevices(TaskID), SelectedSensorValue, NotifyByEmail, ActionDate, ActionTime, EnableTaskOnTime, DisableTaskOnTime, DB));
 
                             System.out.println("Add Task : " + TaskID + ", with Name : " + TaskName);

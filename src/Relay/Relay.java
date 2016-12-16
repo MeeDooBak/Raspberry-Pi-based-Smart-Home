@@ -24,9 +24,10 @@ public class Relay implements Runnable {
     public void run() {
         while (true) {
             try {
-                if (!RelayQueueList.isEmpty()) {
+                while (!RelayQueueList.isEmpty()) {
                     RelayQueue RelayQueue = RelayQueueList.poll();
                     Relay.SNMP_SET(RelayQueue.getID(), RelayQueue.getValue());
+                    Thread.sleep(100);
                 }
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {

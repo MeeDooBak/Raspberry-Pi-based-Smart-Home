@@ -2,6 +2,7 @@ package Task;
 
 import Device.*;
 import Email.*;
+import Logger.*;
 import Rooms.*;
 import Sensor.*;
 import Users.*;
@@ -12,13 +13,11 @@ import java.util.logging.*;
 public class LightTask implements Runnable {
 
     private boolean isDisabled;
-    private boolean isBusy;
 
     private final int TaskID;
     private final String TaskName;
     private final UserList User;
     private final RoomList Room;
-    private final Mail Mail;
     private final SensorList SmokeSensor;
     private final boolean repeatDaily;
     private final int AlarmDuration;
@@ -33,7 +32,7 @@ public class LightTask implements Runnable {
     private final Connection DB;
     private final Thread Thread;
 
-    public LightTask(int TaskID, String TaskName, UserList User, RoomList Room, Mail Mail, SensorList SmokeSensor, boolean isDisabled, boolean repeatDaily,
+    public LightTask(int TaskID, String TaskName, UserList User, RoomList Room, SensorList SmokeSensor, boolean isDisabled, boolean repeatDaily,
             int AlarmDuration, int AlarmInterval, SensorList Sensor, ArrayList<TaskDevicesList> List, int SelectedSensorValue, boolean NotifyByEmail, java.sql.Date ActionDate,
             Time EnableTaskOnTime, Time DisableTaskOnTime, Connection DB) {
 
@@ -41,7 +40,6 @@ public class LightTask implements Runnable {
         this.TaskName = TaskName;
         this.User = User;
         this.Room = Room;
-        this.Mail = Mail;
         this.SmokeSensor = SmokeSensor;
         this.isDisabled = isDisabled;
         this.repeatDaily = repeatDaily;
@@ -56,14 +54,13 @@ public class LightTask implements Runnable {
         this.DisableTaskOnTime = DisableTaskOnTime;
         this.DB = DB;
 
-        this.isBusy = false;
-
         this.Thread = new Thread(this);
         this.Thread.start();
     }
 
     public boolean setisDisabled(boolean isDisabled) {
         if (Thread.isAlive()) {
+            Thread.stop();
             this.isDisabled = true;
             for (int i = 0; i < 2000; i++) {
                 if (!Thread.isAlive()) {
@@ -77,78 +74,130 @@ public class LightTask implements Runnable {
     }
 
     public void Execute() {
-        isBusy = true;
-        if (((LightSensor) Sensor.GetSensor()).getSensorValue() == SelectedSensorValue) {
-            if (((SmokeSensor) SmokeSensor.GetSensor()).getSensorState()) {
-                System.out.println("The Task : " + TaskID + " Has been Deactivate, Because the Gas Sensor is Activated");
-            } else {
-                for (int i = 0; i < List.size(); i++) {
-                    switch (List.get(i).getDeviceID().getDeviceName()) {
-                        case "Roof Lamp":
-                            ((Light) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), true);
-                            break;
-                        case "AC":
-                            ((AC) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), true);
-                            break;
-                        case "Curtains":
-                            try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                                    ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + List.get(i).getDeviceID().getDeviceID())) {
-                                Result.next();
-                                ((Motor) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), Result.getInt("StepperMotorMoves"), true);
-                            } catch (SQLException ex) {
-                                Logger.getLogger(LightTask.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                            break;
-                        case "Alarm":
-                            ((Alarm) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval, true);
-                            break;
-                        case "Garage Door":
-                            try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                                    ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + List.get(i).getDeviceID().getDeviceID())) {
-                                Result.next();
-                                ((Motor) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), Result.getInt("StepperMotorMoves"), true);
-                            } catch (SQLException ex) {
-                                Logger.getLogger(LightTask.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                            break;
-                        default:
-                            break;
+        try {
+            if (((LightSensor) Sensor.GetSensor()).getSensorValue() == SelectedSensorValue) {
+                if (((SmokeSensor) SmokeSensor.GetSensor()).getSensorState()) {
+                    System.out.println("The Task : " + TaskID + " Has been Deactivate, Because the Gas Sensor is Activated");
+                } else {
+                    boolean Send = false;
+                    for (int i = 0; i < List.size(); i++) {
+                        switch (List.get(i).getDeviceID().getDeviceName()) {
+                            case "Roof Lamp":
+                                if (((Light) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                                    ((Light) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), true);
+                                    Send = true;
+                                }
+                                break;
+                            case "AC":
+                                if (((AC) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                                    ((AC) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), true);
+                                    Send = true;
+                                }
+                                break;
+                            case "Curtains":
+                                try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                                        ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + List.get(i).getDeviceID().getDeviceID())) {
+                                    Result.next();
+                                    if (((Motor) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                                        ((Motor) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), Result.getInt("StepperMotorMoves"), true);
+                                        Send = true;
+                                    }
+                                } catch (SQLException ex) {
+                                    Logger.getLogger(ActionOnDetectionTask.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                                break;
+                            case "Alarm":
+                                if (((Alarm) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                                    ((Alarm) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval, true);
+                                    Send = true;
+                                }
+                                break;
+                            case "Garage Door":
+                                try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                                        ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + List.get(i).getDeviceID().getDeviceID())) {
+                                    Result.next();
+                                    if (((Motor) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                                        ((Motor) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), Result.getInt("StepperMotorMoves"), true);
+                                        Send = true;
+                                    }
+                                } catch (SQLException ex) {
+                                    Logger.getLogger(ActionOnDetectionTask.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    if (NotifyByEmail && Send) {
+                        Mail.SendMail("Notification", TaskName, User, Room, Sensor, List, -1);
+                    }
+                    if (Send) {
+                        SLogger.Logger("Notification", TaskName, Room, Sensor, List, -1);
                     }
                 }
-                if (NotifyByEmail) {
-                    Mail.SendMail("Notification", TaskName, User, Room, List);
-                }
+                Thread.sleep(1000);
             }
+        } catch (InterruptedException ex) {
+            Logger.getLogger(LightTask.class.getName()).log(Level.SEVERE, null, ex);
         }
-        isBusy = false;
     }
 
     @Override
     public void run() {
         while (!isDisabled) {
             try {
-                long CurrentTime = new java.util.Date().getTime();
-                if ((EnableTaskOnTime == null && DisableTaskOnTime == null) || (EnableTaskOnTime.getTime() <= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime())) {
-                    if (repeatDaily && !isBusy) {
-                        Execute();
-                    } else {
-                        java.sql.Date CDate = new java.sql.Date(new java.util.Date().getTime());
-                        if (("" + CDate).equals("" + ActionDate) && !isBusy) {
+                if (repeatDaily) {
+                    if (EnableTaskOnTime != null && DisableTaskOnTime != null) {
+                        java.util.Date EnableDate = new java.util.Date(System.currentTimeMillis());
+                        EnableDate.setHours(EnableTaskOnTime.getHours());
+                        EnableDate.setMinutes(EnableTaskOnTime.getMinutes());
+                        EnableDate.setSeconds(EnableTaskOnTime.getSeconds());
+
+                        java.util.Date DisableDate = new java.util.Date(System.currentTimeMillis());
+                        DisableDate.setHours(DisableTaskOnTime.getHours());
+                        DisableDate.setMinutes(DisableTaskOnTime.getMinutes());
+                        DisableDate.setSeconds(DisableTaskOnTime.getSeconds());
+
+                        if (EnableDate.getTime() <= System.currentTimeMillis() && System.currentTimeMillis() <= DisableDate.getTime()) {
                             Execute();
-                        } else if (CDate.after(ActionDate)) {
-                            isDisabled = true;
-                            PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-                            ps.setBoolean(1, isDisabled);
-                            ps.setInt(2, TaskID);
-                            ps.executeUpdate();
                         }
+                    } else {
+                        Execute();
                     }
                 } else {
-                    isDisabled = true;
-                    PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-                    ps.setBoolean(1, isDisabled);
-                    ps.setInt(2, TaskID);
-                    ps.executeUpdate();
+                    java.sql.Date CDate = new java.sql.Date(new java.util.Date().getTime());
+                    if ((CDate + "").equals(ActionDate + "")) {
+                        if (EnableTaskOnTime != null && DisableTaskOnTime != null) {
+                            java.util.Date EnableDate = new java.util.Date(System.currentTimeMillis());
+                            EnableDate.setHours(EnableTaskOnTime.getHours());
+                            EnableDate.setMinutes(EnableTaskOnTime.getMinutes());
+                            EnableDate.setSeconds(EnableTaskOnTime.getSeconds());
+
+                            java.util.Date DisableDate = new java.util.Date(System.currentTimeMillis());
+                            DisableDate.setHours(DisableTaskOnTime.getHours());
+                            DisableDate.setMinutes(DisableTaskOnTime.getMinutes());
+                            DisableDate.setSeconds(DisableTaskOnTime.getSeconds());
+
+                            if (EnableDate.getTime() <= System.currentTimeMillis() && System.currentTimeMillis() <= DisableDate.getTime()) {
+                                Execute();
+
+                            } else if (System.currentTimeMillis() > DisableDate.getTime()) {
+                                isDisabled = true;
+                                PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+                                ps.setBoolean(1, isDisabled);
+                                ps.setInt(2, TaskID);
+                                ps.executeUpdate();
+                            }
+                        } else {
+                            Execute();
+                        }
+                    } else if (CDate.after(ActionDate)) {
+                        isDisabled = true;
+                        PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+                        ps.setBoolean(1, isDisabled);
+                        ps.setInt(2, TaskID);
+                        ps.executeUpdate();
+                    }
                 }
                 Thread.sleep(1000);
             } catch (SQLException | InterruptedException ex) {

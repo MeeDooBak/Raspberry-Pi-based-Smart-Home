@@ -1,6 +1,7 @@
 package Email;
 
 import Rooms.*;
+import Sensor.SensorList;
 import Task.*;
 import Users.*;
 import java.util.*;
@@ -14,12 +15,12 @@ public class Mail implements Runnable {
     private final String UserName;
     private final String Password;
 
-    private final Queue<EmailQueue> EmailQueueList;
+    private static Queue<EmailQueue> EmailQueueList;
 
     public Mail(String UserName, String Password) {
         this.UserName = UserName;
         this.Password = Password;
-        this.EmailQueueList = new LinkedList();
+        Mail.EmailQueueList = new LinkedList();
 
         this.props = System.getProperties();
         this.props.put("mail.smtp.starttls.enable", "true");
@@ -32,34 +33,87 @@ public class Mail implements Runnable {
         new Thread(this).start();
     }
 
-    public void SendMail(String MessageType, String TaskName, UserList User, RoomList Room, ArrayList<TaskDevicesList> List) {
+    public static void SendMail(String MessageType, String TaskName, UserList User, RoomList Room, SensorList Sensor, ArrayList<TaskDevicesList> List, int SelectedSensorValue) {
         String Email = "";
         String Subject = "";
         String Body = "";
 
-        if (MessageType.equals("Notification")) {
-            Email = User.getUserEmail();
-            Subject = "Notification Message For Task " + TaskName;
+        switch (MessageType) {
+            case "Notification":
+                Email = User.getUserEmail();
+                Subject = "Notification Message For Task (" + TaskName + ")";
+                Body += "Dear " + User.getUserName() + ",\n";
+                Body += "Your Task (" + TaskName + ") in (" + Room.getRoomName() + ")\n\n";
+                if (Sensor != null) {
+                    Body += "Executed with (" + Sensor.getSensorName() + ")\n";
+                } else {
+                    Body += "Executed with (Clock)\n";
+                }
 
-            Body += "Dear, " + User.getUserName() + "\n";
-            Body += "Your Task " + TaskName + " in " + Room.getRoomName() + "\n";
-            Body += "Has Been Activated \n";
-
-            for (int i = 0; i < List.size(); i++) {
-                Body += "Device ID : " + List.get(i).getDeviceID().getDeviceID();
-                Body += ", with Name : " + List.get(i).getDeviceID().getDeviceName();
-                Body += ", Shange State to " + List.get(i).getRequiredDeviceStatus();
+                Body += "and Turned Devices:\n";
+                for (int i = 0; i < List.size(); i++) {
+                    Body += "Device Name : (" + List.get(i).getDeviceID().getDeviceName() + ")";
+                    Body += ", Changed State to " + List.get(i).getRequiredDeviceStatus();
+                    Body += "\n";
+                }
                 Body += "\n";
-            }
+                Body += "Best Regards\n";
+                Body += "Smart Home\n";
+                System.out.println("Notification Message For Task (" + TaskName + ")");
+                System.out.println("Send It To " + User.getUserName() + " Email.");
+                break;
 
-            Body += "Best Regards, \n";
-            Body += "Smart Home \n";
+            case "Smoke":
+                Email = User.getUserEmail();
+                Subject = "Warning Message For Task (" + TaskName + ")";
+                Body += "Dear " + User.getUserName() + ",\n";
+                Body += "Your Task (" + TaskName + ") in (" + Room.getRoomName() + ")\n\n";
+                Body += "Executed with (" + Sensor.getSensorName() + ")\n";
+                Body += "The Smoke sensor detected a fire or a gas leak, The System is in Freeze-Mode, Devices can't be Switched ON/OFF, the Tasks will be Disabled as well.\n\n";
+                Body += "Best Regards\n";
+                Body += "Smart Home\n";
+                System.out.println("Warning Message For Task (" + TaskName + ")");
+                System.out.println("Send It To " + User.getUserName() + " Email.");
+                break;
 
-            System.out.println("Notification Message For Task " + TaskName);
-            System.out.println("Send Email To " + User.getUserName());
+            case "Water level":
+                Email = User.getUserEmail();
+                Subject = "Notification Message For Task (" + TaskName + ")";
+                Body += "Dear " + User.getUserName() + ",\n";
+                Body += "Your Task (" + TaskName + ") in (" + Room.getRoomName() + ")\n\n";
+                Body += "Executed with (" + Sensor.getSensorName() + ")\n";
+                Body += "Water level in the tank has reached " + SelectedSensorValue + "%.\n\n";
+                Body += "Best Regards\n";
+                Body += "Smart Home\n";
+                System.out.println("Notification Message For Task (" + TaskName + ")");
+                System.out.println("Send It To " + User.getUserName() + " Email.");
+                break;
 
-        } else if (MessageType.equals("Warning")) {
+            case "House parameters":
+                Email = User.getUserEmail();
+                Subject = "Warning Message For Task (" + TaskName + ")";
+                Body += "Dear " + User.getUserName() + ",\n";
+                Body += "Your Task (" + TaskName + ") in (" + Room.getRoomName() + ")\n\n";
+                Body += "Executed with (" + Sensor.getSensorName() + ")\n";
+                Body += "and Turned Devices:\n";
+                for (int i = 0; i < List.size(); i++) {
+                    Body += "Device Name : " + List.get(i).getDeviceID().getDeviceName();
+                    if (List.get(i).getDeviceID().getDeviceName().equals("Alarm")) {
+                        Body += ", Changed State to " + List.get(i).getRequiredDeviceStatus();
+                    } else if (List.get(i).getDeviceID().getDeviceName().equals("Security Camera")) {
+                        Body += ", Took " + List.get(i).getTakeImage() + " Imgs. ";
+                    }
+                    Body += "\n";
+                }
+                Body += "If this is a mistake, The alarms can be turned off through the website.\n";
+                Body += "Best Regards\n";
+                Body += "Smart Home\n";
+                System.out.println("Notification Message For Task (" + TaskName + ")");
+                System.out.println("Send It To " + User.getUserName() + " Email.");
+                break;
 
+            default:
+                break;
         }
         EmailQueueList.add(new EmailQueue(Email, Subject, Body));
     }
@@ -68,7 +122,7 @@ public class Mail implements Runnable {
     public void run() {
         while (true) {
             try {
-                if (!EmailQueueList.isEmpty()) {
+                while (!EmailQueueList.isEmpty()) {
                     EmailQueue RelayQueue = EmailQueueList.poll();
 
                     Session session = Session.getDefaultInstance(props);
@@ -83,6 +137,7 @@ public class Mail implements Runnable {
                     transport.connect("smtp.gmail.com", UserName, Password);
                     transport.sendMessage(message, message.getAllRecipients());
                     transport.close();
+                    Thread.sleep(100);
                 }
                 Thread.sleep(1000);
             } catch (InterruptedException | MessagingException ex) {

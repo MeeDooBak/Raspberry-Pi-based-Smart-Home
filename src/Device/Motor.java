@@ -54,6 +54,10 @@ public class Motor implements Runnable {
         Motor.setStepsPerRevolution(2038);
     }
 
+    public boolean getDeviceState() {
+        return DeviceState;
+    }
+
     public final void ChangeState(boolean DeviceState, int StepperMotorMoves, boolean isStatusChanged) {
         if (this.DeviceState != DeviceState && isStatusChanged) {
             try (PreparedStatement ps2 = DB.prepareStatement("update device set isStatusChanged = ? where DeviceID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {

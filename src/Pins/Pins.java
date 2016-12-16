@@ -10,17 +10,17 @@ import java.util.*;
 import java.util.logging.*;
 
 public class Pins {
-
+    
     private final Connection DB;
     private final ArrayList<PinsList> PinsList;
     private final GpioController GPIO;
     private final MCP23017GpioProvider[] Provider = new MCP23017GpioProvider[4];
-
+    
     public Pins(Connection DB, ArrayList<PinsList> PinsList) {
         this.DB = DB;
         this.PinsList = PinsList;
         this.GPIO = GpioFactory.getInstance();
-
+        
         try {
             this.Provider[0] = new MCP23017GpioProvider(I2CBus.BUS_1, 0x20);
             this.Provider[1] = new MCP23017GpioProvider(I2CBus.BUS_1, 0x21);
@@ -29,9 +29,10 @@ public class Pins {
         } catch (IOException ex) {
             System.out.println("Pins Class, Error In MCP23017 Gpio Provider");
             Logger.getLogger(Pins.class.getName()).log(Level.SEVERE, null, ex);
+            System.exit(0);
         }
     }
-
+    
     public int indexof(int PinID) {
         for (int i = 0; i < PinsList.size(); i++) {
             if (PinsList.get(i).getPinID() == PinID) {
@@ -40,7 +41,7 @@ public class Pins {
         }
         return -1;
     }
-
+    
     public PinsList Get(int PinID) {
         for (int i = 0; i < PinsList.size(); i++) {
             if (PinsList.get(i).getPinID() == PinID) {
@@ -49,12 +50,12 @@ public class Pins {
         }
         return null;
     }
-
+    
     public void Start() {
         try {
             try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
                     ResultSet Result = Statement.executeQuery("select * from gpio_pins")) {
-
+                
                 Result.beforeFirst();
                 while (Result.next()) {
                     int PinID = Result.getInt("PinID");
@@ -79,7 +80,7 @@ public class Pins {
                         PinsList.add(new PinsList(PinID, Type, Result.getString("PI4Jnumber"), GPIO, null));
                     }
                     System.out.println("Add Pin : " + PinID + " " + Type);
-
+                    
                 }
             }
         } catch (SQLException ex) {

@@ -46,7 +46,7 @@ public class DeviceList {
                 SecurityCamera = new SecurityCamera(DeviceID, GateNum1, DB);
                 break;
             case "Water Pump":
-                WaterPump = new WaterPump(DeviceID, GateNum1, DeviceState, isStatusChanged, DB, RelayQueue);
+                WaterPump = new WaterPump(DeviceID, GateNum1, DeviceState, isStatusChanged, DB);
                 break;
             default:
                 break;

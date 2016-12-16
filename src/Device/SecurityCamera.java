@@ -85,7 +85,7 @@ public final class SecurityCamera implements WebcamImageTransformer {
     @Override
     public BufferedImage transform(BufferedImage Image) {
         try {
-            Thread.sleep(100);
+            Thread.sleep(250);
         } catch (InterruptedException ex) {
             Logger.getLogger(Rotation90.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -129,7 +129,7 @@ public final class SecurityCamera implements WebcamImageTransformer {
                     ImageTime.add(Date);
                     System.out.println("Capture : " + Image.getName());
 
-                    Thread.sleep(50);
+                    Thread.sleep(200);
                 } catch (IOException | InterruptedException ex) {
                     Logger.getLogger(SecurityCamera.class.getName()).log(Level.SEVERE, null, ex);
                 }

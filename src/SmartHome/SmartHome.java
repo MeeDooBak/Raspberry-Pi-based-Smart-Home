@@ -8,6 +8,7 @@ import Rooms.*;
 import Email.*;
 import Sensor.*;
 import Device.*;
+import Logger.*;
 import java.sql.*;
 import java.util.*;
 import RemoteControl.*;
@@ -19,15 +20,12 @@ public class SmartHome {
     private static Connection DB;
     private static Relay RelayQueue;
 
-    private static Mail Mail;
     private static Pins Pins;
     private static Room Room;
     private static User User;
     private static Device Device;
     private static Sensor Sensor;
     private static Task Task;
-    private static WaterLevelUpTask WaterLevelUpTask;
-    private static RemoteControl RemoteControl;
 
     private static ArrayList<RoomList> RoomList;
     private static ArrayList<UserList> UserList;
@@ -52,7 +50,8 @@ public class SmartHome {
                 Logger.getLogger(Device.class.getName()).log(Level.SEVERE, null, ex);
             }
 
-            Mail = new Mail("smart.home.msgs@gmail.com", "PiSmartHome");
+            Mail Mail = new Mail("smart.home.msgs@gmail.com", "PiSmartHome");
+            SLogger SLogger = new SLogger(DB);
 
             PinsList = new ArrayList();
             Pins = new Pins(DB, PinsList);
@@ -79,18 +78,13 @@ public class SmartHome {
             Sensor.Start();
 
             TaskList = new ArrayList();
-            Task = new Task(DB, TaskList, Sensor, Device, Room, User, Mail, Sensor.Get("Smoke Detector"));
+            Task = new Task(DB, TaskList, Sensor, Device, Room, User, Sensor.Get("Smoke Detector"));
             Thread TaskThread = new Thread(Task);
             TaskThread.start();
             TaskThread.join();
 
-            WaterLevelUpTask = new WaterLevelUpTask(Sensor.GetUltrasonic(), Device.GetWaterPump());
-            Thread WaterLevelUpTaskThread = new Thread(WaterLevelUpTask);
-            WaterLevelUpTaskThread.start();
-
-            RemoteControl = new RemoteControl(User, Room, Device);
-            Thread RemoteControlThread = new Thread(RemoteControl);
-            RemoteControlThread.start();
+            WaterLevelUpTask WaterLevelUpTask = new WaterLevelUpTask(Sensor.GetUltrasonic(), Device.GetWaterPump());
+            RemoteControl RemoteControl = new RemoteControl(Device);
 
             new Thread(Status).start();
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | InterruptedException ex) {

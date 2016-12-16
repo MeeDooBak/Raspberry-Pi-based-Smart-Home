@@ -17,11 +17,13 @@ public class Alarm implements Runnable {
     private boolean DeviceState;
     private int AlarmDuration;
     private int AlarmInterval;
+    private Thread AlarmThread;
 
     public Alarm(int DeviceID, PinsList GateNum, boolean DeviceState, boolean isStatusChanged, int AlarmDuration, int AlarmInterval, Connection DB) {
         this.DeviceID = DeviceID;
         this.DB = DB;
         this.Busy = false;
+        this.AlarmThread = new Thread(this);
 
         getPin(GateNum);
         ChangeState(DeviceState, AlarmDuration, AlarmInterval, isStatusChanged);
@@ -45,12 +47,16 @@ public class Alarm implements Runnable {
                 ps2.setInt(2, DeviceID);
                 ps2.executeUpdate();
 
-                if (!Busy) {
-                    this.DeviceState = DeviceState;
-                    this.AlarmDuration = AlarmDuration;
-                    this.AlarmInterval = AlarmInterval;
-                    new Thread(this).start();
+                if (Busy) {
+                    this.AlarmThread.stop();
+                    this.PIN.high();
                 }
+                this.DeviceState = DeviceState;
+                this.AlarmDuration = AlarmDuration;
+                this.AlarmInterval = AlarmInterval;
+                this.AlarmThread = new Thread(this);
+                this.AlarmThread.start();
+
             } catch (SQLException ex) {
                 System.out.println("Alarm " + DeviceID + ", Error In DataBase");
                 Logger.getLogger(Alarm.class.getName()).log(Level.SEVERE, null, ex);
@@ -68,18 +74,22 @@ public class Alarm implements Runnable {
             Busy = true;
             if (DeviceState) {
                 if (AlarmDuration == 0 && AlarmInterval == 0) {
-                    PIN.low();
+                    for (int i = 0; i < 46; i++) {
+                        PIN.low();
+                        Thread.sleep(300);
+                        PIN.high();
+                        Thread.sleep(1000);
+                    }
                 } else {
-                    long currentTime = System.currentTimeMillis();
-                    long end = currentTime + AlarmDuration * 1000;
-                    while (currentTime < end) {
-                        try {
+                    long end = System.currentTimeMillis() + AlarmDuration * 60000;
+                    while (System.currentTimeMillis() < end) {
+                        for (int i = 0; i < 46; i++) {
                             PIN.low();
-                            Thread.sleep(AlarmInterval * 1000);
+                            Thread.sleep(300);
                             PIN.high();
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger(Alarm.class.getName()).log(Level.SEVERE, null, ex);
+                            Thread.sleep(1000);
                         }
+                        Thread.sleep(AlarmInterval * 60000);
                     }
                 }
             } else {
@@ -94,7 +104,7 @@ public class Alarm implements Runnable {
             }
 
             try (PreparedStatement ps = DB.prepareStatement("update device set DeviceState = ? where DeviceID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
-                ps.setBoolean(1, DeviceState);
+                ps.setBoolean(1, false);
                 ps.setInt(2, DeviceID);
                 ps.executeUpdate();
             }
@@ -104,6 +114,8 @@ public class Alarm implements Runnable {
 
         } catch (SQLException ex) {
             System.out.println("Alarm " + DeviceID + ", Error In DataBase");
+            Logger.getLogger(Alarm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
             Logger.getLogger(Alarm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

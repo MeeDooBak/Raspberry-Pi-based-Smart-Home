@@ -4,6 +4,7 @@ import Pins.*;
 import java.sql.*;
 import java.util.logging.*;
 import com.pi4j.io.gpio.*;
+import java.util.Arrays;
 
 public class Ultrasonic implements Runnable {
 
@@ -48,39 +49,48 @@ public class Ultrasonic implements Runnable {
         return MinValue;
     }
 
-    public boolean IsValed() {
-        if (MaxValue > SensorValue && SensorValue > MinValue) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     @Override
     public void run() {
         while (true) {
             try {
-                this.TrigPin.high();
-                Thread.sleep(0, 10000);
-                this.TrigPin.low();
+                SensorValue = -1;
+                int[] Data = new int[5];
 
-                int countdown = 2100;
-                while (this.EchoPin.isLow() && countdown > 0) {
-                    countdown--;
-                }
+                for (int i = 0; i < Data.length; i++) {
+                    this.TrigPin.high();
+                    Thread.sleep(0, 10000);
+                    this.TrigPin.low();
 
-                countdown = 2100;
-                long start = System.nanoTime();
-                while (this.EchoPin.isHigh() && countdown > 0) {
-                    countdown--;
+                    int countdown = 2100;
+                    while (this.EchoPin.isLow() && countdown > 0) {
+                        countdown--;
+                    }
+
+                    if (countdown > 0) {
+
+                        countdown = 2100;
+                        long start = System.nanoTime();
+
+                        while (this.EchoPin.isHigh() && countdown > 0) {
+                            countdown--;
+                        }
+                        long end = System.nanoTime();
+
+                        if (countdown > 0) {
+                            Data[i] = ((int) ((float) Math.ceil((end - start) / 1000.0) * 340.29f / 20000));
+                        }
+                    }
+                    Thread.sleep(50);
                 }
-                SensorValue = (int) Math.ceil(Math.ceil((System.nanoTime() - start) / 1000.0) * 340.29f / (2 * 10000));
+                Arrays.sort(Data);
+                SensorValue = Data[2];
 
                 try (PreparedStatement ps = DB.prepareStatement("update sensor set SensorValue = ? where SensorID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
                     ps.setInt(1, SensorValue);
                     ps.setInt(2, SensorID);
                     ps.executeUpdate();
                 }
+
                 Thread.sleep(500);
             } catch (SQLException | InterruptedException ex) {
                 System.out.println("Ultrasonic " + SensorID + ", Error In DataBase");

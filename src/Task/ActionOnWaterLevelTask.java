@@ -2,6 +2,7 @@ package Task;
 
 import Device.*;
 import Email.*;
+import Logger.*;
 import Rooms.*;
 import Sensor.*;
 import Users.*;
@@ -12,13 +13,12 @@ import java.util.logging.*;
 public class ActionOnWaterLevelTask implements Runnable {
 
     private boolean isDisabled;
-    private boolean isBusy;
+    private boolean isChange;
 
     private final int TaskID;
     private final String TaskName;
     private final UserList User;
     private final RoomList Room;
-    private final Mail Mail;
     private final SensorList SmokeSensor;
     private final boolean repeatDaily;
     private final int AlarmDuration;
@@ -37,7 +37,7 @@ public class ActionOnWaterLevelTask implements Runnable {
     private final int MinValue;
     private final int[][] Levels;
 
-    public ActionOnWaterLevelTask(int TaskID, String TaskName, UserList User, RoomList Room, Mail Mail, SensorList SmokeSensor, boolean isDisabled, boolean repeatDaily,
+    public ActionOnWaterLevelTask(int TaskID, String TaskName, UserList User, RoomList Room, SensorList SmokeSensor, boolean isDisabled, boolean repeatDaily,
             int AlarmDuration, int AlarmInterval, SensorList Sensor, ArrayList<TaskDevicesList> List, int SelectedSensorValue, boolean NotifyByEmail, java.sql.Date ActionDate,
             Time EnableTaskOnTime, Time DisableTaskOnTime, Connection DB) {
 
@@ -45,7 +45,6 @@ public class ActionOnWaterLevelTask implements Runnable {
         this.TaskName = TaskName;
         this.User = User;
         this.Room = Room;
-        this.Mail = Mail;
         this.SmokeSensor = SmokeSensor;
         this.isDisabled = isDisabled;
         this.repeatDaily = repeatDaily;
@@ -60,18 +59,13 @@ public class ActionOnWaterLevelTask implements Runnable {
         this.DisableTaskOnTime = DisableTaskOnTime;
         this.DB = DB;
 
-        this.isBusy = false;
+        this.isChange = true;
 
         this.MaxValue = ((Ultrasonic) Sensor.GetSensor()).getMaxValue();
         this.MinValue = ((Ultrasonic) Sensor.GetSensor()).getMinValue();
-        this.Levels = new int[MaxValue - MinValue + 1][2];
-        int count = 100;
 
-        for (int j = 0, i = this.MinValue; i <= this.MaxValue; i++, j++) {
-            this.Levels[j][0] = i;
-            this.Levels[j][1] = count;
-            count -= 10;
-        }
+        this.Levels = new int[][]{{this.MinValue, 100}, {2, 90}, {3, 80}, {4, 70}, {5, 65}, {6, 60}, {7, 55},
+        {8, 50}, {9, 45}, {10, 40}, {11, 35}, {12, 30}, {13, 25}, {14, 20}, {this.MaxValue, 10}};
 
         this.Thread = new Thread(this);
         this.Thread.start();
@@ -79,6 +73,7 @@ public class ActionOnWaterLevelTask implements Runnable {
 
     public boolean setisDisabled(boolean isDisabled) {
         if (Thread.isAlive()) {
+            Thread.stop();
             this.isDisabled = true;
             for (int i = 0; i < 2000; i++) {
                 if (!Thread.isAlive()) {
@@ -92,87 +87,109 @@ public class ActionOnWaterLevelTask implements Runnable {
     }
 
     public void Execute() {
-        isBusy = true;
-
-        int Percentage = 0;
-        for (int[] Level1 : Levels) {
-            if (Level1[1] == SelectedSensorValue) {
-                Percentage = Level1[0];
-                break;
+        try {
+            int Percentage = 0;
+            for (int[] Level1 : Levels) {
+                if (Level1[1] == SelectedSensorValue) {
+                    Percentage = Level1[0];
+                    break;
+                }
             }
-        }
 
-        if (((Ultrasonic) Sensor.GetSensor()).getSensorValue() == Percentage) {
-            if (((SmokeSensor) SmokeSensor.GetSensor()).getSensorState()) {
-                System.out.println("The Task : " + TaskID + " Has been Deactivate, Because the Gas Sensor is Activated");
-            } else {
-                for (int i = 0; i < List.size(); i++) {
-                    switch (List.get(i).getDeviceID().getDeviceName()) {
-                        case "Roof Lamp":
-                            ((Light) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), true);
-                            break;
-                        case "AC":
-                            ((AC) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), true);
-                            break;
-                        case "Curtains":
-                            try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                                    ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + List.get(i).getDeviceID().getDeviceID())) {
-                                Result.next();
-                                ((Motor) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), Result.getInt("StepperMotorMoves"), true);
-                            } catch (SQLException ex) {
-                                Logger.getLogger(ActionOnWaterLevelTask.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                            break;
-                        case "Alarm":
-                            ((Alarm) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval, true);
-                            break;
-                        case "Garage Door":
-                            try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                                    ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + List.get(i).getDeviceID().getDeviceID())) {
-                                Result.next();
-                                ((Motor) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), Result.getInt("StepperMotorMoves"), true);
-                            } catch (SQLException ex) {
-                                Logger.getLogger(ActionOnWaterLevelTask.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                            break;
-                        default:
-                            break;
+            if (((Ultrasonic) Sensor.GetSensor()).getSensorValue() == Percentage && isChange) {
+                if (((SmokeSensor) SmokeSensor.GetSensor()).getSensorState()) {
+                    System.out.println("The Task : " + TaskID + " Has been Deactivate, Because the Gas Sensor is Activated");
+                } else {
+                    boolean Send = false;
+                    for (int i = 0; i < List.size(); i++) {
+                        switch (List.get(i).getDeviceID().getDeviceName()) {
+                            case "Alarm":
+                                if (((Alarm) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                                    ((Alarm) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval, true);
+                                    Send = true;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    if (List.isEmpty()) {
+                        Send = true;
+                    }
+                    if (NotifyByEmail && Send) {
+                        Mail.SendMail("Water level", TaskName, User, Room, Sensor, List, SelectedSensorValue);
+                    }
+                    if (Send) {
+                        SLogger.Logger("Water level", TaskName, Room, Sensor, List, SelectedSensorValue);
                     }
                 }
-                if (NotifyByEmail) {
-//                    Mail.SendMail("Notification", TaskName, User, Room, List);
-                }
+                isChange = false;
+                Thread.sleep(1000);
+            } else {
+                isChange = true;
+                Thread.sleep(1000);
             }
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ActionOnWaterLevelTask.class.getName()).log(Level.SEVERE, null, ex);
         }
-        isBusy = false;
     }
 
     @Override
     public void run() {
         while (!isDisabled) {
             try {
-                long CurrentTime = new java.util.Date().getTime();
-                if ((EnableTaskOnTime == null && DisableTaskOnTime == null) || (EnableTaskOnTime.getTime() <= CurrentTime && CurrentTime <= DisableTaskOnTime.getTime())) {
-                    if (repeatDaily && !isBusy) {
-                        Execute();
-                    } else {
-                        java.sql.Date CDate = new java.sql.Date(new java.util.Date().getTime());
-                        if (("" + CDate).equals("" + ActionDate) && !isBusy) {
+                if (repeatDaily) {
+                    if (EnableTaskOnTime != null && DisableTaskOnTime != null) {
+                        java.util.Date EnableDate = new java.util.Date(System.currentTimeMillis());
+                        EnableDate.setHours(EnableTaskOnTime.getHours());
+                        EnableDate.setMinutes(EnableTaskOnTime.getMinutes());
+                        EnableDate.setSeconds(EnableTaskOnTime.getSeconds());
+
+                        java.util.Date DisableDate = new java.util.Date(System.currentTimeMillis());
+                        DisableDate.setHours(DisableTaskOnTime.getHours());
+                        DisableDate.setMinutes(DisableTaskOnTime.getMinutes());
+                        DisableDate.setSeconds(DisableTaskOnTime.getSeconds());
+
+                        if (EnableDate.getTime() <= System.currentTimeMillis() && System.currentTimeMillis() <= DisableDate.getTime()) {
                             Execute();
-                        } else if (CDate.after(ActionDate)) {
-                            isDisabled = true;
-                            PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-                            ps.setBoolean(1, isDisabled);
-                            ps.setInt(2, TaskID);
-                            ps.executeUpdate();
                         }
+                    } else {
+                        Execute();
                     }
                 } else {
-                    isDisabled = true;
-                    PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-                    ps.setBoolean(1, isDisabled);
-                    ps.setInt(2, TaskID);
-                    ps.executeUpdate();
+                    java.sql.Date CDate = new java.sql.Date(new java.util.Date().getTime());
+                    if ((CDate + "").equals(ActionDate + "")) {
+                        if (EnableTaskOnTime != null && DisableTaskOnTime != null) {
+                            java.util.Date EnableDate = new java.util.Date(System.currentTimeMillis());
+                            EnableDate.setHours(EnableTaskOnTime.getHours());
+                            EnableDate.setMinutes(EnableTaskOnTime.getMinutes());
+                            EnableDate.setSeconds(EnableTaskOnTime.getSeconds());
+
+                            java.util.Date DisableDate = new java.util.Date(System.currentTimeMillis());
+                            DisableDate.setHours(DisableTaskOnTime.getHours());
+                            DisableDate.setMinutes(DisableTaskOnTime.getMinutes());
+                            DisableDate.setSeconds(DisableTaskOnTime.getSeconds());
+
+                            if (EnableDate.getTime() <= System.currentTimeMillis() && System.currentTimeMillis() <= DisableDate.getTime()) {
+                                Execute();
+
+                            } else if (System.currentTimeMillis() > DisableDate.getTime()) {
+                                isDisabled = true;
+                                PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+                                ps.setBoolean(1, isDisabled);
+                                ps.setInt(2, TaskID);
+                                ps.executeUpdate();
+                            }
+                        } else {
+                            Execute();
+                        }
+                    } else if (CDate.after(ActionDate)) {
+                        isDisabled = true;
+                        PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+                        ps.setBoolean(1, isDisabled);
+                        ps.setInt(2, TaskID);
+                        ps.executeUpdate();
+                    }
                 }
                 Thread.sleep(1000);
             } catch (SQLException | InterruptedException ex) {

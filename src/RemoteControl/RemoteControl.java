@@ -1,222 +1,35 @@
 package RemoteControl;
 
 import Device.*;
-import Rooms.*;
-import Users.*;
 import java.io.*;
-import java.util.*;
+import com.pi4j.io.i2c.*;
+import com.pi4j.io.gpio.*;
 import java.util.logging.*;
+import com.pi4j.gpio.extension.mcp.*;
 
 public class RemoteControl implements Runnable {
 
-    private final User Users;
-    private final Room Room;
     private final Device Devices;
-
+    private GpioPinDigitalOutput PIN;
     private BufferedReader client;
     private String Line;
     private String Previous = "";
-
-    private String UserID = "";
-    private String UserPass = "";
-    private String RoomID = "";
     private String DeviceID = "";
 
-    public RemoteControl(User Users, Room Room, Device Devices) {
-        this.Users = Users;
-        this.Room = Room;
+    public RemoteControl(Device Devices) {
         this.Devices = Devices;
-
         try {
-            client = new BufferedReader(new InputStreamReader((Runtime.getRuntime().exec(new String[]{"/usr/bin/irw"})).getInputStream()));
+            this.client = new BufferedReader(new InputStreamReader((Runtime.getRuntime().exec(new String[]{"/usr/bin/irw"})).getInputStream()));
+            this.PIN = GpioFactory.getInstance().provisionDigitalOutputPin(new MCP23017GpioProvider(I2CBus.BUS_1, 0x25), MCP23017Pin.GPIO_A6, PinState.HIGH);
         } catch (IOException ex) {
             Logger.getLogger(RemoteControl.class.getName()).log(Level.SEVERE, null, ex);
         }
+        new Thread(this).start();
     }
 
-    private UserList getUserID() {
+    private DeviceList getDevice() {
         try {
-            while ((Line = client.readLine()) != null) {
-                if (Line.split(" ")[2].equals(Previous)) {
-                    Previous = "";
-                } else {
-                    Line = Line.split(" ")[2];
-                    Previous = Line;
-                    System.out.println(Line);
-
-                    if (Line.equals("KEY_1")) {
-                        UserID += "1";
-                    } else if (Line.equals("KEY_2")) {
-                        UserID += "2";
-                    } else if (Line.equals("KEY_3")) {
-                        UserID += "3";
-                    } else if (Line.equals("KEY_4")) {
-                        UserID += "4";
-                    } else if (Line.equals("KEY_5")) {
-                        UserID += "5";
-                    } else if (Line.equals("KEY_6")) {
-                        UserID += "6";
-                    } else if (Line.equals("KEY_7")) {
-                        UserID += "7";
-                    } else if (Line.equals("KEY_8")) {
-                        UserID += "8";
-                    } else if (Line.equals("KEY_9")) {
-                        UserID += "9";
-                    } else if (Line.equals("KEY_0")) {
-                        UserID += "0";
-                    } else if (Line.equals("KEY_OK")) {
-                        UserList User = Users.Get(Integer.parseInt(UserID));
-                        if (User != null) {
-                            System.out.println("RemoteControl, User ID : " + User.getUserID());
-                            return User;
-                        } else {
-                            System.out.println("RemoteControl, User ID Not Found.");
-                            return null;
-                        }
-                    } else if (Line.equals("KEY_BACKSPACE")) {
-                        UserID = UserID.substring(0, UserID.length() - 1);
-                    } else if (Line.equals("KEY_BACK")) {
-                        return null;
-                    } else if (Line.equals("KEY_EXIT")) {
-                        return null;
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(RemoteControl.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    private boolean getUserPass(UserList UserClass) {
-        try {
-            while ((Line = client.readLine()) != null) {
-                if (Line.split(" ")[2].equals(Previous)) {
-                    Previous = "";
-                } else {
-                    Line = Line.split(" ")[2];
-                    Previous = Line;
-                    System.out.println(Line);
-
-                    if (Line.equals("KEY_1")) {
-                        UserPass += "1";
-                    } else if (Line.equals("KEY_2")) {
-                        UserPass += "2";
-                    } else if (Line.equals("KEY_3")) {
-                        UserPass += "3";
-                    } else if (Line.equals("KEY_4")) {
-                        UserPass += "4";
-                    } else if (Line.equals("KEY_5")) {
-                        UserPass += "5";
-                    } else if (Line.equals("KEY_6")) {
-                        UserPass += "6";
-                    } else if (Line.equals("KEY_7")) {
-                        UserPass += "7";
-                    } else if (Line.equals("KEY_8")) {
-                        UserPass += "8";
-                    } else if (Line.equals("KEY_9")) {
-                        UserPass += "9";
-                    } else if (Line.equals("KEY_0")) {
-                        UserPass += "0";
-                    } else if (Line.equals("KEY_OK")) {
-                        if (UserClass.getPassword().equals(UserPass)) {
-                            System.out.println("RemoteControl, User Password True.");
-                            return true;
-                        } else {
-                            System.out.println("RemoteControl, User Password false.");
-                            return false;
-                        }
-                    } else if (Line.equals("KEY_BACKSPACE")) {
-                        UserPass = UserPass.substring(0, UserID.length() - 1);
-                    } else if (Line.equals("KEY_BACK")) {
-                        return false;
-                    } else if (Line.equals("KEY_EXIT")) {
-                        return false;
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(RemoteControl.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return false;
-    }
-
-    private RoomList getRoom(UserList UserClass) {
-        try {
-            while ((Line = client.readLine()) != null) {
-                if (Line.split(" ")[2].equals(Previous)) {
-                    Previous = "";
-                } else {
-                    Line = Line.split(" ")[2];
-                    Previous = Line;
-                    System.out.println(Line);
-
-                    if (Line.equals("KEY_1")) {
-                        RoomID += "1";
-                    } else if (Line.equals("KEY_2")) {
-                        RoomID += "2";
-                    } else if (Line.equals("KEY_3")) {
-                        RoomID += "3";
-                    } else if (Line.equals("KEY_4")) {
-                        RoomID += "4";
-                    } else if (Line.equals("KEY_5")) {
-                        RoomID += "5";
-                    } else if (Line.equals("KEY_6")) {
-                        RoomID += "6";
-                    } else if (Line.equals("KEY_7")) {
-                        RoomID += "7";
-                    } else if (Line.equals("KEY_8")) {
-                        RoomID += "8";
-                    } else if (Line.equals("KEY_9")) {
-                        RoomID += "9";
-                    } else if (Line.equals("KEY_0")) {
-                        RoomID += "0";
-                    } else if (Line.equals("KEY_OK")) {
-                        if (UserClass.isIsAdmin()) {
-                            RoomList Room2 = Room.Get(Integer.parseInt(RoomID));
-                            if (Room2 != null) {
-                                System.out.println("RemoteControl, Room ID : " + Room2.getRoomID());
-                                return Room2;
-                            } else {
-                                System.out.println("RemoteControl, Room ID Not Found.");
-                                return null;
-                            }
-                        } else {
-                            RoomList Room2 = null;
-                            ArrayList<RoomList> RoomClass = UserClass.getRoomList();
-                            for (int i = 0; i < RoomClass.size(); i++) {
-                                if (RoomClass.get(i).getRoomID() == Integer.parseInt(RoomID)) {
-                                    Room2 = RoomClass.get(i);
-                                    break;
-                                }
-                            }
-
-                            if (Room2 != null) {
-                                System.out.println("RemoteControl, Room ID : " + Room2.getRoomID());
-                                return Room2;
-                            } else {
-                                System.out.println("RemoteControl, Room ID Not Found.");
-                                return null;
-                            }
-                        }
-
-                    } else if (Line.equals("KEY_BACKSPACE")) {
-                        RoomID = RoomID.substring(0, RoomID.length() - 1);
-                    } else if (Line.equals("KEY_BACK")) {
-                        return null;
-                    } else if (Line.equals("KEY_EXIT")) {
-                        return null;
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(RemoteControl.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    private boolean getDevice(RoomList RoomClass) {
-        try {
+            DeviceID = "";
             while ((Line = client.readLine()) != null) {
                 if (Line.split(" ")[2].equals(Previous)) {
                     Previous = "";
@@ -246,37 +59,30 @@ public class RemoteControl implements Runnable {
                     } else if (Line.equals("KEY_0")) {
                         DeviceID += "0";
                     } else if (Line.equals("KEY_OK")) {
-                        boolean Found = false;
-                        ArrayList<Integer> DeviceClass = RoomClass.getDeviceList();
-                        for (int i = 0; i < DeviceClass.size(); i++) {
-                            if (DeviceClass.get(i) == Integer.parseInt(DeviceID)) {
-                                Found = true;
-                                break;
-                            }
-                        }
-                        if (Found) {
+                        DeviceList DeviceClass = Devices.Get(Integer.parseInt(DeviceID));
+                        if (DeviceClass != null) {
                             System.out.println("RemoteControl, Device ID : " + DeviceID);
-                            return true;
+                            return DeviceClass;
                         } else {
                             System.out.println("RemoteControl, Device ID Not Found.");
-                            return false;
+                            return null;
                         }
                     } else if (Line.equals("KEY_BACKSPACE")) {
                         DeviceID = DeviceID.substring(0, DeviceID.length() - 1);
                     } else if (Line.equals("KEY_BACK")) {
-                        return false;
+                        return null;
                     } else if (Line.equals("KEY_EXIT")) {
-                        return false;
+                        return null;
                     }
                 }
             }
         } catch (IOException ex) {
             Logger.getLogger(RemoteControl.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return false;
+        return null;
     }
 
-    private void Execute(int DeviceID) {
+    private void Execute(DeviceList DeviceClass) {
         try {
             while ((Line = client.readLine()) != null) {
                 if (Line.split(" ")[2].equals(Previous)) {
@@ -286,9 +92,11 @@ public class RemoteControl implements Runnable {
                     Previous = Line;
                     System.out.println(Line);
 
-                    DeviceList DeviceClass = Devices.Get(DeviceID);
-                    if (DeviceClass != null) {
-
+                    if (Line.equals("KEY_BACK")) {
+                        break;
+                    } else if (Line.equals("KEY_EXIT")) {
+                        break;
+                    } else {
                         switch (DeviceClass.getDeviceName()) {
                             case "Roof Lamp":
                                 if (Line.equals("KEY_POWER")) {
@@ -302,9 +110,7 @@ public class RemoteControl implements Runnable {
                                 break;
                             case "Alarm":
                                 if (Line.equals("KEY_POWER")) {
-                                    if (Line.equals("KEY_POWER")) {
-                                        ((Alarm) DeviceClass.GetDevice()).ChangeState(!((Alarm) DeviceClass.GetDevice()).getDeviceState(), 0, 0, true);
-                                    }
+                                    ((Alarm) DeviceClass.GetDevice()).ChangeState(!((Alarm) DeviceClass.GetDevice()).getDeviceState(), 0, 0, true);
                                 }
                                 break;
                             case "Curtains":
@@ -345,30 +151,21 @@ public class RemoteControl implements Runnable {
 
                     if (Line.equals("KEY_HOME")) {
                         System.out.println("Start Remote Control");
-
-                        UserID = "";
-                        UserPass = "";
-                        RoomID = "";
-                        DeviceID = "";
-
-                        UserList UserClass = getUserID();
-                        if (UserClass != null) {
-                            if (getUserPass(UserClass)) {
-                                while (true) {
-                                    RoomList RoomClass = getRoom(UserClass);
-                                    if (RoomClass != null) {
-                                        while (true) {
-                                            if (getDevice(RoomClass)) {
-                                                Execute(Integer.parseInt(DeviceID));
-                                            } else {
-                                                break;
-                                            }
-                                        }
-                                    } else {
-                                        break;
-                                    }
-                                }
-                            }
+                        DeviceList DeviceClass = getDevice();
+                        if (DeviceClass != null) {
+                            PIN.low();
+                            Thread.sleep(100);
+                            PIN.high();
+                            Execute(DeviceClass);
+                        }
+                    } else if (Line.equals("KEY_OPTION")) {
+                        System.out.println("Start Remote Control For Garage Door");
+                        DeviceList DeviceClass = Devices.Get("Garage Door");
+                        if (DeviceClass != null) {
+                            PIN.low();
+                            Thread.sleep(100);
+                            PIN.high();
+                            Execute(DeviceClass);
                         }
                     }
                 }

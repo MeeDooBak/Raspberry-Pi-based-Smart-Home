@@ -15,7 +15,6 @@ public class SensorList {
     private TemperatureSensor TemperatureSensor;
     private LightSensor LightSensor;
     private InfraredSensor InfraredSensor;
-    private Clock Clock;
 
     public SensorList(int SensorID, int RoomID, String SensorName, boolean SensorState, PinsList GateNum1, PinsList GateNum2, int SensorValue, int MaxValue, int MinValue, Connection DB) {
 
@@ -39,9 +38,6 @@ public class SensorList {
             case "Ultrasonic":
                 Ultrasonic = new Ultrasonic(SensorID, GateNum1, GateNum2, SensorValue, MaxValue, MinValue, DB);
                 break;
-            case "Clock":
-                Clock = new Clock(SensorID, SensorState, SensorValue, DB);
-                break;
             case "Infrared Sensor":
                 InfraredSensor = new InfraredSensor(SensorID, SensorState, GateNum1, SensorValue, DB);
                 break;
@@ -62,8 +58,6 @@ public class SensorList {
                 return (T) LightSensor;
             case "Ultrasonic":
                 return (T) Ultrasonic;
-            case "Clock":
-                return (T) Clock;
             case "Infrared Sensor":
                 return (T) InfraredSensor;
             default:
