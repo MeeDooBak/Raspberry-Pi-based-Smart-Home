@@ -3,12 +3,8 @@ package Archives;
 import com.github.sarxos.webcam.*;
 import com.github.sarxos.webcam.ds.ipcam.*;
 import com.github.sarxos.webcam.util.jh.JHFlipFilter;
-import com.xuggle.mediatool.*;
-import com.xuggle.xuggler.*;
-import com.xuggle.xuggler.video.*;
 import java.awt.*;
 import java.awt.image.*;
-import java.io.*;
 import java.net.*;
 import java.util.logging.*;
 
@@ -23,10 +19,6 @@ public class CamCapIP_WithNoF implements WebcamImageTransformer {
     private final Dimension cs = WebcamResolution.VGA.getSize();
     private Webcam webcam;
     private WebcamPanel CamPanel;
-    private IMediaWriter writer;
-    private int count = 0;
-    private Thread Thread2;
-    private boolean StopRecord;
 
     static {
         Webcam.setDriver(new IpCamDriver());
@@ -52,9 +44,7 @@ public class CamCapIP_WithNoF implements WebcamImageTransformer {
             CamPanel.setFitArea(true);
             CamPanel.start();
 
-            Thread.sleep(1000);
-            Record();
-        } catch (MalformedURLException | InterruptedException ex) {
+        } catch (MalformedURLException ex) {
             Logger.getLogger(CamCapIP_WithNoF.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -73,49 +63,6 @@ public class CamCapIP_WithNoF implements WebcamImageTransformer {
             default:
                 return Image;
         }
-    }
-
-    private void Record() {
-
-        File file = new File("output.mp4");
-
-        writer = ToolFactory.makeWriter(file.getName());
-        writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264, ds.height, ds.width);
-
-        long start = System.currentTimeMillis();
-        count = 0;
-        StopRecord = true;
-
-        Thread2 = new Thread() {
-
-            @Override
-            public void run() {
-                while (StopRecord) {
-                    try {
-                        System.out.println("Capture frame " + count);
-
-                        BufferedImage image = ConverterFactory.convertToType(webcam.getImage(), BufferedImage.TYPE_3BYTE_BGR);
-                        IConverter converter = ConverterFactory.createConverter(image, IPixelFormat.Type.YUV420P);
-
-                        IVideoPicture frame = converter.toPicture(image, (System.currentTimeMillis() - start) * 1000);
-                        frame.setKeyFrame(count == 0);
-                        frame.setQuality(0);
-
-                        writer.encodeVideo(0, frame);
-
-                        count++;
-                        if (count == 100) {
-                            writer.close();
-                            Thread2.stop();
-                        }
-                        Thread.sleep(10);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(CamCapIP_WithNoF.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-        };
-        Thread2.start();
     }
 
     public static void main(String args[]) {

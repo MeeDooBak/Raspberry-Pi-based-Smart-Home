@@ -1,6 +1,7 @@
 package RemoteControl;
 
 import Device.*;
+import Logger.*;
 import java.io.*;
 import com.pi4j.io.i2c.*;
 import com.pi4j.io.gpio.*;
@@ -16,28 +17,47 @@ public class RemoteControl implements Runnable {
     private String Previous = "";
     private String DeviceID = "";
 
+    // Get Infromation from Main Class 
     public RemoteControl(Device Devices) {
         this.Devices = Devices;
         try {
+            // using Buffer Reader to get Input Read From Remote Control 
+            // It is use Command Line on Raspberry Pi To Get Data Input
             this.client = new BufferedReader(new InputStreamReader((Runtime.getRuntime().exec(new String[]{"/usr/bin/irw"})).getInputStream()));
+
+            // Provision GPIO pin (# A6) from MCP23017 as an output pin and turn OFF
+            // It is an Alarm To Tell User the Input is Correct
             this.PIN = GpioFactory.getInstance().provisionDigitalOutputPin(new MCP23017GpioProvider(I2CBus.BUS_1, 0x25), MCP23017Pin.GPIO_A6, PinState.HIGH);
         } catch (IOException ex) {
-            Logger.getLogger(RemoteControl.class.getName()).log(Level.SEVERE, null, ex);
+            // This Catch For create custom MCP23017 GPIO provider Error 
+            FileLogger.AddWarning("RemoteControl Class, Error In MCP23017 Gpio Provider\n" + ex);
+            FileLogger.AddWarning("System has been Shutdown");
+            System.exit(0);
         }
+
+        // Start Thread To Get Data From Remote Control 
         new Thread(this).start();
     }
 
+    // This Method To Get The Device ID Number From Remote Control 
     private DeviceList getDevice() {
         try {
+            // Some Verbal TO Store Device ID From Remote Control 
             DeviceID = "";
+
+            // While Loop Get Key Pressing From User
             while ((Line = client.readLine()) != null) {
+                // To Check If the Key Entered Two Time
                 if (Line.split(" ")[2].equals(Previous)) {
                     Previous = "";
                 } else {
+                    // To Split " 0000000000f40bf0 00 KEY_POWER A " 
+                    // To Get Only Key " KEY_POWER " 
                     Line = Line.split(" ")[2];
+                    // Put Key in Previous Verbal to Check if it is Redundant
                     Previous = Line;
-                    System.out.println(Line);
 
+                    // Add Key Number To Device ID Verbal
                     if (Line.equals("KEY_1")) {
                         DeviceID += "1";
                     } else if (Line.equals("KEY_2")) {
@@ -58,72 +78,99 @@ public class RemoteControl implements Runnable {
                         DeviceID += "9";
                     } else if (Line.equals("KEY_0")) {
                         DeviceID += "0";
-                    } else if (Line.equals("KEY_OK")) {
+                    } else if (Line.equals("KEY_OK")) { // if Key is OK New To Check If The Device ID is Correct
                         DeviceList DeviceClass = Devices.Get(Integer.parseInt(DeviceID));
+                        // if the Device is Found 
                         if (DeviceClass != null) {
-                            System.out.println("RemoteControl, Device ID : " + DeviceID);
+                            // just To Print the Result
+                            FileLogger.AddInfo("RemoteControl, Device ID : " + DeviceID);
+                            // Return Device Class
                             return DeviceClass;
-                        } else {
-                            System.out.println("RemoteControl, Device ID Not Found.");
+                        } else { // if the Device not Found
+                            // just To Print the Result
+                            FileLogger.AddInfo("RemoteControl, Device ID Not Found.");
+                            // Return Null
                             return null;
                         }
-                    } else if (Line.equals("KEY_BACKSPACE")) {
+                    } else if (Line.equals("KEY_BACKSPACE")) { // if user Want To Delete last Key He/Her Enter
+                        // Delete Last Number
                         DeviceID = DeviceID.substring(0, DeviceID.length() - 1);
-                    } else if (Line.equals("KEY_BACK")) {
+                    } else if (Line.equals("KEY_BACK")) { // if User Want To Go Back and Enter Other Device ID
                         return null;
-                    } else if (Line.equals("KEY_EXIT")) {
+                    } else if (Line.equals("KEY_EXIT")) { // if User Want To Exit 
                         return null;
                     }
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(RemoteControl.class.getName()).log(Level.SEVERE, null, ex);
+            // This Catch For Error In Getting Key From Remote Control 
+            FileLogger.AddWarning("RemoteControl Class, Error In Getting Key From Remote Control\n" + ex);
         }
         return null;
     }
 
+    // This Method To Control Device
     private void Execute(DeviceList DeviceClass) {
         try {
+            // While Loop Get Key Pressing From User
             while ((Line = client.readLine()) != null) {
+                // To Check If the Key Entered Two Time
                 if (Line.split(" ")[2].equals(Previous)) {
                     Previous = "";
                 } else {
+                    // To Split " 0000000000f40bf0 00 KEY_POWER A " 
+                    // To Get Only Key " KEY_POWER " 
                     Line = Line.split(" ")[2];
+                    // Put Key in Previous Verbal to Check if it is Redundant
                     Previous = Line;
-                    System.out.println(Line);
 
+                    // if User Want To Go Back and Enter Other Device ID
                     if (Line.equals("KEY_BACK")) {
                         break;
-                    } else if (Line.equals("KEY_EXIT")) {
+                    } else if (Line.equals("KEY_EXIT")) {  // if User Want To Exit
                         break;
                     } else {
+                        // Or Check The Device According to its kind
+                        // if it Use Power Key Or UP / Down Key
                         switch (DeviceClass.getDeviceName()) {
                             case "Roof Lamp":
+                                // if it is Light user can Turn On or Off Using Power Key
                                 if (Line.equals("KEY_POWER")) {
+                                    // Change the Device State 
                                     ((Light) DeviceClass.GetDevice()).ChangeState(!((Light) DeviceClass.GetDevice()).getDeviceState(), true);
                                 }
                                 break;
                             case "AC":
+                                // if it is AC user can Turn On or Off Using Power Key
                                 if (Line.equals("KEY_POWER")) {
+                                    // Change the Device State 
                                     ((AC) DeviceClass.GetDevice()).ChangeState(!((AC) DeviceClass.GetDevice()).getDeviceState(), true);
                                 }
                                 break;
                             case "Alarm":
+                                // if it is Alarm user can Turn On or Off Using Power Key
                                 if (Line.equals("KEY_POWER")) {
+                                    // Change the Device State 
                                     ((Alarm) DeviceClass.GetDevice()).ChangeState(!((Alarm) DeviceClass.GetDevice()).getDeviceState(), 0, 0, true);
                                 }
                                 break;
                             case "Curtains":
+                                // if it is Curtains user can Turn On using UP Key or Off Using Down Key
                                 if (Line.equals("KEY_UP")) {
+                                    // Change the Device State 
                                     ((Motor) DeviceClass.GetDevice()).ChangeState(true, 5499, true);
                                 } else if (Line.equals("KEY_DOWN")) {
+                                    // Change the Device State 
                                     ((Motor) DeviceClass.GetDevice()).ChangeState(false, 0, true);
                                 }
                                 break;
                             case "Garage Door":
+                                // if it is Curtains user can Turn On using UP Key or Off Using Down Key
                                 if (Line.equals("KEY_UP")) {
+                                    // Change the Device State 
                                     ((Motor) DeviceClass.GetDevice()).ChangeState(true, 0, true);
                                 } else if (Line.equals("KEY_DOWN")) {
+                                    // Change the Device State 
                                     ((Motor) DeviceClass.GetDevice()).ChangeState(false, 5599, true);
                                 }
                                 break;
@@ -134,45 +181,66 @@ public class RemoteControl implements Runnable {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(RemoteControl.class.getName()).log(Level.SEVERE, null, ex);
+            // This Catch For Error In Getting Key From Remote Control 
+            FileLogger.AddWarning("RemoteControl Class, Error In Getting Key From Remote Control\n" + ex);
         }
     }
 
+    // The Thread
     @Override
     public void run() {
         try {
+            // While Loop Get Key Pressing From User
             while ((Line = client.readLine()) != null) {
+                // To Check If the Key Entered Two Time
                 if (Line.split(" ")[2].equals(Previous)) {
                     Previous = "";
                 } else {
+                    // To Split " 0000000000f40bf0 00 KEY_POWER A " 
+                    // To Get Only Key " KEY_POWER " 
                     Line = Line.split(" ")[2];
+                    // Put Key in Previous Verbal to Check if it is Redundant
                     Previous = Line;
-                    System.out.println(Line);
 
+                    // if User Want To Start Enter Device ID Mast Enter Home Key
                     if (Line.equals("KEY_HOME")) {
-                        System.out.println("Start Remote Control");
+                        // just To Print the Result
+                        FileLogger.AddInfo("RemoteControl, Start Remote Control.");
+                        // The Method To Enter Device ID
                         DeviceList DeviceClass = getDevice();
+                        // Check The Return Date 
+                        // if Method Found the Device
                         if (DeviceClass != null) {
+                            // Alarm To Tell User the Input is Correct
                             PIN.low();
                             Thread.sleep(100);
                             PIN.high();
+                            // the Method To Control Device
                             Execute(DeviceClass);
                         }
-                    } else if (Line.equals("KEY_OPTION")) {
-                        System.out.println("Start Remote Control For Garage Door");
+                    } else if (Line.equals("KEY_OPTION")) {  // Dirct Access For Garage Door
+                        // just To Print the Result
+                        FileLogger.AddInfo("RemoteControl, Start Remote Control For Garage Door.");
+                        // Get Garage Door class From Devices Class
                         DeviceList DeviceClass = Devices.Get("Garage Door");
+                        // if Method Found the Device
                         if (DeviceClass != null) {
+                            // Alarm To Tell User the Input is Correct
                             PIN.low();
                             Thread.sleep(100);
                             PIN.high();
+                            // the Method To Control Device
                             Execute(DeviceClass);
                         }
                     }
                 }
+
+                // To Sleep For 2 Second
                 Thread.sleep(2000);
             }
         } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(RemoteControl.class.getName()).log(Level.SEVERE, null, ex);
+            // This Catch For Error In Getting Key From Remote Control 
+            FileLogger.AddWarning("RemoteControl Class, Error In Getting Key From Remote Control\n" + ex);
         }
     }
 }

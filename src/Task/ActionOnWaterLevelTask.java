@@ -8,13 +8,11 @@ import Sensor.*;
 import Users.*;
 import java.sql.*;
 import java.util.*;
-import java.util.logging.*;
 
 public class ActionOnWaterLevelTask implements Runnable {
 
     private boolean isDisabled;
-    private boolean isChange;
-
+    private int Percentage;
     private final int TaskID;
     private final String TaskName;
     private final UserList User;
@@ -32,11 +30,11 @@ public class ActionOnWaterLevelTask implements Runnable {
     private final Time DisableTaskOnTime;
     private final Connection DB;
     private final Thread Thread;
-
     private final int MaxValue;
     private final int MinValue;
     private final int[][] Levels;
 
+    // Get Device Information from Database
     public ActionOnWaterLevelTask(int TaskID, String TaskName, UserList User, RoomList Room, SensorList SmokeSensor, boolean isDisabled, boolean repeatDaily,
             int AlarmDuration, int AlarmInterval, SensorList Sensor, ArrayList<TaskDevicesList> List, int SelectedSensorValue, boolean NotifyByEmail, java.sql.Date ActionDate,
             Time EnableTaskOnTime, Time DisableTaskOnTime, Connection DB) {
@@ -59,141 +57,214 @@ public class ActionOnWaterLevelTask implements Runnable {
         this.DisableTaskOnTime = DisableTaskOnTime;
         this.DB = DB;
 
-        this.isChange = true;
-
+        // Get The Maximum Value For The Sensor
         this.MaxValue = ((Ultrasonic) Sensor.GetSensor()).getMaxValue();
+        // Get The Minimum Value For The Sensor
         this.MinValue = ((Ultrasonic) Sensor.GetSensor()).getMinValue();
 
-        this.Levels = new int[][]{{this.MinValue, 100}, {2, 90}, {3, 80}, {4, 70}, {5, 65}, {6, 60}, {7, 55},
-        {8, 50}, {9, 45}, {10, 40}, {11, 35}, {12, 30}, {13, 25}, {14, 20}, {this.MaxValue, 10}};
+        // Set The Percentage Level For The Water
+        this.Levels = new int[][]{{this.MinValue, 100}, {7, 90}, {8, 80}, {9, 70}, {10, 60}, {11, 50}, {12, 40}, {13, 30}, {14, 20}, {this.MaxValue, 10}};
 
+        // Get The Value From User Information Percentage
+        for (int[] Level1 : Levels) {
+            if (Level1[1] == SelectedSensorValue) {
+                this.Percentage = Level1[0];
+                break;
+            }
+        }
+
+        // Start Thread To Get Sensor State and Execute it in Devices
+        // According to User Information
         this.Thread = new Thread(this);
         this.Thread.start();
     }
 
+    // Disabled The Thread To Stop it and Deleting The Task To Set the New Information
     public boolean setisDisabled(boolean isDisabled) {
+        // Check if Thread is Alive To Stop It
         if (Thread.isAlive()) {
+            // Stop The Thread
             Thread.stop();
+            // Set It Disabled
             this.isDisabled = true;
+
+            // Loop Untll The Thread is Stop And Return True
             for (int i = 0; i < 2000; i++) {
                 if (!Thread.isAlive()) {
                     return true;
                 }
             }
             return false;
-        } else {
+        } else { // If The Thread is Ready Stop
+            // Return True
             return true;
         }
     }
 
+    // This Method To Execute Changing in The Device And Send Email To User If He / Her Want
     public void Execute() {
         try {
-            int Percentage = 0;
-            for (int[] Level1 : Levels) {
-                if (Level1[1] == SelectedSensorValue) {
-                    Percentage = Level1[0];
-                    break;
-                }
-            }
+            // Get The Sensor State Value
+            int Level = ((Ultrasonic) Sensor.GetSensor()).getSensorValue();
 
-            if (((Ultrasonic) Sensor.GetSensor()).getSensorValue() == Percentage && isChange) {
-                if (((SmokeSensor) SmokeSensor.GetSensor()).getSensorState()) {
-                    System.out.println("The Task : " + TaskID + " Has been Deactivate, Because the Gas Sensor is Activated");
-                } else {
-                    boolean Send = false;
-                    for (int i = 0; i < List.size(); i++) {
-                        switch (List.get(i).getDeviceID().getDeviceName()) {
-                            case "Alarm":
-                                if (((Alarm) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
-                                    ((Alarm) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval, true);
-                                    Send = true;
-                                }
-                                break;
-                            default:
-                                break;
+            // Check if Sensor State Value is Greater Than -1 Or Ignore it
+            if (Level != -1) {
+
+                // Check if the Sensor State Value is Equal To User Information Percentage
+                if (Level == Percentage) {
+                    // Before Execute Changing To Device Let Check The Smoking Sensor
+                    // If it is True Do not Execute Changing To Device
+                    // For Safety
+                    if (((SmokeSensor) SmokeSensor.GetSensor()).getSensorState()) {
+                        // just To Print the Result of Smoking Sensor State
+                        FileLogger.AddWarning("The Task : " + TaskID + " Has been Deactivate, Because the Gas Sensor is Activated");
+
+                    } else { // If The Smoking Sensor Not Activate Execute Changing To Device
+
+                        // Loop For All Device Select From User For This Task
+                        for (int i = 0; i < List.size(); i++) {
+
+                            // Get The Device Name To Change it State, According to its kind
+                            switch (List.get(i).getDeviceID().getDeviceName()) {
+                                case "Alarm":
+                                    // Check if The Device State is Not Equl To User Information State To Change it
+                                    if (((Alarm) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                                        // Change the Device State According to User Information
+                                        ((Alarm) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval, true);
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
-                    }
-                    if (List.isEmpty()) {
-                        Send = true;
-                    }
-                    if (NotifyByEmail && Send) {
-                        Mail.SendMail("Water level", TaskName, User, Room, Sensor, List, SelectedSensorValue);
-                    }
-                    if (Send) {
+
+                        // If User Want To Send Email When This Task Execute
+                        if (NotifyByEmail) {
+                            Mail.SendMail("Water level", TaskName, User, Room, Sensor, List, SelectedSensorValue);
+                        }
+
+                        // To Write It In The Log DataBase
                         SLogger.Logger("Water level", TaskName, Room, Sensor, List, SelectedSensorValue);
                     }
+
+                    // Loop Until The Sensor State Value Change
+                    while (true) {
+                        // Get The Sensor State Value
+                        Level = ((Ultrasonic) Sensor.GetSensor()).getSensorValue();
+
+                        // Check if Sensor State Value is Greater Than -1 and is Not Equal To User Information Percentage
+                        // To Break From The Loop
+                        if (Level != -1 && Level != Percentage) {
+                            break;
+                        }
+
+                        // To Sleep For 1 Second
+                        Thread.sleep(1000);
+                    }
                 }
-                isChange = false;
-                Thread.sleep(1000);
-            } else {
-                isChange = true;
-                Thread.sleep(1000);
             }
         } catch (InterruptedException ex) {
-            Logger.getLogger(ActionOnWaterLevelTask.class.getName()).log(Level.SEVERE, null, ex);
+            // This Catch For Thread Sleep
+            FileLogger.AddWarning("ActionOnWaterLevelTask " + TaskID + ", Error In Thread Sleep\n" + ex);
         }
     }
 
+    // The TAsk Thread
     @Override
     public void run() {
+        // While Until it Disabled
         while (!isDisabled) {
             try {
+                // Check if the Task Repeat Daily
                 if (repeatDaily) {
+                    // Check if The Task Will Be Work From Time To Time Not 24 Hour
                     if (EnableTaskOnTime != null && DisableTaskOnTime != null) {
+
+                        // Set Starting Time For Start The Task
                         java.util.Date EnableDate = new java.util.Date(System.currentTimeMillis());
                         EnableDate.setHours(EnableTaskOnTime.getHours());
                         EnableDate.setMinutes(EnableTaskOnTime.getMinutes());
                         EnableDate.setSeconds(EnableTaskOnTime.getSeconds());
 
+                        // Set Ending Time For End The Task
                         java.util.Date DisableDate = new java.util.Date(System.currentTimeMillis());
                         DisableDate.setHours(DisableTaskOnTime.getHours());
                         DisableDate.setMinutes(DisableTaskOnTime.getMinutes());
                         DisableDate.setSeconds(DisableTaskOnTime.getSeconds());
 
+                        // Check if The Current Time is Between Starting and Ending Time
+                        // To Execute the Changing
                         if (EnableDate.getTime() <= System.currentTimeMillis() && System.currentTimeMillis() <= DisableDate.getTime()) {
+                            // Just Execute the Changing
                             Execute();
                         }
-                    } else {
+                    } else { // if the Task Will Be Work 24 Hour
+                        // Just Execute the Changing
                         Execute();
                     }
-                } else {
+                } else { // If the Task Not Repeat Daily it is For Specific Day
+                    // Set The Task Day
                     java.sql.Date CDate = new java.sql.Date(new java.util.Date().getTime());
+                    // Check If The Task Day is Now
                     if ((CDate + "").equals(ActionDate + "")) {
+
+                        // Check if The Task Will Be Work From Time To Time Not 24 Hour
                         if (EnableTaskOnTime != null && DisableTaskOnTime != null) {
+
+                            // Set Starting Time For Start The Task
                             java.util.Date EnableDate = new java.util.Date(System.currentTimeMillis());
                             EnableDate.setHours(EnableTaskOnTime.getHours());
                             EnableDate.setMinutes(EnableTaskOnTime.getMinutes());
                             EnableDate.setSeconds(EnableTaskOnTime.getSeconds());
 
+                            // Set Ending Time For End The Task
                             java.util.Date DisableDate = new java.util.Date(System.currentTimeMillis());
                             DisableDate.setHours(DisableTaskOnTime.getHours());
                             DisableDate.setMinutes(DisableTaskOnTime.getMinutes());
                             DisableDate.setSeconds(DisableTaskOnTime.getSeconds());
 
+                            // Check if The Current Time is Between Starting and Ending Time
+                            // To Execute the Changing
                             if (EnableDate.getTime() <= System.currentTimeMillis() && System.currentTimeMillis() <= DisableDate.getTime()) {
                                 Execute();
 
-                            } else if (System.currentTimeMillis() > DisableDate.getTime()) {
+                            } else if (System.currentTimeMillis() > DisableDate.getTime()) { // If The Current Time is Greater Than Ending Time The Task Will Be Disabled
+                                // Disable The Task
                                 isDisabled = true;
+
+                                // Set In The DataBase This Task Has Been Disabled
                                 PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
                                 ps.setBoolean(1, isDisabled);
                                 ps.setInt(2, TaskID);
                                 ps.executeUpdate();
+
+                                // Write It In The Log DataBase
+                                SLogger.Logger("DisabledTask", TaskName, Room, Sensor, List, -1);
                             }
-                        } else {
+                        } else { // if the Task Will Be Work 24 Hour
+                            // Just Execute the Changing
                             Execute();
                         }
-                    } else if (CDate.after(ActionDate)) {
+                    } else if (CDate.after(ActionDate)) { // If The Task Day Has Gone The Task Will Be Disabled
+                        // Disable The Task
                         isDisabled = true;
+
+                        // Set In The DataBase This Task Has Been Disabled
                         PreparedStatement ps = DB.prepareStatement("update task set isDisabled = ? where TaskID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
                         ps.setBoolean(1, isDisabled);
                         ps.setInt(2, TaskID);
                         ps.executeUpdate();
+
+                        // Write It In The Log DataBase
+                        SLogger.Logger("DisabledTask", TaskName, Room, Sensor, List, -1);
                     }
                 }
+
+                // To Sleep For 1 Second
                 Thread.sleep(1000);
             } catch (SQLException | InterruptedException ex) {
-                Logger.getLogger(ActionOnWaterLevelTask.class.getName()).log(Level.SEVERE, null, ex);
+                // This Catch For DataBase Error
+                FileLogger.AddWarning("ActionOnWaterLevelTask " + TaskID + ", Error In DataBase\n" + ex);
             }
         }
     }

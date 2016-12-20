@@ -18,14 +18,17 @@ public class DeviceList {
     private SecurityCamera SecurityCamera;
     private WaterPump WaterPump;
 
+    // Get Device Information from Database
     public DeviceList(int DeviceID, RoomList Room, String DeviceName, boolean DeviceState, PinsList GateNum1, PinsList GateNum2, PinsList GateNum3, PinsList GateNum4,
             boolean isStatusChanged, int StepperMotorMoves, int AlarmDuration, int AlarmInterval, Connection DB, Relay RelayQueue, int MaxValue, Timestamp lastStatusChange) {
 
         this.DeviceID = DeviceID;
-        this.Room = Room;
-        Room.getDeviceList().add(DeviceID);
         this.DeviceName = DeviceName;
+        this.Room = Room;
+        // add This Device For Given Room
+        Room.getDeviceList().add(DeviceID);
 
+        // Create Device Class According to its kind
         switch (DeviceName) {
             case "Roof Lamp":
                 Light = new Light(DeviceID, GateNum1, DeviceState, isStatusChanged, DB, RelayQueue);
@@ -53,6 +56,7 @@ public class DeviceList {
         }
     }
 
+    // Get Device Class According to its kind
     public <T> T GetDevice() {
         switch (DeviceName) {
             case "Roof Lamp":
@@ -74,14 +78,17 @@ public class DeviceList {
         }
     }
 
+    // Get Device ID
     public int getDeviceID() {
         return DeviceID;
     }
 
+    // Get Device Room
     public RoomList getRoom() {
         return Room;
     }
 
+    // Get Device Name
     public String getDeviceName() {
         return DeviceName;
     }

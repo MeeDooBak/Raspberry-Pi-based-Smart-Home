@@ -1,17 +1,10 @@
 package Device;
 
 import Pins.*;
-import Relay.*;
-import com.pi4j.gpio.extension.mcp.MCP23017GpioProvider;
-import com.pi4j.gpio.extension.mcp.MCP23017Pin;
-import com.pi4j.io.gpio.GpioController;
-import com.pi4j.io.gpio.GpioFactory;
-import com.pi4j.io.gpio.GpioPinDigitalOutput;
-import com.pi4j.io.gpio.PinState;
-import com.pi4j.io.i2c.I2CBus;
-import java.io.IOException;
+import Logger.*;
 import java.sql.*;
-import java.util.logging.*;
+import com.pi4j.io.gpio.*;
+import com.pi4j.gpio.extension.mcp.*;
 
 public class WaterPump implements Runnable {
 
@@ -21,85 +14,102 @@ public class WaterPump implements Runnable {
     private boolean DeviceState;
     private GpioPinDigitalOutput PIN;
 
+    // Get Device Information from Database
     public WaterPump(int DeviceID, PinsList GateNum, boolean DeviceState, boolean isStatusChanged, Connection DB) {
         this.DeviceID = DeviceID;
         this.DB = DB;
         this.Busy = false;
+
+        // To Get Device Pin From Raspberry PI
         this.getPin(GateNum);
 
+        // To Make the Change For the First Time
         this.ChangeState(DeviceState, isStatusChanged, "UP");
     }
 
+    // Get Device Pin From Raspberry PI
     private void getPin(PinsList GateNum) {
-        try {
-            GpioController GPIO = GpioFactory.getInstance();
-            MCP23017GpioProvider Provider = new MCP23017GpioProvider(I2CBus.BUS_1, 0x25);
-            PIN = GPIO.provisionDigitalOutputPin(Provider, MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1))], PinState.HIGH);
-        } catch (IOException ex) {
-            System.out.println("Alarm " + DeviceID + ", Error In Getting Pin");
-            Logger.getLogger(Alarm.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        // Provision GPIO pin (# from Database) from MCP23017 as an output pin and turn OFF
+        PIN = GateNum.getGPIO().provisionDigitalOutputPin(GateNum.getMCP23017(), MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1))], PinState.HIGH);
     }
 
+    // To Change Device State
     public final void ChangeState(boolean DeviceState, boolean isStatusChanged, String UP_DOWN) {
+        // To Check if the Current Device State is not equl The New Device State
+        // and to check is it Change from DataBase
+        // if it is equl just ignore it
         if (this.DeviceState != DeviceState && isStatusChanged) {
+            // To tell Database that java change the Device State 
             try (PreparedStatement ps2 = DB.prepareStatement("update device set isStatusChanged = ? where DeviceID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
                 ps2.setBoolean(1, false);
                 ps2.setInt(2, DeviceID);
                 ps2.executeUpdate();
 
+                // To Check If the Thread is not working 
+                // If it is Working just ignore it.
                 if (!Busy) {
+                    // just to Get the New Date and Start The Thread
                     this.DeviceState = DeviceState;
 
+                    // just To Print the Information
                     if (DeviceState) {
-                        System.out.println("Fill in The Upper Water Tank");
+                        FileLogger.AddInfo("Fill in The Upper Water Tank");
                     } else {
                         if (UP_DOWN.equals("UP")) {
-                            System.out.println("The Upper Water Tank is Full");
+                            FileLogger.AddInfo("The Upper Water Tank is Full");
                         } else if (UP_DOWN.equals("DOWN")) {
-                            System.out.println("The Lower Water Tank is Empty");
+                            FileLogger.AddInfo("The Lower Water Tank is Empty");
                         } else {
-                            System.out.println("WaterPump No Massege");
+                            FileLogger.AddInfo("WaterPump No Massege");
                         }
                     }
                     new Thread(this).start();
-                } else {
-                    System.out.println("WaterPump Busy");
                 }
             } catch (SQLException ex) {
-                System.out.println("WaterPump " + DeviceID + ", Error In DataBase");
-                Logger.getLogger(WaterPump.class.getName()).log(Level.SEVERE, null, ex);
+                // This Catch For DataBase Error
+                FileLogger.AddWarning("WaterPump " + DeviceID + ", Error In DataBase\n" + ex);
             }
         }
     }
 
+    // The Thread 
     @Override
     public void run() {
         try {
+            // The Tell The Method the Thread is Busy.
             Busy = true;
+
+            // Here to Change the Device state to ON
             if (DeviceState) {
                 PIN.low();
-            } else {
+            } else { // Here to Change the Device state to OFF
                 PIN.high();
             }
 
+            // To Set the New Information in The Database
+            // To set the New Time
             try (PreparedStatement ps = DB.prepareStatement("update device set lastStatusChange = ? where DeviceID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
-                Timestamp NewStatusChange = new Timestamp(new java.util.Date().getTime());
-                ps.setTimestamp(1, NewStatusChange);
+                ps.setTimestamp(1, new Timestamp(new java.util.Date().getTime()));
                 ps.setInt(2, DeviceID);
                 ps.executeUpdate();
             }
+
+            // To set the New State 
             try (PreparedStatement ps = DB.prepareStatement("update device set DeviceState = ? where DeviceID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
                 ps.setBoolean(1, DeviceState);
                 ps.setInt(2, DeviceID);
                 ps.executeUpdate();
             }
 
+            // The Tell The Method the Thread is not Busy.
             Busy = false;
-            System.out.println("WaterPump " + DeviceID + ", State Change To " + DeviceState);
+
+            // just To Print the Result
+            FileLogger.AddInfo("WaterPump " + DeviceID + ", State Change To " + DeviceState);
+
         } catch (SQLException ex) {
-            System.out.println("WaterPump " + DeviceID + ", Error In DataBase");
-            Logger.getLogger(WaterPump.class.getName()).log(Level.SEVERE, null, ex);
+            // This Catch For DataBase Error 
+            FileLogger.AddWarning("WaterPump " + DeviceID + ", Error In DataBase\n" + ex);
         }
     }
 }

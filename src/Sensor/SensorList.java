@@ -8,7 +8,6 @@ public class SensorList {
     private final int SensorID;
     private final int RoomID;
     private final String SensorName;
-
     private MotionSensor MotionSensor;
     private Ultrasonic Ultrasonic;
     private SmokeSensor SmokeDetector;
@@ -16,12 +15,14 @@ public class SensorList {
     private LightSensor LightSensor;
     private InfraredSensor InfraredSensor;
 
+    // Get Device Information from Database
     public SensorList(int SensorID, int RoomID, String SensorName, boolean SensorState, PinsList GateNum1, PinsList GateNum2, int SensorValue, int MaxValue, int MinValue, Connection DB) {
 
         this.SensorID = SensorID;
         this.RoomID = RoomID;
         this.SensorName = SensorName;
 
+        // Create Sensor Class According to its kind
         switch (SensorName) {
             case "Motion Sensor":
                 MotionSensor = new MotionSensor(SensorID, SensorState, GateNum1, SensorValue, DB);
@@ -35,7 +36,7 @@ public class SensorList {
             case "Light Sensor":
                 LightSensor = new LightSensor(SensorID, SensorState, GateNum1, SensorValue, DB);
                 break;
-            case "Ultrasonic":
+            case "Ultrasonic Sensor":
                 Ultrasonic = new Ultrasonic(SensorID, GateNum1, GateNum2, SensorValue, MaxValue, MinValue, DB);
                 break;
             case "Infrared Sensor":
@@ -46,6 +47,7 @@ public class SensorList {
         }
     }
 
+    // Get Sensor Class According to its kind
     public final <T> T GetSensor() {
         switch (SensorName) {
             case "Motion Sensor":
@@ -56,7 +58,7 @@ public class SensorList {
                 return (T) TemperatureSensor;
             case "Light Sensor":
                 return (T) LightSensor;
-            case "Ultrasonic":
+            case "Ultrasonic Sensor":
                 return (T) Ultrasonic;
             case "Infrared Sensor":
                 return (T) InfraredSensor;
@@ -65,14 +67,17 @@ public class SensorList {
         }
     }
 
+    // Get Sensor ID
     public int getSensorID() {
         return SensorID;
     }
 
+    // Get Sensor Room ID
     public int getRoomID() {
         return RoomID;
     }
 
+    // Get Sensor Name
     public String getSensorName() {
         return SensorName;
     }

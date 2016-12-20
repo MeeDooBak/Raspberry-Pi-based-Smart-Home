@@ -62,18 +62,24 @@ public class CamCapIP extends javax.swing.JFrame implements WebcamImageTransform
 
     @Override
     public BufferedImage transform(BufferedImage Image) {
-        switch (RotationBy) {
-            case 0:
-                return Image;
-            case 90:
-                return FLIP_90.filter(Image, null);
-            case 180:
-                return FLIP_180.filter(Image, null);
-            case 270:
-                return FLIP_270.filter(Image, null);
-            default:
-                return Image;
+        try {
+            Thread.sleep(100);
+            switch (RotationBy) {
+                case 0:
+                    return Image;
+                case 90:
+                    return FLIP_90.filter(Image, null);
+                case 180:
+                    return FLIP_180.filter(Image, null);
+                case 270:
+                    return FLIP_270.filter(Image, null);
+                default:
+                    return Image;
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CamCapIP.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return Image;
     }
 
     @SuppressWarnings("unchecked")

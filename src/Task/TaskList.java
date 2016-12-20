@@ -1,6 +1,5 @@
 package Task;
 
-import Email.*;
 import Rooms.*;
 import Sensor.*;
 import Users.*;
@@ -12,7 +11,6 @@ public final class TaskList {
     private final int TaskID;
     private final SensorList Sensor;
     private final int SelectedSensorValue;
-
     private ActionOnDetectionTask ActionOnDetection;
     private ActionAfterNoDetectionTask ActionAfterNoDetection;
     private SmokeTask SmokeDetector;
@@ -22,6 +20,7 @@ public final class TaskList {
     private ActionOnWaterLevelTask ActionOnWaterLevel;
     private InfraredTask InfraredTask;
 
+    // Get Sensor Information from Database
     public TaskList(int TaskID, String TaskName, UserList User, RoomList Room, SensorList SmokeSensor, boolean isDisabled, boolean repeatDaily,
             int AlarmDuration, int AlarmInterval, SensorList Sensor, ArrayList<TaskDevicesList> List, int SelectedSensorValue, boolean NotifyByEmail,
             Date ActionDate, Time ActionTime, Time EnableTaskOnTime, Time DisableTaskOnTime, Connection DB) {
@@ -30,6 +29,7 @@ public final class TaskList {
         this.Sensor = Sensor;
         this.SelectedSensorValue = SelectedSensorValue;
 
+        // Create Task Class According to its kind Using Sensor Name
         switch (Sensor.getSensorName()) {
             case "Motion Sensor":
                 if (SelectedSensorValue == -1) {
@@ -66,12 +66,14 @@ public final class TaskList {
                         EnableTaskOnTime, DisableTaskOnTime, DB);
                 break;
             default:
-                System.out.println("There is No Sensor");
                 break;
         }
     }
 
+    // This Method To Stop The Task Thread And Delete The Task
     public boolean DeleteTask() {
+        // Delete The Task Class According to its kind Using Sensor Name 
+        // And Return The True if it is Securely Delete it
         switch (Sensor.getSensorName()) {
             case "Motion Sensor":
                 if (SelectedSensorValue == 0) {
@@ -98,6 +100,7 @@ public final class TaskList {
         }
     }
 
+    // Get The Task ID
     public int getTaskID() {
         return TaskID;
     }

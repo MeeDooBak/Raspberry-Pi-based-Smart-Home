@@ -1,24 +1,28 @@
 package Device;
 
 import Pins.*;
-import Archives.Rotation90;
-import com.github.sarxos.webcam.*;
-import com.github.sarxos.webcam.ds.ipcam.*;
-import com.github.sarxos.webcam.util.jh.*;
-import com.xuggle.mediatool.*;
-import com.xuggle.xuggler.*;
-import com.xuggle.xuggler.video.*;
-import java.awt.*;
-import java.awt.image.*;
+import Logger.*;
 import java.io.*;
+import java.awt.*;
 import java.net.*;
 import java.sql.*;
 import java.text.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.*;
-import javax.imageio.*;
 import javax.swing.*;
+import java.util.List;
+import javax.imageio.*;
+import java.awt.image.*;
+import java.util.logging.*;
+import Archives.Rotation90;
+import java.util.ArrayList;
+import com.xuggle.xuggler.*;
+import com.xuggle.mediatool.*;
+import com.github.sarxos.webcam.*;
+import com.xuggle.xuggler.video.*;
+import com.github.sarxos.webcam.util.jh.*;
+import com.github.sarxos.webcam.ds.ipcam.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public final class SecurityCamera implements WebcamImageTransformer {
 
@@ -42,53 +46,74 @@ public final class SecurityCamera implements WebcamImageTransformer {
     private IMediaWriter writer;
     private long count = 0;
 
+    // register custom IP Camera driver
     static {
         Webcam.setDriver(new IpCamDriver());
     }
 
+    // Get Device Information from Database
     public SecurityCamera(int DeviceID, PinsList GateNum, Connection DB) {
         this.DB = DB;
         this.DeviceID = DeviceID;
 
+        // Get Camera Information From Datebase
         try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
                 ResultSet Result = Statement.executeQuery("select * from ip_address where ID = " + GateNum.getPI4Jnumber())) {
             Result.next();
 
+            // Get Camera IP Address and it Rotation
             String IP = Result.getString("IPaddress");
             this.RotationBy = Result.getInt("RotationBy");
 
+            // register IP camera device
             IpCamDeviceRegistry.register(new IpCamDevice(("SecurityCamera " + DeviceID), "http://admin:@" + IP + "/videostream.cgi", IpCamMode.PUSH));
 
-        } catch (SQLException | MalformedURLException ex) {
-            Logger.getLogger(SecurityCamera.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            // This Catch For DataBase Error 
+            FileLogger.AddWarning("SecurityCamera " + DeviceID + ", Error In DataBase\n" + ex);
+        } catch (MalformedURLException ex) {
+            // This Catch For register IP camera device
+            FileLogger.AddWarning("SecurityCamera " + DeviceID + ", Error In register IP camera device\n" + ex);
         }
     }
 
+    // Start to Get Camera Information from Webcam Class
     public void Start() {
-
+        // get all Camera registered in Webcam Class
         List<Webcam> wCam = Webcam.getWebcams();
         for (int i = 0; i < wCam.size(); i++) {
+            // Search for a specific camera
             if (wCam.get(i).getName().equals("SecurityCamera " + DeviceID)) {
+                // save this camera in this class
                 WebCam = wCam.get(i);
                 break;
             }
         }
+        // set the Size for the Camera 
         WebCam.setViewSize(CS);
+
+        // set the Rotation for the camera 
         WebCam.setImageTransformer((WebcamImageTransformer) this);
 
+        // create camera Panel With Size and start get image for the Camera
         WebCamPanel = new WebcamPanel(WebCam, DS, false);
         WebCamPanel.setFillArea(true);
         WebCamPanel.setBorder(BorderFactory.createEmptyBorder());
         WebCamPanel.start();
     }
 
+    // The Rotation Thread 
     @Override
     public BufferedImage transform(BufferedImage Image) {
         try {
-            Thread.sleep(250);
+            Thread.sleep(150);
         } catch (InterruptedException ex) {
-            Logger.getLogger(Rotation90.class.getName()).log(Level.SEVERE, null, ex);
+            // This Catch For Thread Sleep
+            FileLogger.AddWarning("SecurityCamera " + DeviceID + ", Error In Thread Sleep\n" + ex);
         }
+
+        // check if Rotation is eqle 0, 90, 180 or 270
+        // just Rotate image and send it to Camera Panel
         switch (RotationBy) {
             case 0:
                 return Image;
@@ -103,53 +128,82 @@ public final class SecurityCamera implements WebcamImageTransformer {
         }
     }
 
+    // For Start Capture Image From The Camera
     public boolean Capture(int TakeImage) {
+        // To Check If the Camera is not working 
+        // If it is Working just ignore it.
         if (ImageBusy) {
             return false;
         } else {
+            // just to Get the New Date and Start The Capture Thread
             this.TakeImage = TakeImage;
             new Thread(Capture_Thread).start();
             return true;
         }
     }
 
+    // The Capture Thread
     private final Runnable Capture_Thread = new Runnable() {
         @Override
         public void run() {
+            // The Time When Image is Taken
+            java.util.Date TakenDate = new java.util.Date();
+
+            // The Tell The Method the Thread is Busy.
             ImageBusy = true;
+
+            // Create 2 ArrayList to Store The Name and The Time
             ArrayList<String> ImageList = new ArrayList();
             ArrayList<java.util.Date> ImageTime = new ArrayList();
+
+            // Begin to capture the image depending on the user's request
             for (int i = 0; i < TakeImage; i++) {
                 try {
+                    // Create JPG File 
                     java.util.Date Date = new java.util.Date();
-                    File Image = new File("Camera_" + DeviceID + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SS").format(Date) + ".jpg");
+                    File Image = new File("/var/www/html/Camera_Gallery/Camera_" + DeviceID + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SS").format(Date) + ".jpg");
+
+                    // save image to JPG file
                     ImageIO.write(WebCam.getImage(), "JPG", Image);
 
+                    // Add the Name and time To the ArrayList
                     ImageList.add(Image.getName());
                     ImageTime.add(Date);
-                    System.out.println("Capture : " + Image.getName());
+
+                    // just To Print the Result
+                    FileLogger.AddInfo("SecurityCamera " + DeviceID + ", Capture : " + Image.getName());
 
                     Thread.sleep(200);
                 } catch (IOException | InterruptedException ex) {
-                    Logger.getLogger(SecurityCamera.class.getName()).log(Level.SEVERE, null, ex);
+                    // This Catch For save image to JPG file
+                    FileLogger.AddWarning("SecurityCamera " + DeviceID + ", Error In save image to JPG file\n" + ex);
                 }
             }
 
+            // Start insert The Date From ArrayList To The Database 
             for (int i = 0; i < ImageList.size(); i++) {
                 try (PreparedStatement ps = DB.prepareStatement("INSERT INTO camera_gallery (cameraID, isImage, imgDate, imgPath) VALUES (?, ?, ?, ?)")) {
+                    // Device ID
                     ps.setInt(1, DeviceID);
+                    // It is An Image
                     ps.setBoolean(2, true);
-                    ps.setTimestamp(3, new Timestamp(ImageTime.get(i).getTime()));
+                    // Time
+                    ps.setTimestamp(3, new Timestamp(TakenDate.getTime()));
+                    // Image Name
                     ps.setString(4, ImageList.get(i));
+                    // Insert
                     ps.executeUpdate();
                 } catch (SQLException ex) {
-                    Logger.getLogger(SecurityCamera.class.getName()).log(Level.SEVERE, null, ex);
+                    // This Catch For DataBase Error 
+                    FileLogger.AddWarning("SecurityCamera " + DeviceID + ", Error In DataBase\n" + ex);
                 }
             }
+            // The Tell The Method the Thread is not Busy.
             ImageBusy = false;
         }
     };
 
+    // For Start Record From The Camera
     public boolean Record(int Minute) {
         if (RecordBusy) {
             return false;
@@ -160,6 +214,7 @@ public final class SecurityCamera implements WebcamImageTransformer {
         }
     }
 
+    // The Record Thread
     private final Runnable Record_Thread = new Runnable() {
         @Override
         public void run() {
