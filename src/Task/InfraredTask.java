@@ -99,6 +99,12 @@ public class InfraredTask implements Runnable {
                                 // Tack Image According to User Information
                                 ((SecurityCamera) List.get(i).getDeviceID().GetDevice()).Capture(List.get(i).getTakeImage());
                             }
+
+                            // Check if The User Information Want To Record Video From Security Camera Device
+                            if (List.get(i).getTakeVideo() > 0) {
+                                // Record Video According to User Information
+                                ((SecurityCamera) List.get(i).getDeviceID().GetDevice()).Record(List.get(i).getTakeVideo());
+                            }
                             break;
                         default:
                             break;

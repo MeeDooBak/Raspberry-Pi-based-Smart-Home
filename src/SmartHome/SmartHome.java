@@ -36,6 +36,10 @@ public class SmartHome {
             // Start The Application
             System.out.println("Start The Application...");
 
+            // Create Logger To Save Log To Java File
+            FileLogger FileLogger = new FileLogger();
+            System.out.println("Class Java Logger Executed Successfully.");
+
             // Set The DataBase Calss
             Class.forName("com.mysql.jdbc.Driver").newInstance();
 
@@ -65,10 +69,6 @@ public class SmartHome {
             // Create Logger To Save Log To Database
             SLogger SLogger = new SLogger(DB);
             System.out.println("Class Database Logger Executed Successfully.");
-
-            // Create Logger To Save Log To Java File
-            FileLogger FileLogger = new FileLogger();
-            System.out.println("Class Java Logger Executed Successfully.");
 
             // Create ArrayList To Store The Pin Class
             PinsList = new ArrayList();

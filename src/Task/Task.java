@@ -169,10 +169,6 @@ public class Task implements Runnable {
                 if (Result2.getInt("RequiredDeviceStatus") == 1) {
                     // add To the ArrayList the Task Devices List Class
                     List.add(new TaskDevicesList(Devices.Get(Result2.getInt("DeviceID")), true, Result2.getInt("TakeImage"), Result2.getInt("TakeVideo")));
-
-                } else if (Result2.getInt("RequiredDeviceStatus") == 0) { // if the User Want The Camera State To Be False
-                    // add To the ArrayList the Task Devices List Class
-                    List.add(new TaskDevicesList(Devices.Get(Result2.getInt("DeviceID")), false, Result2.getInt("TakeImage"), Result2.getInt("TakeVideo")));
                 }
             }
         } catch (SQLException ex) {

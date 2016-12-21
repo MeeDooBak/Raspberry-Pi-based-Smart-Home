@@ -46,7 +46,7 @@ public class DeviceList {
                 Motor = new Motor(DeviceID, DeviceName, GateNum1, GateNum2, GateNum3, GateNum4, MaxValue, DeviceState, isStatusChanged, StepperMotorMoves, DB);
                 break;
             case "Security Camera":
-                SecurityCamera = new SecurityCamera(DeviceID, GateNum1, DB);
+                SecurityCamera = new SecurityCamera(DeviceID, DB);
                 break;
             case "Water Pump":
                 WaterPump = new WaterPump(DeviceID, GateNum1, DeviceState, isStatusChanged, DB);

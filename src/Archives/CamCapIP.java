@@ -28,7 +28,6 @@ public class CamCapIP extends javax.swing.JFrame implements WebcamImageTransform
     private IMediaWriter writer;
     private int count = 0;
     private Thread Thread;
-    private boolean StopRecord;
 
     static {
         Webcam.setDriver(new IpCamDriver());
@@ -36,7 +35,6 @@ public class CamCapIP extends javax.swing.JFrame implements WebcamImageTransform
 
     public CamCapIP() throws MalformedURLException {
         initComponents();
-        Stop.setVisible(false);
 
         IpCamDeviceRegistry.register(new IpCamDevice("IP-Cam-1", "http://admin:@192.168.1.100/videostream.cgi", IpCamMode.PUSH));
         RotationBy = 270;
@@ -89,7 +87,6 @@ public class CamCapIP extends javax.swing.JFrame implements WebcamImageTransform
         btCapture = new javax.swing.JButton();
         panelCam1 = new javax.swing.JPanel();
         Record = new javax.swing.JButton();
-        Stop = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1012, 291));
@@ -123,13 +120,6 @@ public class CamCapIP extends javax.swing.JFrame implements WebcamImageTransform
             }
         });
 
-        Stop.setText("Stop");
-        Stop.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                StopActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -140,9 +130,7 @@ public class CamCapIP extends javax.swing.JFrame implements WebcamImageTransform
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btCapture)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Record)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Stop))
+                        .addComponent(Record))
                     .addComponent(panelCam1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -152,8 +140,7 @@ public class CamCapIP extends javax.swing.JFrame implements WebcamImageTransform
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btCapture)
-                    .addComponent(Record)
-                    .addComponent(Stop))
+                    .addComponent(Record))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelCam1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -174,55 +161,42 @@ public class CamCapIP extends javax.swing.JFrame implements WebcamImageTransform
 
     private void RecordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RecordActionPerformed
         Record.setVisible(false);
-        Stop.setVisible(true);
 
-        File file = new File("output.mp4");
-
-        writer = ToolFactory.makeWriter(file.getName());
-        writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264, ds.height, ds.width);
-
-        long start = System.currentTimeMillis();
-        count = 0;
-        StopRecord = true;
-
-        Thread = new Thread() {
-
-            @Override
-            public void run() {
-                while (StopRecord) {
-                    try {
-                        System.out.println("Capture frame " + count);
-
-                        BufferedImage image = ConverterFactory.convertToType(webcam.getImage(), BufferedImage.TYPE_3BYTE_BGR);
-                        IConverter converter = ConverterFactory.createConverter(image, IPixelFormat.Type.YUV420P);
-
-                        IVideoPicture frame = converter.toPicture(image, (System.currentTimeMillis() - start) * 1000);
-                        frame.setKeyFrame(count == 0);
-                        frame.setQuality(0);
-
-                        writer.encodeVideo(0, frame);
-
-                        count++;
-                        Thread.sleep(10);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(CamCapIP.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-        };
-        Thread.setDaemon(true);
+        Thread = new Thread(Record_Thread);
         Thread.start();
     }//GEN-LAST:event_RecordActionPerformed
 
-    private void StopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StopActionPerformed
-        Record.setVisible(true);
-        Stop.setVisible(false);
-        StopRecord = false;
-        Thread.stop();
+    private final Runnable Record_Thread = new Runnable() {
+        @Override
+        public void run() {
+            writer = ToolFactory.makeWriter("Camera\\Camera_1.mp4");
+            writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264, cs.height, cs.width);
 
-        writer.close();
-        System.out.println("Video recorded ");
-    }//GEN-LAST:event_StopActionPerformed
+            long start = System.currentTimeMillis();
+            long end = start + 1 * 60000;
+
+            while (System.currentTimeMillis() <= end) {
+                try {
+                    System.out.println("Capture frame " + count);
+
+                    BufferedImage image = ConverterFactory.convertToType(webcam.getImage(), BufferedImage.TYPE_3BYTE_BGR);
+                    IConverter converter = ConverterFactory.createConverter(image, IPixelFormat.Type.YUV420P);
+                    IVideoPicture frame = converter.toPicture(image, (System.currentTimeMillis() - start) * 1000);
+                    frame.setKeyFrame(count == 0);
+                    frame.setQuality(0);
+                    writer.encodeVideo(0, frame);
+                    count++;
+                    Thread.sleep(10);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(CamCapIP.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            System.out.println("Video recorded ");
+            writer.close();
+
+            Record.setVisible(true);
+        }
+    };
 
     public static void main(String args[]) {
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -260,7 +234,6 @@ public class CamCapIP extends javax.swing.JFrame implements WebcamImageTransform
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Record;
-    private javax.swing.JButton Stop;
     private javax.swing.JButton btCapture;
     private javax.swing.JPanel panelCam1;
     // End of variables declaration//GEN-END:variables

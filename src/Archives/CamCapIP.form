@@ -37,8 +37,6 @@
                       <Component id="btCapture" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="Record" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="Stop" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="panelCam1" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -53,7 +51,6 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="btCapture" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="Record" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="Stop" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="panelCam1" min="-2" max="-2" attributes="0"/>
@@ -97,14 +94,6 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RecordActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="Stop">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Stop"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="StopActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

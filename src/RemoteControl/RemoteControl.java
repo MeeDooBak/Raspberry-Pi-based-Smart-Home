@@ -28,6 +28,8 @@ public class RemoteControl implements Runnable {
             // Provision GPIO pin (# A6) from MCP23017 as an output pin and turn OFF
             // It is an Alarm To Tell User the Input is Correct
             this.PIN = GpioFactory.getInstance().provisionDigitalOutputPin(new MCP23017GpioProvider(I2CBus.BUS_1, 0x25), MCP23017Pin.GPIO_A6, PinState.HIGH);
+            // this will ensure that the motor is stopped when the program terminates
+            GpioFactory.getInstance().setShutdownOptions(true, PinState.HIGH, PIN);
         } catch (IOException ex) {
             // This Catch For create custom MCP23017 GPIO provider Error 
             FileLogger.AddWarning("RemoteControl Class, Error In MCP23017 Gpio Provider\n" + ex);

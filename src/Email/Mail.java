@@ -155,7 +155,7 @@ public class Mail implements Runnable {
                 // check the queue not Empty
                 while (!EmailQueueList.isEmpty()) {
                     // get the First Message from the Queue
-                    EmailQueue RelayQueue = EmailQueueList.poll();
+                    EmailQueue EmailQueue = EmailQueueList.poll();
 
                     // Open The Session
                     Session session = Session.getDefaultInstance(props);
@@ -163,9 +163,9 @@ public class Mail implements Runnable {
 
                     // Set the infromation
                     message.setFrom(new InternetAddress(UserName));
-                    message.addRecipient(Message.RecipientType.TO, new InternetAddress(RelayQueue.getToUser()));
-                    message.setSubject(RelayQueue.getSubject());
-                    message.setText(RelayQueue.getBody());
+                    message.addRecipient(Message.RecipientType.TO, new InternetAddress(EmailQueue.getToUser()));
+                    message.setSubject(EmailQueue.getSubject());
+                    message.setText(EmailQueue.getBody());
 
                     // Send the Message
                     Transport transport = session.getTransport("smtp");

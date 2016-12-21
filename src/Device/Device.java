@@ -15,8 +15,6 @@ public class Device implements Runnable {
     private final Room Rooms;
     private final Pins Pins;
 
-    private int CameraCount;
-
     // Get Infromation from Main Class 
     public Device(Connection DB, ArrayList<DeviceList> DeviceList, Room Rooms, Pins Pins, Relay RelayQueue) {
         this.DB = DB;
@@ -24,8 +22,6 @@ public class Device implements Runnable {
         this.DeviceList = DeviceList;
         this.Rooms = Rooms;
         this.Pins = Pins;
-
-        this.CameraCount = 0;
     }
 
     // Search and return ArrayList index if the specific device exists by ID
@@ -199,9 +195,6 @@ public class Device implements Runnable {
                             case "Security Camera":
                                 DeviceList.add(new DeviceList(DeviceID, Rooms.Get(RoomID), DeviceName, false, Pins.Get(GateNum),
                                         null, null, null, false, -1, -1, -1, DB, null, -1, null));
-
-                                // To Count How Many new Camera We Have 
-                                CameraCount++;
                                 break;
 
                             case "Water Pump":
@@ -214,20 +207,6 @@ public class Device implements Runnable {
                         }
                         // just To Print the Result
                         FileLogger.AddInfo("Add Device : " + DeviceID + ", with Name : " + DeviceName + ", in Room : " + Rooms.Get(RoomID).getRoomName());
-                    }
-                }
-            }
-
-            // To Check if There are New Camera 
-            if (CameraCount > 0) {
-                // Reset the Counter to Zero
-                CameraCount = 0;
-                for (int i = 0; i < DeviceList.size(); i++) {
-                    // Search and return Security Camera Class and start it to get image for the Camera 
-                    if (DeviceList.get(i).getDeviceName().equals("Security Camera")) {
-                        ((SecurityCamera) DeviceList.get(i).GetDevice()).Start();
-                        // just To Print the Result
-                        FileLogger.AddInfo("SecurityCamera " + DeviceList.get(i).getDeviceID() + ", Is Live Now");
                     }
                 }
             }

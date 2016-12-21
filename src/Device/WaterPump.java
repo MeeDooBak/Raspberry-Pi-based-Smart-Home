@@ -31,6 +31,8 @@ public class WaterPump implements Runnable {
     private void getPin(PinsList GateNum) {
         // Provision GPIO pin (# from Database) from MCP23017 as an output pin and turn OFF
         PIN = GateNum.getGPIO().provisionDigitalOutputPin(GateNum.getMCP23017(), MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1))], PinState.HIGH);
+        // this will ensure that the motor is stopped when the program terminates
+        GateNum.getGPIO().setShutdownOptions(true, PinState.HIGH, PIN);
     }
 
     // To Change Device State
