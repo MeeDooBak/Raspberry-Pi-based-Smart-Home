@@ -1,30 +1,27 @@
 package SmartHome_Camera_WIN.Camera;
 
 import Logger.*;
-import SmartHome_Camera_WIN.Pins.*;
 import java.sql.*;
 import java.util.*;
+import SmartHome_Camera_WIN.Pins.*;
 
-public class Camera implements Runnable {
+public class Camera {
 
     private final Connection DB;
     private final ArrayList<CameraList> DeviceList;
     private final Pins Pins;
-    private int CameraCount;
 
     // Get Infromation from Main Class 
     public Camera(Connection DB, ArrayList<CameraList> DeviceList, Pins Pins) {
         this.DB = DB;
         this.DeviceList = DeviceList;
         this.Pins = Pins;
-        this.CameraCount = 0;
     }
 
-    // The Thread
-    @Override
-    public void run() {
+    // Start Get Information From The Database
+    public void Start() {
         try {
-            // Start Get Information From The Database about the Devices
+            // Start Get Information From The Database about the Camera
             try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
                     ResultSet Result = Statement.executeQuery("select * from device")) {
 
@@ -39,13 +36,11 @@ public class Camera implements Runnable {
                     // Get the Device Gate Number
                     int GateNum = Result.getInt("GateNum");
 
+                    // Check if The Device Name is Equal To Camera
                     switch (DeviceName) {
-                        // Create and add To the ArrayList the Device Class According to its kind
+                        // Create and add To the ArrayList the Device Class (Just Camera)
                         case "Security Camera":
                             DeviceList.add(new CameraList(DeviceID, DeviceName, Pins.Get(GateNum), DB));
-
-                            // To Count How Many new Camera We Have 
-                            CameraCount++;
 
                             // just To Print the Result
                             FileLogger.AddInfo("Add Device : " + DeviceID + ", with Name : " + DeviceName);
@@ -57,18 +52,11 @@ public class Camera implements Runnable {
                 }
             }
 
-            // To Check if There are New Camera 
-            if (CameraCount > 0) {
-                // Reset the Counter to Zero
-                CameraCount = 0;
-                for (int i = 0; i < DeviceList.size(); i++) {
-                    // Search and return Security Camera Class and start it to get image for the Camera 
-                    if (DeviceList.get(i).getDeviceName().equals("Security Camera")) {
-                        DeviceList.get(i).Start();
-                        // just To Print the Result
-                        FileLogger.AddInfo("SecurityCamera " + DeviceList.get(i).getDeviceID() + ", Is Live Now");
-                    }
-                }
+            // Loop For All Camera To Start it
+            for (int i = 0; i < DeviceList.size(); i++) {
+                DeviceList.get(i).Start();
+                // just To Print the Result
+                FileLogger.AddInfo("SecurityCamera " + DeviceList.get(i).getDeviceID() + ", Is Live Now");
             }
         } catch (SQLException ex) {
             // This Catch For DataBase Error 

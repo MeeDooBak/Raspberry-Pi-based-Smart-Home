@@ -10,7 +10,6 @@ import javax.swing.*;
 import java.util.List;
 import javax.imageio.*;
 import java.awt.image.*;
-import java.util.logging.*;
 import com.xuggle.xuggler.*;
 import com.xuggle.mediatool.*;
 import com.github.sarxos.webcam.*;
@@ -50,7 +49,6 @@ public class CameraList implements WebcamImageTransformer {
 
     // Get Device Information from Database
     public CameraList(int DeviceID, String DeviceName, PinsList GateNum, Connection DB) {
-
         this.DeviceID = DeviceID;
         this.DeviceName = DeviceName;
         this.DB = DB;
@@ -100,9 +98,11 @@ public class CameraList implements WebcamImageTransformer {
         WebCamPanel.setBorder(BorderFactory.createEmptyBorder());
         WebCamPanel.start();
 
+        // Start Thread To Get Action From Database To Execute it
         new Thread(Action).start();
     }
 
+    // The Thread Action
     private final Runnable Action = new Runnable() {
 
         @Override
@@ -121,16 +121,27 @@ public class CameraList implements WebcamImageTransformer {
                         // Get Action Value
                         int Value = Result.getInt("Value");
 
+                        // To Check if The Action is Capture or Record
                         if (isImage) {
-                            Capture(Value);
+                            // Start Capture and Check if The Action Executed
+                            if (Capture(Value)) {
+                                // Delete The Action From The DataBase
+                                Result.deleteRow();
+                                System.out.println("Start To Capture Image From Camera " + DeviceID);
+                            } else {
+                                System.out.println("Wait Until Camera " + DeviceID + " To Be Not Busy");
+                            }
                         } else {
-                            Record(Value);
+                            // Start Record and Check if The Action Executed
+                            if (Record(Value)) {
+                                // Delete The Action From The DataBase
+                                Result.deleteRow();
+                                System.out.println("Start To Record Video From Camera " + DeviceID);
+                            } else {
+                                System.out.println("Wait Until Camera " + DeviceID + " To Be Not Busy");
+                            }
                         }
-
-                        // Delete The Action From The DataBase
-                        Result.deleteRow();
                     }
-
                     // To Sleep For 1 Second
                     Thread.sleep(1000);
                 } catch (SQLException | InterruptedException ex) {
@@ -147,7 +158,7 @@ public class CameraList implements WebcamImageTransformer {
         try {
             Thread.sleep(50);
 
-            // check if Rotation is eqle 0, 90, 180 or 270
+            // check if Rotation is equale 0, 90, 180 or 270
             // just Rotate image and send it to Camera Panel
             switch (RotationBy) {
                 case 0:
@@ -170,7 +181,7 @@ public class CameraList implements WebcamImageTransformer {
 
     // For Start Capture Image From The Camera
     public boolean Capture(int TakeImage) {
-        // To Check If the Camera is not working 
+        // To Check If the Camera is not Busy Capture Image
         // If it is Working just ignore it.
         if (ImageBusy) {
             return false;
@@ -186,11 +197,11 @@ public class CameraList implements WebcamImageTransformer {
     private final Runnable Capture_Thread = new Runnable() {
         @Override
         public void run() {
-            // The Time When Image is Taken
-            java.util.Date TakenDate = new java.util.Date();
-
             // The Tell The Method the Thread is Busy.
             ImageBusy = true;
+
+            // The Time When Image is Taken
+            java.util.Date TakenDate = new java.util.Date();
 
             // Begin to capture the image depending on the user's request
             for (int i = 0; i < TakeImage; i++) {
@@ -202,11 +213,13 @@ public class CameraList implements WebcamImageTransformer {
                     // save image to JPG file
                     ImageIO.write(WebCam.getImage(), "JPG", Image);
 
+                    // Send JPG File Image To Raspberry PI To Display In The Website
                     SendFile.SendFile(DeviceID, Image.getName(), true, TakenDate.getTime());
 
                     // just To Print the Result
                     FileLogger.AddInfo("SecurityCamera " + DeviceID + ", Capture : " + Image.getName());
 
+                    // To Sleep For 200 Millisecond
                     Thread.sleep(200);
                 } catch (IOException | InterruptedException ex) {
                     // This Catch For save image to JPG file
@@ -221,9 +234,12 @@ public class CameraList implements WebcamImageTransformer {
 
     // For Start Record From The Camera
     public boolean Record(int Minute) {
+        // To Check If the Camera is not Busy Record Video
+        // If it is Working just ignore it.
         if (RecordBusy) {
             return false;
         } else {
+            // just to Get the New Date and Start The Record Thread
             this.Minute = Minute;
             new Thread(Record_Thread).start();
             return true;
@@ -234,10 +250,18 @@ public class CameraList implements WebcamImageTransformer {
     private final Runnable Record_Thread = new Runnable() {
         @Override
         public void run() {
+            // The Tell The Method the Thread is Busy.
             RecordBusy = true;
+
+            // The Time When Image is Taken
             java.util.Date Date = new java.util.Date();
+
+            // Create a Media Writer, To Create The Output File
             writer = ToolFactory.makeWriter("Camera\\Camera_" + DeviceID + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SS").format(Date) + ".mp4");
 
+            // Add Video Stream To Media Writer 
+            // According to Image Rotation
+            // To Set The Correct Size 
             switch (RotationBy) {
                 case 0:
                     writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264, CS.width, CS.height);
@@ -256,29 +280,46 @@ public class CameraList implements WebcamImageTransformer {
                     break;
             }
 
+            // Save The Starting Point in Current Millisecond
             long start = System.currentTimeMillis();
+            // Save The Ending Pount According to User Information 
+            // And Convert Minute To Millisecond
             long end = start + Minute * 60000;
+            // Set The Counter 
             count = 0;
 
+            // Loop Until Current Millisecond To Be Greater Than Ending Point
             while (System.currentTimeMillis() <= end) {
                 try {
+                    // Create a Buffered Image To Save Camera Images 
                     BufferedImage image = ConverterFactory.convertToType(WebCam.getImage(), BufferedImage.TYPE_3BYTE_BGR);
+                    // Converte Buffered Image To Type YUV420P
                     IConverter converter = ConverterFactory.createConverter(image, IPixelFormat.Type.YUV420P);
+                    // Converts a BufferedImage to an IVideoPicture.
                     IVideoPicture frame = converter.toPicture(image, (System.currentTimeMillis() - start) * 1000);
+                    // Reset if this is a key frame or not
                     frame.setKeyFrame(count == 0);
+                    // Set the Quality to a new value
                     frame.setQuality(0);
+                    // Encodes video from the given picture into the stream with the specified index.
                     writer.encodeVideo(0, frame);
+                    // Increase The Counter
                     count++;
+                    // To Sleep For 10 Millisecond (10 FPS)
                     Thread.sleep(10);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(CameraList.class.getName()).log(Level.SEVERE, null, ex);
+                    // This Catch For Thread Sleep
+                    FileLogger.AddWarning("CameraList " + DeviceID + ", Error In Thread Sleep\n" + ex);
                 }
             }
+            // To Close Media Writer
             writer.close();
 
+            // Send MP4 File Video To Raspberry PI To Display In The Website
             SendFile.SendFile(DeviceID, "Camera_" + DeviceID + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SS").format(Date) + ".mp4", false, Date.getTime());
-            RecordBusy = false;
 
+            // The Tell The Method the Thread is not Busy.
+            RecordBusy = false;
         }
     };
 

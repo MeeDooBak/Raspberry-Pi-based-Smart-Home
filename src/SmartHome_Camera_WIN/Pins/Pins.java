@@ -34,6 +34,7 @@ public class Pins {
                     ResultSet Result = Statement.executeQuery("select * from gpio_pins")) {
 
                 Result.beforeFirst();
+                // While Loop For All Row in DataBase
                 while (Result.next()) {
                     // Get the Pin ID
                     int PinID = Result.getInt("PinID");
@@ -41,8 +42,7 @@ public class Pins {
                     String Type = Result.getString("Type");
 
                     if (Type.equals("Camera")) {
-                        // Create Pin Class According to its kind
-                        // if the Pin is I2C
+                        // Create Pin Class (Just Camera)
                         PinsList.add(new PinsList(PinID, Type, Result.getString("PI4Jnumber")));
 
                         // just To Print the Result

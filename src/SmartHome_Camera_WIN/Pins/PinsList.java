@@ -13,17 +13,17 @@ public class PinsList {
         this.PI4Jnumber = PI4Jnumber;
     }
 
-    // Set Pin ID
+    // Get Pin ID
     public int getPinID() {
         return PinID;
     }
 
-    // Set Pin Type
+    // Get Pin Type
     public String getType() {
         return Type;
     }
 
-    // Set Pin PI4J Number
+    // Get Pin PI4J Number
     public String getPI4Jnumber() {
         return PI4Jnumber;
     }

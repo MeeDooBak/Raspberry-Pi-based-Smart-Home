@@ -32,7 +32,7 @@ public class SmartHome {
             DB = DriverManager.getConnection("jdbc:mysql://192.168.1.99:3306/smarthome", "root", "root");
             System.out.println("Connection To Database Established.");
 
-            // Create Logger To Save Log To Java File
+            // Create Send File Class To Send Data To Raspberry PI
             SendFile SendFile = new SendFile("192.168.1.99", 21, "root", "mlover054004", DB);
             System.out.println("Class Send File Executed Successfully.");
 
@@ -48,15 +48,12 @@ public class SmartHome {
             CameraList = new ArrayList();
             // Create Device Class
             Camera = new Camera(DB, CameraList, Pins);
-            // Start The Thread To Getting Infrmation From The Database
-            Thread CameraThread = new Thread(Camera);
-            CameraThread.start();
-            // Wait Until The Thred Finish
-            CameraThread.join();
+            // Start Getting Infrmation From The Database
+            Camera.Start();
             System.out.println("Class Camera Executed Successfully.");
-            System.out.println("The System in Idle Mode, Waiting For Action");
 
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | InterruptedException ex) {
+            System.out.println("The System in Idle Mode, Waiting For Action");
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException ex) {
             // This Catch For DataBase Error 
             FileLogger.AddWarning("Main Class, Error In DataBase\n" + ex);
         }
