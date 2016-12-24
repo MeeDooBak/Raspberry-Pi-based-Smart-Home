@@ -115,8 +115,13 @@ public class Task implements Runnable {
                         // Check if THe Task Disabled To Ignore it
                         if (!isDisabled) {
 
+                            UserList NewUserList = User.Get(UserID);
+                            if (User.Get(UserID).getDescription().equals("Admin")) {
+                                NewUserList = User.Get("Father");
+                            }
+
                             // Create and add To the ArrayList the Task Class
-                            TaskList.add(new TaskList(TaskID, TaskName, User.Get(UserID), Room.Get(RoomID), SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval,
+                            TaskList.add(new TaskList(TaskID, TaskName, NewUserList, Room.Get(RoomID), SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval,
                                     Sensors.Get(SensorID), getDevices(TaskID), SelectedSensorValue, NotifyByEmail, ActionDate, ActionTime, EnableTaskOnTime, DisableTaskOnTime, DB));
 
                             // just To Print the Result

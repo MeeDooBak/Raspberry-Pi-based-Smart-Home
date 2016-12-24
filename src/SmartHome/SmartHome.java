@@ -17,19 +17,19 @@ import com.adventnet.snmp.snmp2.*;
 public class SmartHome {
 
     private static Connection DB;
-    private static Relay RelayQueue;
-    private static Pins Pins;
-    private static Room Room;
-    private static User User;
-    private static Device Device;
-    private static Sensor Sensor;
-    private static Task Task;
-    private static ArrayList<RoomList> RoomList;
-    private static ArrayList<UserList> UserList;
-    private static ArrayList<SensorList> SensorList;
-    private static ArrayList<DeviceList> DeviceList;
-    private static ArrayList<TaskList> TaskList;
-    private static ArrayList<PinsList> PinsList;
+    public static Relay RelayQueue;
+    public static Pins Pins;
+    public static Room Room;
+    public static User User;
+    public static Device Device;
+    public static Sensor Sensor;
+    public static Task Task;
+    public static ArrayList<RoomList> RoomList;
+    public static ArrayList<UserList> UserList;
+    public static ArrayList<SensorList> SensorList;
+    public static ArrayList<DeviceList> DeviceList;
+    public static ArrayList<TaskList> TaskList;
+    public static ArrayList<PinsList> PinsList;
 
     public static void main(String[] args) {
         try {

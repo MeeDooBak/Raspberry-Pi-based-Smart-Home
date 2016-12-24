@@ -38,6 +38,16 @@ public class User implements Runnable {
         return null;
     }
 
+    // Search and return User Class if the specific User exists by Title
+    public UserList Get(String Title) {
+        for (int i = 0; i < UserList.size(); i++) {
+            if (UserList.get(i).getDescription().equals(Title)) {
+                return UserList.get(i);
+            }
+        }
+        return null;
+    }
+
     // The Thread To Get User Information From The Database
     @Override
     public void run() {
