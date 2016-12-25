@@ -156,7 +156,7 @@ public class CameraList implements WebcamImageTransformer {
     @Override
     public BufferedImage transform(BufferedImage Image) {
         try {
-            Thread.sleep(50);
+            Thread.sleep(0);
 
             // check if Rotation is equale 0, 90, 180 or 270
             // just Rotate image and send it to Camera Panel

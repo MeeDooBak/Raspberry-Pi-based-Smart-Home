@@ -1,0 +1,20 @@
+Dec 25, 2016 2:51:14 AM Logger.FileLogger AddInfo
+INFO: Add Pin : 107 Camera
+Dec 25, 2016 2:51:14 AM Logger.FileLogger AddInfo
+INFO: Add Pin : 108 Camera
+Dec 25, 2016 2:51:15 AM Logger.FileLogger AddInfo
+INFO: Add Device : 1001, with Name : Security Camera
+Dec 25, 2016 2:51:15 AM Logger.FileLogger AddInfo
+INFO: Add Device : 1002, with Name : Security Camera
+Dec 25, 2016 2:51:15 AM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Is Live Now
+Dec 25, 2016 2:51:15 AM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1002, Is Live Now
+Dec 25, 2016 2:52:23 AM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1002_25-12-2016_02-51-21-346.mp4 File.
+Dec 25, 2016 2:52:23 AM Logger.FileLogger AddInfo
+INFO: The Camera_1002_25-12-2016_02-51-21-346.mp4 File is Uploaded Successfully.
+Dec 25, 2016 2:52:26 AM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_25-12-2016_02-51-21-326.mp4 File.
+Dec 25, 2016 2:52:26 AM Logger.FileLogger AddInfo
+INFO: The Camera_1001_25-12-2016_02-51-21-326.mp4 File is Uploaded Successfully.
