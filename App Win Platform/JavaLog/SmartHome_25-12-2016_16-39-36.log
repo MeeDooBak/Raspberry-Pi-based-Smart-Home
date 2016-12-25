@@ -1,0 +1,75 @@
+Dec 25, 2016 4:39:48 PM Logger.FileLogger AddInfo
+INFO: Add Pin : 107 Camera
+Dec 25, 2016 4:39:48 PM Logger.FileLogger AddInfo
+INFO: Add Pin : 108 Camera
+Dec 25, 2016 4:39:48 PM Logger.FileLogger AddInfo
+INFO: Add Device : 1001, with Name : Security Camera
+Dec 25, 2016 4:39:48 PM Logger.FileLogger AddInfo
+INFO: Add Device : 1002, with Name : Security Camera
+Dec 25, 2016 4:39:48 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Is Live Now
+Dec 25, 2016 4:39:48 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1002, Is Live Now
+Dec 25, 2016 4:40:45 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_25-12-2016_16-40-45-329.jpg
+Dec 25, 2016 4:40:45 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_25-12-2016_16-40-45-329.jpg File.
+Dec 25, 2016 4:40:45 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.io.FileNotFoundException: Camera\Camera_1001_25-12-2016_16-40-45-329.jpg (The system cannot find the path specified)
+Dec 25, 2016 4:40:45 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1002, Capture : Camera_1002_25-12-2016_16-40-45-430.jpg
+Dec 25, 2016 4:40:45 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_25-12-2016_16-40-45-576.jpg
+Dec 25, 2016 4:40:45 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_25-12-2016_16-40-45-815.jpg
+Dec 25, 2016 4:40:46 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_25-12-2016_16-40-46-47.jpg
+Dec 25, 2016 4:40:46 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_25-12-2016_16-40-46-279.jpg
+Dec 25, 2016 4:40:46 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1002_25-12-2016_16-40-45-430.jpg File.
+Dec 25, 2016 4:40:46 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.io.FileNotFoundException: Camera\Camera_1002_25-12-2016_16-40-45-430.jpg (The system cannot find the path specified)
+Dec 25, 2016 4:40:46 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_25-12-2016_16-40-45-576.jpg File.
+Dec 25, 2016 4:40:46 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.io.FileNotFoundException: Camera\Camera_1001_25-12-2016_16-40-45-576.jpg (The system cannot find the path specified)
+Dec 25, 2016 4:40:46 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_25-12-2016_16-40-45-815.jpg File.
+Dec 25, 2016 4:40:46 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.io.FileNotFoundException: Camera\Camera_1001_25-12-2016_16-40-45-815.jpg (The system cannot find the path specified)
+Dec 25, 2016 4:40:46 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_25-12-2016_16-40-46-47.jpg File.
+Dec 25, 2016 4:40:46 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.io.FileNotFoundException: Camera\Camera_1001_25-12-2016_16-40-46-47.jpg (The system cannot find the path specified)
+Dec 25, 2016 4:40:46 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_25-12-2016_16-40-46-279.jpg File.
+Dec 25, 2016 4:40:46 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.io.FileNotFoundException: Camera\Camera_1001_25-12-2016_16-40-46-279.jpg (The system cannot find the path specified)
+Dec 25, 2016 4:40:46 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_25-12-2016_16-40-46-517.jpg
+Dec 25, 2016 4:40:46 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_25-12-2016_16-40-46-749.jpg
+Dec 25, 2016 4:40:47 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_25-12-2016_16-40-46-980.jpg
+Dec 25, 2016 4:40:47 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_25-12-2016_16-40-46-517.jpg File.
+Dec 25, 2016 4:40:47 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.io.FileNotFoundException: Camera\Camera_1001_25-12-2016_16-40-46-517.jpg (The system cannot find the path specified)
+Dec 25, 2016 4:40:47 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_25-12-2016_16-40-46-749.jpg File.
+Dec 25, 2016 4:40:47 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.io.FileNotFoundException: Camera\Camera_1001_25-12-2016_16-40-46-749.jpg (The system cannot find the path specified)
+Dec 25, 2016 4:40:47 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_25-12-2016_16-40-46-980.jpg File.
+Dec 25, 2016 4:40:47 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.io.FileNotFoundException: Camera\Camera_1001_25-12-2016_16-40-46-980.jpg (The system cannot find the path specified)

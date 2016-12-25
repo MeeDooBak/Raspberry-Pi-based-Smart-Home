@@ -29,6 +29,7 @@ public class CameraList implements WebcamImageTransformer {
     private final int DeviceID;
     private final String DeviceName;
     private final Connection DB;
+    private String DirectoryPath;
 
     private int TakeImage;
     private int Minute;
@@ -65,12 +66,42 @@ public class CameraList implements WebcamImageTransformer {
             // register IP camera device
             IpCamDeviceRegistry.register(new IpCamDevice(("SecurityCamera " + DeviceID), "http://admin:@" + IP + "/videostream.cgi", IpCamMode.PUSH));
 
+            // Get System Location Path and Decode it
+            URL SystemLocation = CameraList.class.getProtectionDomain().getCodeSource().getLocation();
+            String Path = URLDecoder.decode(SystemLocation.getFile(), "UTF-8");
+
+            // Get Parent File Path if run Normally or as a JAR.
+            String ParentPath;
+            if (SystemLocation.toString().contains(".jar")) {
+                ParentPath = new File(Path).getParentFile().getPath();
+            } else {
+                ParentPath = new File(Path).getParentFile().getParentFile().getPath();
+            }
+
+            // Get File Separator from the System
+            String FileSeparator = System.getProperty("file.separator");
+
+            // Set Directory Path 
+            DirectoryPath = ParentPath + FileSeparator + "Camera" + FileSeparator;
+
+            // Get Directory Path File
+            File Directory = new File(DirectoryPath);
+
+            // Check if the Directory is nor Exists
+            // To Create Directory
+            if (!Directory.exists()) {
+                Directory.mkdir();
+            }
+
         } catch (SQLException ex) {
             // This Catch For DataBase Error 
             FileLogger.AddWarning("SecurityCamera " + DeviceID + ", Error In DataBase\n" + ex);
         } catch (MalformedURLException ex) {
             // This Catch For register IP camera device
             FileLogger.AddWarning("SecurityCamera " + DeviceID + ", Error In register IP camera device\n" + ex);
+        } catch (UnsupportedEncodingException ex) {
+            // This Catch For Unsupported Encoding
+            FileLogger.AddWarning("SecurityCamera " + DeviceID + ", Error Unsupported Encoding\n" + ex);
         }
     }
 
@@ -208,7 +239,7 @@ public class CameraList implements WebcamImageTransformer {
                 try {
                     // Create JPG File 
                     java.util.Date Date = new java.util.Date();
-                    File Image = new File("Camera\\Camera_" + DeviceID + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SS").format(Date) + ".jpg");
+                    File Image = new File(DirectoryPath + System.getProperty("file.separator") + "Camera_" + DeviceID + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SS").format(Date) + ".jpg");
 
                     // save image to JPG file
                     ImageIO.write(WebCam.getImage(), "JPG", Image);
@@ -257,7 +288,7 @@ public class CameraList implements WebcamImageTransformer {
             java.util.Date Date = new java.util.Date();
 
             // Create a Media Writer, To Create The Output File
-            writer = ToolFactory.makeWriter("Camera\\Camera_" + DeviceID + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SS").format(Date) + ".mp4");
+            writer = ToolFactory.makeWriter(DirectoryPath + System.getProperty("file.separator") + "Camera_" + DeviceID + "_" + new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SS").format(Date) + ".mp4");
 
             // Add Video Stream To Media Writer 
             // According to Image Rotation

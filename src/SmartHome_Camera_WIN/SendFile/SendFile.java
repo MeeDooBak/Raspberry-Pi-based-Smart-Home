@@ -2,6 +2,8 @@ package SmartHome_Camera_WIN.SendFile;
 
 import Logger.*;
 import java.io.*;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.sql.*;
 import java.util.*;
 import org.apache.commons.net.ftp.*;
@@ -15,6 +17,7 @@ public class SendFile implements Runnable {
     private final Connection DB;
     private static Queue<SendFileQueue> SendFileList;
     private final FTPClient FTPClient;
+    private String DirectoryPath;
 
     // Get Infromation from Main Class 
     public SendFile(String Server, int Port, String UserName, String Password, Connection DB) {
@@ -44,6 +47,33 @@ public class SendFile implements Runnable {
             FTPClient.enterLocalPassiveMode();
             //Sets the file type to be transferred. FTP.BINARY_FILE_TYPE,
             FTPClient.setFileType(FTP.BINARY_FILE_TYPE);
+
+            // Get System Location Path and Decode it
+            URL SystemLocation = SendFile.class.getProtectionDomain().getCodeSource().getLocation();
+            String Path = URLDecoder.decode(SystemLocation.getFile(), "UTF-8");
+
+            // Get Parent File Path if run Normally or as a JAR.
+            String ParentPath;
+            if (SystemLocation.toString().contains(".jar")) {
+                ParentPath = new File(Path).getParentFile().getPath();
+            } else {
+                ParentPath = new File(Path).getParentFile().getParentFile().getPath();
+            }
+
+            // Get File Separator from the System
+            String FileSeparator = System.getProperty("file.separator");
+
+            // Set Directory Path 
+            DirectoryPath = ParentPath + FileSeparator + "Camera" + FileSeparator;
+
+            // Get Directory Path File
+            File Directory = new File(DirectoryPath);
+
+            // Check if the Directory is nor Exists
+            // To Create Directory
+            if (!Directory.exists()) {
+                Directory.mkdir();
+            }
         } catch (IOException ex) {
             // This Catch For FTP Client Connection Error 
             FileLogger.AddWarning("SendFile Class, Error In FTP Client Connection\n" + ex);
@@ -70,7 +100,7 @@ public class SendFile implements Runnable {
                     FileLogger.AddInfo("Start Uploading " + SendFileQueue.getFileName() + " File.");
 
                     // Open an Input Stream and Set The File To Prepare To Send it
-                    try (InputStream inputStream = new FileInputStream(new File("Camera\\" + SendFileQueue.getFileName()))) {
+                    try (InputStream inputStream = new FileInputStream(new File(DirectoryPath + System.getProperty("file.separator") + SendFileQueue.getFileName()))) {
 
                         // Start Send The File 
                         boolean successfully = FTPClient.storeFile(SendFileQueue.getFileName(), inputStream);
