@@ -2,14 +2,17 @@ package Device;
 
 import Pins.*;
 import Logger.*;
+import Rooms.*;
 import java.sql.*;
 import com.pi4j.io.gpio.*;
 import com.pi4j.gpio.extension.mcp.*;
 
-public class Alarm implements Runnable {
+public class Alarm implements Runnable, DeviceInterface {
 
     private GpioPinDigitalOutput PIN;
     private final int DeviceID;
+    private final RoomList Room;
+    private final String DeviceName;
     private final Connection DB;
     private boolean Busy;
     private boolean DeviceState;
@@ -18,33 +21,52 @@ public class Alarm implements Runnable {
     private Thread AlarmThread;
 
     // Get Device Information from Database
-    public Alarm(int DeviceID, PinsList GateNum, boolean DeviceState, boolean isStatusChanged, int AlarmDuration, int AlarmInterval, Connection DB) {
+    public Alarm(int DeviceID, RoomList Room, String DeviceName, PinsList GateNum, boolean DeviceState, boolean isStatusChanged, int AlarmDuration, int AlarmInterval, Connection DB) {
         this.DeviceID = DeviceID;
+        this.DeviceName = DeviceName;
+        this.Room = Room;
+        // add This Device For Given Room
+        Room.getDeviceList().add(DeviceID);
         this.DB = DB;
         this.Busy = false;
-        this.AlarmThread = new Thread(this);
 
         // To Get Device Pin From Raspberry PI
         getPin(GateNum);
 
         // To Make the Change For the First Time
-        ChangeState(DeviceState, AlarmDuration, AlarmInterval, isStatusChanged);
+        ChangeState(DeviceState, AlarmDuration, AlarmInterval);
     }
 
     // Get Device Pin From Raspberry PI
     private void getPin(PinsList GateNum) {
         // Provision GPIO pin (# from Database) from MCP23017 as an output pin and turn OFF
         PIN = GateNum.getGPIO().provisionDigitalOutputPin(GateNum.getMCP23017(), MCP23017Pin.ALL_A_PINS[Integer.parseInt(GateNum.getPI4Jnumber().substring(1))], PinState.HIGH);
-        // this will ensure that the motor is stopped when the program terminates
+        // this will ensure that the Pin is stopped when the program terminates
         GateNum.getGPIO().setShutdownOptions(true, PinState.HIGH, PIN);
     }
 
+    @Override
+    public int getDeviceID() {
+        return DeviceID;
+    }
+
+    @Override
+    public RoomList getRoom() {
+        return Room;
+    }
+
+    @Override
+    public String getDeviceName() {
+        return DeviceName;
+    }
+
     // To Change Device State
-    public final void ChangeState(boolean DeviceState, int AlarmDuration, int AlarmInterval, boolean isStatusChanged) {
+    @Override
+    public final void ChangeState(boolean DeviceState, int AlarmDuration, int AlarmInterval) {
         // To Check if the Current Device State is not equl The New Device State
         // and to check is it Change from DataBase
         // if it is equl just ignore it
-        if (this.DeviceState != DeviceState && isStatusChanged) {
+        if (this.DeviceState != DeviceState) {
             // To tell Database that java change the Device State 
             try (PreparedStatement ps2 = DB.prepareStatement("update device set isStatusChanged = ? where DeviceID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
                 ps2.setBoolean(1, false);
@@ -74,6 +96,7 @@ public class Alarm implements Runnable {
     }
 
     // Return Device State
+    @Override
     public boolean getDeviceState() {
         return DeviceState;
     }
@@ -142,5 +165,27 @@ public class Alarm implements Runnable {
             // This Catch For DataBase Error
             FileLogger.AddWarning("Alarm " + DeviceID + ", Error In DataBase\n" + ex);
         }
+    }
+
+    @Override
+    public void ChangeState(boolean DeviceState) {
+    }
+
+    @Override
+    public void ChangeState(boolean DeviceState, String UP_DOWN) {
+    }
+
+    @Override
+    public void ChangeState(boolean DeviceState, int StepperMotorMoves) {
+    }
+
+    @Override
+    public boolean Capture(int TakeImage) {
+        return false;
+    }
+
+    @Override
+    public boolean Record(int Minute) {
+        return false;
     }
 }

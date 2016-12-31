@@ -12,9 +12,9 @@ public class Camera {
     private final Pins Pins;
 
     // Get Infromation from Main Class 
-    public Camera(Connection DB, ArrayList<CameraList> DeviceList, Pins Pins) {
+    public Camera(Connection DB, Pins Pins) {
         this.DB = DB;
-        this.DeviceList = DeviceList;
+        this.DeviceList = new ArrayList();
         this.Pins = Pins;
     }
 

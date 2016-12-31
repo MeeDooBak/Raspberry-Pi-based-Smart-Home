@@ -7,12 +7,14 @@ import com.pi4j.io.gpio.*;
 import com.pi4j.io.gpio.event.*;
 import com.pi4j.gpio.extension.mcp.*;
 
-public class InfraredSensor implements Runnable {
+public class InfraredSensor implements Runnable, SensorInterface {
 
     private boolean SensorState;
     private int SensorValue;
 
     private final int SensorID;
+    private final int RoomID;
+    private final String SensorName;
     private final Connection DB;
     private GpioPinDigitalInput PIN1;
     private GpioPinDigitalInput PIN2;
@@ -24,9 +26,11 @@ public class InfraredSensor implements Runnable {
     private boolean ChackPIN4;
 
     // Get Sensor Information from Database
-    public InfraredSensor(int SensorID, boolean SensorState, PinsList GateNum, int SensorValue, Connection DB) {
+    public InfraredSensor(int SensorID, int RoomID, String SensorName, boolean SensorState, PinsList GateNum, int SensorValue, Connection DB) {
         this.DB = DB;
         this.SensorID = SensorID;
+        this.RoomID = RoomID;
+        this.SensorName = SensorName;
         this.SensorState = SensorState;
         this.SensorValue = SensorValue;
 
@@ -69,12 +73,32 @@ public class InfraredSensor implements Runnable {
         }
     }
 
+    // Get Sensor ID
+    @Override
+    public int getSensorID() {
+        return SensorID;
+    }
+
+    // Get Sensor Room ID
+    @Override
+    public int getRoomID() {
+        return RoomID;
+    }
+
+    // Get Sensor Name
+    @Override
+    public String getSensorName() {
+        return SensorName;
+    }
+
     // Return Sensor State if True Or False
+    @Override
     public boolean getSensorState() {
         return SensorState;
     }
 
     // Return Sensor State if Has Value
+    @Override
     public int getSensorValue() {
         return SensorValue;
     }
@@ -174,4 +198,14 @@ public class InfraredSensor implements Runnable {
             }
         }
     };
+
+    @Override
+    public int getMaxValue() {
+        return 0;
+    }
+
+    @Override
+    public int getMinValue() {
+        return 0;
+    }
 }

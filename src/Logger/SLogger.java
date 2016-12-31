@@ -21,7 +21,7 @@ public class SLogger implements Runnable {
     }
 
     // Get The Information From The Other Classes to add it in the Queue then Insert it 
-    public static void Logger(String MessageType, String TaskName, RoomList Room, SensorList Sensor, ArrayList<TaskDevicesList> List, int SelectedSensorValue) {
+    public static void Logger(String MessageType, String TaskName, RoomList Room, SensorInterface Sensor, ArrayList<TaskDevicesList> List, int SelectedSensorValue) {
         int RecordCategoryID = 0;
         String Description = "";
 
@@ -41,7 +41,7 @@ public class SLogger implements Runnable {
                 }
                 Description += " and Turned ";
                 for (int i = 0; i < List.size(); i++) {
-                    Description += "( " + List.get(i).getDeviceID().getDeviceName();
+                    Description += "( " + List.get(i).getDevice().getDeviceName();
                     Description += " [" + List.get(i).getRequiredDeviceStatus() + "] )";
                     if ((i + 1) < List.size()) {
                         Description += ", ";
@@ -64,7 +64,7 @@ public class SLogger implements Runnable {
                 if (!List.isEmpty()) {
                     Description += " and Turned ";
                     for (int i = 0; i < List.size(); i++) {
-                        Description += "( " + List.get(i).getDeviceID().getDeviceName();
+                        Description += "( " + List.get(i).getDevice().getDeviceName();
                         Description += " [" + List.get(i).getRequiredDeviceStatus() + "] )";
                         if ((i + 1) < List.size()) {
                             Description += ", ";
@@ -107,10 +107,10 @@ public class SLogger implements Runnable {
                 Description += " Executed with (" + Sensor.getSensorName() + ")";
                 Description += " House parameters are breached, ";
                 for (int i = 0; i < List.size(); i++) {
-                    Description += "The " + List.get(i).getDeviceID().getDeviceName();
-                    if (List.get(i).getDeviceID().getDeviceName().equals("Alarm")) {
+                    Description += "The " + List.get(i).getDevice().getDeviceName();
+                    if (List.get(i).getDevice().getDeviceName().equals("Alarm")) {
                         Description += " Turned " + List.get(i).getRequiredDeviceStatus();
-                    } else if (List.get(i).getDeviceID().getDeviceName().equals("Security Camera")) {
+                    } else if (List.get(i).getDevice().getDeviceName().equals("Security Camera")) {
                         Description += " Took " + List.get(i).getTakeImage() + " Imgs";
                     }
                     if ((i + 1) < List.size()) {

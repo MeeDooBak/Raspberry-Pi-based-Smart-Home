@@ -7,19 +7,23 @@ import com.pi4j.io.gpio.*;
 import com.pi4j.io.gpio.event.*;
 import com.pi4j.gpio.extension.mcp.*;
 
-public class MotionSensor implements GpioPinListenerDigital {
+public class MotionSensor implements GpioPinListenerDigital, SensorInterface {
 
     private boolean SensorState;
     private int SensorValue;
 
     private final int SensorID;
+    private final int RoomID;
+    private final String SensorName;
     private final Connection DB;
     private GpioPinDigitalInput PIN;
 
     // Get Sensor Information from Database
-    public MotionSensor(int SensorID, boolean SensorState, PinsList GateNum, int SensorValue, Connection DB) {
+    public MotionSensor(int SensorID, int RoomID, String SensorName, boolean SensorState, PinsList GateNum, int SensorValue, Connection DB) {
         this.DB = DB;
         this.SensorID = SensorID;
+        this.RoomID = RoomID;
+        this.SensorName = SensorName;
         this.SensorState = SensorState;
         this.SensorValue = SensorValue;
 
@@ -47,12 +51,32 @@ public class MotionSensor implements GpioPinListenerDigital {
         }
     }
 
+    // Get Sensor ID
+    @Override
+    public int getSensorID() {
+        return SensorID;
+    }
+
+    // Get Sensor Room ID
+    @Override
+    public int getRoomID() {
+        return RoomID;
+    }
+
+    // Get Sensor Name
+    @Override
+    public String getSensorName() {
+        return SensorName;
+    }
+
     // Return Sensor State if True Or False
+    @Override
     public boolean getSensorState() {
         return SensorState;
     }
 
     // Return Sensor State if Has Value
+    @Override
     public int getSensorValue() {
         return SensorValue;
     }
@@ -94,5 +118,15 @@ public class MotionSensor implements GpioPinListenerDigital {
             // This Catch For DataBase Error 
             FileLogger.AddWarning("MotionSensor " + SensorID + ", Error In DataBase\n" + ex);
         }
+    }
+
+    @Override
+    public int getMaxValue() {
+        return 0;
+    }
+
+    @Override
+    public int getMinValue() {
+        return 0;
     }
 }

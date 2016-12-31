@@ -4,22 +4,22 @@ import Device.*;
 
 public class TaskDevicesList {
 
-    private final DeviceList DeviceID;
+    private final DeviceInterface Device;
     private final boolean RequiredDeviceStatus;
     private final int TakeImage;
     private final int TakeVideo;
 
     // Set Device Information For Using it In Task
-    public TaskDevicesList(DeviceList DeviceID, boolean RequiredDeviceStatus, int TakeImage, int TakeVideo) {
-        this.DeviceID = DeviceID;
+    public TaskDevicesList(DeviceInterface Device, boolean RequiredDeviceStatus, int TakeImage, int TakeVideo) {
+        this.Device = Device;
         this.RequiredDeviceStatus = RequiredDeviceStatus;
         this.TakeImage = TakeImage;
         this.TakeVideo = TakeVideo;
     }
 
     // Get Device ID
-    public DeviceList getDeviceID() {
-        return DeviceID;
+    public DeviceInterface getDevice() {
+        return Device;
     }
 
     // Get Device State User Want

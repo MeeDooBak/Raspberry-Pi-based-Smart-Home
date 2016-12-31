@@ -1,6 +1,5 @@
 package Task;
 
-import Device.*;
 import Email.*;
 import Logger.*;
 import Rooms.*;
@@ -9,7 +8,7 @@ import Users.*;
 import java.sql.*;
 import java.util.*;
 
-public class SmokeTask implements Runnable {
+public class SmokeTask implements Runnable, TaskInterface {
 
     private boolean isDisabled;
     private final int TaskID;
@@ -19,7 +18,7 @@ public class SmokeTask implements Runnable {
     private final boolean repeatDaily;
     private final int AlarmDuration;
     private final int AlarmInterval;
-    private final SensorList Sensor;
+    private final SensorInterface Sensor;
     private final ArrayList<TaskDevicesList> List;
     private final boolean NotifyByEmail;
     private final java.sql.Date ActionDate;
@@ -30,7 +29,7 @@ public class SmokeTask implements Runnable {
 
     // Get Device Information from Database
     public SmokeTask(int TaskID, String TaskName, UserList User, RoomList Room, boolean isDisabled, boolean repeatDaily, int AlarmDuration, int AlarmInterval,
-            SensorList Sensor, ArrayList<TaskDevicesList> List, boolean NotifyByEmail, java.sql.Date ActionDate, Time EnableTaskOnTime, Time DisableTaskOnTime, Connection DB) {
+            SensorInterface Sensor, ArrayList<TaskDevicesList> List, boolean NotifyByEmail, java.sql.Date ActionDate, Time EnableTaskOnTime, Time DisableTaskOnTime, Connection DB) {
 
         this.TaskID = TaskID;
         this.TaskName = TaskName;
@@ -54,7 +53,14 @@ public class SmokeTask implements Runnable {
         this.Thread.start();
     }
 
+    // Get The Task ID
+    @Override
+    public int getTaskID() {
+        return TaskID;
+    }
+
     // Disabled The Thread To Stop it and Deleting The Task To Set the New Information
+    @Override
     public boolean setisDisabled(boolean isDisabled) {
         // Check if Thread is Alive To Stop It
         if (Thread.isAlive()) {
@@ -77,21 +83,22 @@ public class SmokeTask implements Runnable {
     }
 
     // This Method To Execute Changing in The Device And Send Email To User If He / Her Want
+    @Override
     public void Execute() {
         try {
             // Check The Sensor State if it is True
-            if (((SmokeSensor) Sensor.GetSensor()).getSensorState()) {
+            if (Sensor.getSensorState()) {
 
                 // Loop For All Device Select From User For This Task
                 for (int i = 0; i < List.size(); i++) {
 
                     // Get The Device Name To Change it State, According to its kind
-                    switch (List.get(i).getDeviceID().getDeviceName()) {
+                    switch (List.get(i).getDevice().getDeviceName()) {
                         case "Alarm":
                             // Check if The Device State is Not Equl To User Information State To Change it
-                            if (((Alarm) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                            if (List.get(i).getDevice().getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
                                 // Change the Device State According to User Information
-                                ((Alarm) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval, true);
+                                List.get(i).getDevice().ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval);
                             }
                             break;
                         default:
@@ -108,7 +115,7 @@ public class SmokeTask implements Runnable {
                 SLogger.Logger("Smoke", TaskName, Room, Sensor, List, -1);
 
                 // Loop Until The Sensor State Change To False
-                while (((SmokeSensor) Sensor.GetSensor()).getSensorState()) {
+                while (Sensor.getSensorState()) {
                     // To Sleep For 1 Second
                     Thread.sleep(1000);
                 }

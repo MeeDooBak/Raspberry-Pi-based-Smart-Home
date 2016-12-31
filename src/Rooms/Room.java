@@ -10,9 +10,9 @@ public class Room {
     private final ArrayList<RoomList> RoomList;
 
     // Get Infromation from Main Class 
-    public Room(Connection DB, ArrayList<RoomList> RoomList) {
+    public Room(Connection DB) {
         this.DB = DB;
-        this.RoomList = RoomList;
+        this.RoomList = new ArrayList();
     }
 
     // Search and return ArrayList index if the specific Room exists by ID

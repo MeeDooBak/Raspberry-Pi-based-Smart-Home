@@ -1,6 +1,5 @@
 package Task;
 
-import Device.*;
 import Email.*;
 import Logger.*;
 import Rooms.*;
@@ -9,7 +8,7 @@ import Users.*;
 import java.sql.*;
 import java.util.*;
 
-public class TemperatureTask implements Runnable {
+public class TemperatureTask implements Runnable, TaskInterface {
 
     private boolean isDisabled;
 
@@ -17,11 +16,11 @@ public class TemperatureTask implements Runnable {
     private final String TaskName;
     private final UserList User;
     private final RoomList Room;
-    private final SensorList SmokeSensor;
+    private final SensorInterface SmokeSensor;
     private final boolean repeatDaily;
     private final int AlarmDuration;
     private final int AlarmInterval;
-    private final SensorList Sensor;
+    private final SensorInterface Sensor;
     private final ArrayList<TaskDevicesList> List;
     private final int SelectedSensorValue;
     private final boolean NotifyByEmail;
@@ -32,8 +31,8 @@ public class TemperatureTask implements Runnable {
     private final Thread Thread;
 
     // Get Device Information from Database
-    public TemperatureTask(int TaskID, String TaskName, UserList User, RoomList Room, SensorList SmokeSensor, boolean isDisabled, boolean repeatDaily,
-            int AlarmDuration, int AlarmInterval, SensorList Sensor, ArrayList<TaskDevicesList> List, int SelectedSensorValue, boolean NotifyByEmail, java.sql.Date ActionDate,
+    public TemperatureTask(int TaskID, String TaskName, UserList User, RoomList Room, SensorInterface SmokeSensor, boolean isDisabled, boolean repeatDaily,
+            int AlarmDuration, int AlarmInterval, SensorInterface Sensor, ArrayList<TaskDevicesList> List, int SelectedSensorValue, boolean NotifyByEmail, java.sql.Date ActionDate,
             Time EnableTaskOnTime, Time DisableTaskOnTime, Connection DB) {
 
         this.TaskID = TaskID;
@@ -60,7 +59,14 @@ public class TemperatureTask implements Runnable {
         this.Thread.start();
     }
 
+    // Get The Task ID
+    @Override
+    public int getTaskID() {
+        return TaskID;
+    }
+
     // Disabled The Thread To Stop it and Deleting The Task To Set the New Information
+    @Override
     public boolean setisDisabled(boolean isDisabled) {
         // Check if Thread is Alive To Stop It
         if (Thread.isAlive()) {
@@ -83,14 +89,15 @@ public class TemperatureTask implements Runnable {
     }
 
     // This Method To Execute Changing in The Device And Send Email To User If He / Her Want
+    @Override
     public void Execute() {
         try {
             // Check The Sensor State Equl To User Information State
-            if (((TemperatureSensor) Sensor.GetSensor()).getSensorValue() == SelectedSensorValue) {
+            if (Sensor.getSensorValue() == SelectedSensorValue) {
                 // Before Execute Changing To Device Let Check The Smoking Sensor
                 // If it is True Do not Execute Changing To Device
                 // For Safety
-                if (((SmokeSensor) SmokeSensor.GetSensor()).getSensorState()) {
+                if (SmokeSensor.getSensorState()) {
                     // just To Print the Result of Smoking Sensor State
                     FileLogger.AddWarning("The Task : " + TaskID + " Has been Deactivate, Because the Gas Sensor is Activated");
 
@@ -103,21 +110,21 @@ public class TemperatureTask implements Runnable {
                     for (int i = 0; i < List.size(); i++) {
 
                         // Get The Device Name To Change it State, According to its kind
-                        switch (List.get(i).getDeviceID().getDeviceName()) {
+                        switch (List.get(i).getDevice().getDeviceName()) {
                             case "Roof Lamp":
                                 // Check if The Device State is Not Equl To User Information State To Change it
-                                if (((Light) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                                if (List.get(i).getDevice().getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
                                     // Change the Device State According to User Information
-                                    ((Light) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), true);
+                                    List.get(i).getDevice().ChangeState(List.get(i).getRequiredDeviceStatus());
                                     Send = true;
                                 }
                                 break;
 
                             case "AC":
                                 // Check if The Device State is Not Equl To User Information State To Change it
-                                if (((AC) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                                if (List.get(i).getDevice().getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
                                     // Change the Device State According to User Information
-                                    ((AC) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), true);
+                                    List.get(i).getDevice().ChangeState(List.get(i).getRequiredDeviceStatus());
                                     Send = true;
                                 }
                                 break;
@@ -125,13 +132,13 @@ public class TemperatureTask implements Runnable {
                             case "Curtains":
                                 // Get Last Move For The Curtains From Database
                                 try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                                        ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + List.get(i).getDeviceID().getDeviceID())) {
+                                        ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + List.get(i).getDevice().getDeviceID())) {
                                     Result.next();
 
                                     // Check if The Device State is Not Equl To User Information State To Change it
-                                    if (((Motor) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                                    if (List.get(i).getDevice().getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
                                         // Change the Device State According to User Information
-                                        ((Motor) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), Result.getInt("StepperMotorMoves"), true);
+                                        List.get(i).getDevice().ChangeState(List.get(i).getRequiredDeviceStatus(), Result.getInt("StepperMotorMoves"));
                                         Send = true;
                                     }
                                 } catch (SQLException ex) {
@@ -142,9 +149,9 @@ public class TemperatureTask implements Runnable {
 
                             case "Alarm":
                                 // Check if The Device State is Not Equl To User Information State To Change it
-                                if (((Alarm) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                                if (List.get(i).getDevice().getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
                                     // Change the Device State According to User Information
-                                    ((Alarm) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval, true);
+                                    List.get(i).getDevice().ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval);
                                     Send = true;
                                 }
                                 break;

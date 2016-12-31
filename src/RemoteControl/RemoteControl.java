@@ -41,13 +41,17 @@ public class RemoteControl implements Runnable {
     }
 
     // This Method To Get The Device ID Number From Remote Control 
-    private DeviceList getDevice() {
+    private DeviceInterface getDevice() {
         try {
             // Some Verbal TO Store Device ID From Remote Control 
             DeviceID = "";
 
             // While Loop Get Key Pressing From User
-            while ((Line = client.readLine()) != null) {
+            while (true) {
+
+                // Get Key Pressing From User
+                Line = client.readLine();
+
                 // To Check If the Key Entered Two Time
                 if (Line.split(" ")[2].equals(Previous)) {
                     Previous = "";
@@ -80,7 +84,7 @@ public class RemoteControl implements Runnable {
                     } else if (Line.equals("KEY_0")) {
                         DeviceID += "0";
                     } else if (Line.equals("KEY_OK")) { // if Key is OK New To Check If The Device ID is Correct
-                        DeviceList DeviceClass = Devices.Get(Integer.parseInt(DeviceID));
+                        DeviceInterface DeviceClass = Devices.Get(Integer.parseInt(DeviceID));
                         // if the Device is Found 
                         if (DeviceClass != null) {
                             // just To Print the Result
@@ -111,10 +115,14 @@ public class RemoteControl implements Runnable {
     }
 
     // This Method To Control Device
-    private void Execute(DeviceList DeviceClass) {
+    private void Execute(DeviceInterface DeviceClass) {
         try {
             // While Loop Get Key Pressing From User
-            while ((Line = client.readLine()) != null) {
+            while (true) {
+
+                // Get Key Pressing From User
+                Line = client.readLine();
+
                 // To Check If the Key Entered Two Time
                 if (Line.split(" ")[2].equals(Previous)) {
                     Previous = "";
@@ -138,41 +146,41 @@ public class RemoteControl implements Runnable {
                                 // if it is Light user can Turn On or Off Using Power Key
                                 if (Line.equals("KEY_POWER")) {
                                     // Change the Device State 
-                                    ((Light) DeviceClass.GetDevice()).ChangeState(!((Light) DeviceClass.GetDevice()).getDeviceState(), true);
+                                    DeviceClass.ChangeState(!DeviceClass.getDeviceState());
                                 }
                                 break;
                             case "AC":
                                 // if it is AC user can Turn On or Off Using Power Key
                                 if (Line.equals("KEY_POWER")) {
                                     // Change the Device State 
-                                    ((AC) DeviceClass.GetDevice()).ChangeState(!((AC) DeviceClass.GetDevice()).getDeviceState(), true);
+                                    DeviceClass.ChangeState(!DeviceClass.getDeviceState());
                                 }
                                 break;
                             case "Alarm":
                                 // if it is Alarm user can Turn On or Off Using Power Key
                                 if (Line.equals("KEY_POWER")) {
                                     // Change the Device State 
-                                    ((Alarm) DeviceClass.GetDevice()).ChangeState(!((Alarm) DeviceClass.GetDevice()).getDeviceState(), 0, 0, true);
+                                    DeviceClass.ChangeState(!DeviceClass.getDeviceState(), 0, 0);
                                 }
                                 break;
                             case "Curtains":
                                 // if it is Curtains user can Turn On using UP Key or Off Using Down Key
                                 if (Line.equals("KEY_UP")) {
                                     // Change the Device State 
-                                    ((Motor) DeviceClass.GetDevice()).ChangeState(true, 5499, true);
+                                    DeviceClass.ChangeState(true, 5499);
                                 } else if (Line.equals("KEY_DOWN")) {
                                     // Change the Device State 
-                                    ((Motor) DeviceClass.GetDevice()).ChangeState(false, 0, true);
+                                    DeviceClass.ChangeState(false, 0);
                                 }
                                 break;
                             case "Garage Door":
                                 // if it is Curtains user can Turn On using UP Key or Off Using Down Key
                                 if (Line.equals("KEY_UP")) {
                                     // Change the Device State 
-                                    ((Motor) DeviceClass.GetDevice()).ChangeState(true, 0, true);
+                                    DeviceClass.ChangeState(true, 0);
                                 } else if (Line.equals("KEY_DOWN")) {
                                     // Change the Device State 
-                                    ((Motor) DeviceClass.GetDevice()).ChangeState(false, 5599, true);
+                                    DeviceClass.ChangeState(false, 5599);
                                 }
                                 break;
                             default:
@@ -192,7 +200,11 @@ public class RemoteControl implements Runnable {
     public void run() {
         try {
             // While Loop Get Key Pressing From User
-            while ((Line = client.readLine()) != null) {
+            while (true) {
+
+                // Get Key Pressing From User
+                Line = client.readLine();
+
                 // To Check If the Key Entered Two Time
                 if (Line.split(" ")[2].equals(Previous)) {
                     Previous = "";
@@ -208,7 +220,7 @@ public class RemoteControl implements Runnable {
                         // just To Print the Result
                         FileLogger.AddInfo("RemoteControl, Start Remote Control.");
                         // The Method To Enter Device ID
-                        DeviceList DeviceClass = getDevice();
+                        DeviceInterface DeviceClass = getDevice();
                         // Check The Return Date 
                         // if Method Found the Device
                         if (DeviceClass != null) {
@@ -223,7 +235,7 @@ public class RemoteControl implements Runnable {
                         // just To Print the Result
                         FileLogger.AddInfo("RemoteControl, Start Remote Control For Garage Door.");
                         // Get Garage Door class From Devices Class
-                        DeviceList DeviceClass = Devices.Get("Garage Door");
+                        DeviceInterface DeviceClass = Devices.Get("Garage Door");
                         // if Method Found the Device
                         if (DeviceClass != null) {
                             // Alarm To Tell User the Input is Correct

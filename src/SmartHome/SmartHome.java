@@ -10,26 +10,19 @@ import Sensor.*;
 import Device.*;
 import Logger.*;
 import java.sql.*;
-import java.util.*;
 import RemoteControl.*;
 import com.adventnet.snmp.snmp2.*;
 
 public class SmartHome {
 
     private static Connection DB;
-    public static Relay RelayQueue;
-    public static Pins Pins;
-    public static Room Room;
-    public static User User;
-    public static Device Device;
-    public static Sensor Sensor;
-    public static Task Task;
-    public static ArrayList<RoomList> RoomList;
-    public static ArrayList<UserList> UserList;
-    public static ArrayList<SensorList> SensorList;
-    public static ArrayList<DeviceList> DeviceList;
-    public static ArrayList<TaskList> TaskList;
-    public static ArrayList<PinsList> PinsList;
+    private static Relay RelayQueue;
+    private static Pins Pins;
+    private static Room Room;
+    private static User User;
+    private static Device Device;
+    private static Sensor Sensor;
+    private static Task Task;
 
     public static void main(String[] args) {
         try {
@@ -70,26 +63,20 @@ public class SmartHome {
             SLogger SLogger = new SLogger(DB);
             System.out.println("Class Database Logger Executed Successfully.");
 
-            // Create ArrayList To Store The Pin Class
-            PinsList = new ArrayList();
             // Create Pin Class
-            Pins = new Pins(DB, PinsList);
+            Pins = new Pins(DB);
             // Start Getting Infrmation From The Database
             Pins.Start();
             System.out.println("Class Pins Executed Successfully.");
 
-            // Create ArrayList To Store The Room Class
-            RoomList = new ArrayList();
             // Create Room Class
-            Room = new Room(DB, RoomList);
+            Room = new Room(DB);
             // Start Getting Infrmation From The Database
             Room.Start();
             System.out.println("Class Room Executed Successfully.");
 
-            // Create ArrayList To Store The User Class
-            UserList = new ArrayList();
             // Create User Class
-            User = new User(DB, UserList, Room);
+            User = new User(DB, Room);
             // Start The Thread To Getting Infrmation From The Database and Update
             Thread UserThread = new Thread(User);
             UserThread.start();
@@ -98,10 +85,8 @@ public class SmartHome {
             Thread.sleep(1000);
             System.out.println("Class User Executed Successfully.");
 
-            // Create ArrayList To Store The Device Class
-            DeviceList = new ArrayList();
             // Create Device Class
-            Device = new Device(DB, DeviceList, Room, Pins, RelayQueue);
+            Device = new Device(DB, Room, Pins, RelayQueue);
             // Start The Thread To Getting Infrmation From The Database
             Thread DeviceThread = new Thread(Device);
             DeviceThread.start();
@@ -109,18 +94,14 @@ public class SmartHome {
             DeviceThread.join();
             System.out.println("Class Device Executed Successfully.");
 
-            // Create ArrayList To Store The Sensor Class
-            SensorList = new ArrayList();
             // Create Sensor Class
-            Sensor = new Sensor(DB, SensorList, Pins);
+            Sensor = new Sensor(DB, Pins);
             // Start Getting Infrmation From The Database
             Sensor.Start();
             System.out.println("Class Sensor Executed Successfully.");
 
-            // Create ArrayList To Store The Task Class
-            TaskList = new ArrayList();
             // Create Task Class
-            Task = new Task(DB, TaskList, Sensor, Device, Room, User, Sensor.Get("Smoke Detector"));
+            Task = new Task(DB, Sensor, Device, Room, User, Sensor.Get("Smoke Detector"));
             // Start The Thread To Getting Infrmation From The Database
             Thread TaskThread = new Thread(Task);
             TaskThread.start();
@@ -129,7 +110,7 @@ public class SmartHome {
             System.out.println("Class Task Executed Successfully.");
 
             // Create Water Level Up Task Class To Fill The Upper Water Tank
-            WaterLevelUpTask WaterLevelUpTask = new WaterLevelUpTask(Sensor.GetUltrasonic(), Device.GetWaterPump());
+            WaterLevelUpTask WaterLevelUpTask = new WaterLevelUpTask(Sensor.GetUltrasonic(), Device.Get("Water Pump"));
             System.out.println("Class Water Level Up Task Executed Successfully.");
 
             // Create Remote Control To Start Using Remote Control To Control Devices

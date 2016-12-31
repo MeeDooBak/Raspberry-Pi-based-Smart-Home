@@ -2,21 +2,28 @@ package Device;
 
 import Pins.*;
 import Logger.*;
+import Rooms.RoomList;
 import java.sql.*;
 import com.pi4j.io.gpio.*;
 import com.pi4j.gpio.extension.mcp.*;
 
-public class WaterPump implements Runnable {
+public class WaterPump implements Runnable, DeviceInterface {
 
     private final int DeviceID;
+    private final RoomList Room;
+    private final String DeviceName;
     private final Connection DB;
     private boolean Busy;
     private boolean DeviceState;
     private GpioPinDigitalOutput PIN;
 
     // Get Device Information from Database
-    public WaterPump(int DeviceID, PinsList GateNum, boolean DeviceState, boolean isStatusChanged, Connection DB) {
+    public WaterPump(int DeviceID, RoomList Room, String DeviceName, PinsList GateNum, boolean DeviceState, boolean isStatusChanged, Connection DB) {
         this.DeviceID = DeviceID;
+        this.DeviceName = DeviceName;
+        this.Room = Room;
+        // add This Device For Given Room
+        Room.getDeviceList().add(DeviceID);
         this.DB = DB;
         this.Busy = false;
 
@@ -24,7 +31,7 @@ public class WaterPump implements Runnable {
         this.getPin(GateNum);
 
         // To Make the Change For the First Time
-        this.ChangeState(DeviceState, isStatusChanged, "UP");
+        this.ChangeState(DeviceState, "UP");
     }
 
     // Get Device Pin From Raspberry PI
@@ -35,12 +42,28 @@ public class WaterPump implements Runnable {
         GateNum.getGPIO().setShutdownOptions(true, PinState.HIGH, PIN);
     }
 
+    @Override
+    public int getDeviceID() {
+        return DeviceID;
+    }
+
+    @Override
+    public RoomList getRoom() {
+        return Room;
+    }
+
+    @Override
+    public String getDeviceName() {
+        return DeviceName;
+    }
+
     // To Change Device State
-    public final void ChangeState(boolean DeviceState, boolean isStatusChanged, String UP_DOWN) {
+    @Override
+    public final void ChangeState(boolean DeviceState, String UP_DOWN) {
         // To Check if the Current Device State is not equl The New Device State
         // and to check is it Change from DataBase
         // if it is equl just ignore it
-        if (this.DeviceState != DeviceState && isStatusChanged) {
+        if (this.DeviceState != DeviceState) {
             // To tell Database that java change the Device State 
             try (PreparedStatement ps2 = DB.prepareStatement("update device set isStatusChanged = ? where DeviceID = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
                 ps2.setBoolean(1, false);
@@ -113,5 +136,32 @@ public class WaterPump implements Runnable {
             // This Catch For DataBase Error 
             FileLogger.AddWarning("WaterPump " + DeviceID + ", Error In DataBase\n" + ex);
         }
+    }
+
+    @Override
+    public void ChangeState(boolean DeviceState) {
+    }
+
+    @Override
+    public void ChangeState(boolean DeviceState, int StepperMotorMoves) {
+    }
+
+    @Override
+    public void ChangeState(boolean DeviceState, int AlarmDuration, int AlarmInterval) {
+    }
+
+    @Override
+    public boolean getDeviceState() {
+        return false;
+    }
+
+    @Override
+    public boolean Capture(int TakeImage) {
+        return false;
+    }
+
+    @Override
+    public boolean Record(int Minute) {
+        return false;
     }
 }

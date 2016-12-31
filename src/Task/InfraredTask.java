@@ -1,6 +1,5 @@
 package Task;
 
-import Device.*;
 import Email.*;
 import Logger.*;
 import Rooms.*;
@@ -9,7 +8,7 @@ import Users.*;
 import java.sql.*;
 import java.util.*;
 
-public class InfraredTask implements Runnable {
+public class InfraredTask implements Runnable, TaskInterface {
 
     private boolean isDisabled;
     private final int TaskID;
@@ -19,7 +18,7 @@ public class InfraredTask implements Runnable {
     private final boolean repeatDaily;
     private final int AlarmDuration;
     private final int AlarmInterval;
-    private final SensorList Sensor;
+    private final SensorInterface Sensor;
     private final ArrayList<TaskDevicesList> List;
     private final boolean NotifyByEmail;
     private final java.sql.Date ActionDate;
@@ -30,7 +29,7 @@ public class InfraredTask implements Runnable {
 
     // Get Device Information from Database
     public InfraredTask(int TaskID, String TaskName, UserList User, RoomList Room, boolean isDisabled, boolean repeatDaily, int AlarmDuration, int AlarmInterval,
-            SensorList Sensor, ArrayList<TaskDevicesList> List, boolean NotifyByEmail, java.sql.Date ActionDate, Time EnableTaskOnTime, Time DisableTaskOnTime, Connection DB) {
+            SensorInterface Sensor, ArrayList<TaskDevicesList> List, boolean NotifyByEmail, java.sql.Date ActionDate, Time EnableTaskOnTime, Time DisableTaskOnTime, Connection DB) {
         this.TaskID = TaskID;
         this.TaskName = TaskName;
         this.User = User;
@@ -53,7 +52,14 @@ public class InfraredTask implements Runnable {
         this.Thread.start();
     }
 
+    // Get The Task ID
+    @Override
+    public int getTaskID() {
+        return TaskID;
+    }
+
     // Disabled The Thread To Stop it and Deleting The Task To Set the New Information
+    @Override
     public boolean setisDisabled(boolean isDisabled) {
         // Check if Thread is Alive To Stop It
         if (Thread.isAlive()) {
@@ -76,34 +82,35 @@ public class InfraredTask implements Runnable {
     }
 
     // This Method To Execute Changing in The Device And Send Email To User If He / Her Want
+    @Override
     public void Execute() {
         try {
             // Check The Sensor State if it is True
-            if (((InfraredSensor) Sensor.GetSensor()).getSensorState()) {
+            if (Sensor.getSensorState()) {
 
                 // Loop For All Device Select From User For This Task
                 for (int i = 0; i < List.size(); i++) {
 
                     // Get The Device Name To Change it State, According to its kind
-                    switch (List.get(i).getDeviceID().getDeviceName()) {
+                    switch (List.get(i).getDevice().getDeviceName()) {
                         case "Alarm":
                             // Check if The Device State is Not Equl To User Information State To Change it
-                            if (((Alarm) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                            if (List.get(i).getDevice().getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
                                 // Change the Device State According to User Information
-                                ((Alarm) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval, true);
+                                List.get(i).getDevice().ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval);
                             }
                             break;
                         case "Security Camera":
                             // Check if The User Information Want To Tack Image From Security Camera Device
                             if (List.get(i).getTakeImage() > 0) {
                                 // Tack Image According to User Information
-                                ((SecurityCamera) List.get(i).getDeviceID().GetDevice()).Capture(List.get(i).getTakeImage());
+                                List.get(i).getDevice().Capture(List.get(i).getTakeImage());
                             }
 
                             // Check if The User Information Want To Record Video From Security Camera Device
                             if (List.get(i).getTakeVideo() > 0) {
                                 // Record Video According to User Information
-                                ((SecurityCamera) List.get(i).getDeviceID().GetDevice()).Record(List.get(i).getTakeVideo());
+                                List.get(i).getDevice().Record(List.get(i).getTakeVideo());
                             }
                             break;
                         default:
@@ -120,7 +127,7 @@ public class InfraredTask implements Runnable {
                 SLogger.Logger("House parameters", TaskName, Room, Sensor, List, -1);
 
                 // Loop Until The Sensor State Change To False
-                while (((InfraredSensor) Sensor.GetSensor()).getSensorState()) {
+                while (Sensor.getSensorState()) {
                     // To Sleep For 1 Second
                     Thread.sleep(1000);
                 }

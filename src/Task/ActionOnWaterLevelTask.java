@@ -1,6 +1,5 @@
 package Task;
 
-import Device.*;
 import Email.*;
 import Logger.*;
 import Rooms.*;
@@ -9,7 +8,7 @@ import Users.*;
 import java.sql.*;
 import java.util.*;
 
-public class ActionOnWaterLevelTask implements Runnable {
+public class ActionOnWaterLevelTask implements Runnable, TaskInterface {
 
     private boolean isDisabled;
     private int Percentage;
@@ -17,11 +16,11 @@ public class ActionOnWaterLevelTask implements Runnable {
     private final String TaskName;
     private final UserList User;
     private final RoomList Room;
-    private final SensorList SmokeSensor;
+    private final SensorInterface SmokeSensor;
     private final boolean repeatDaily;
     private final int AlarmDuration;
     private final int AlarmInterval;
-    private final SensorList Sensor;
+    private final SensorInterface Sensor;
     private final ArrayList<TaskDevicesList> List;
     private final int SelectedSensorValue;
     private final boolean NotifyByEmail;
@@ -35,8 +34,8 @@ public class ActionOnWaterLevelTask implements Runnable {
     private final int[][] Levels;
 
     // Get Device Information from Database
-    public ActionOnWaterLevelTask(int TaskID, String TaskName, UserList User, RoomList Room, SensorList SmokeSensor, boolean isDisabled, boolean repeatDaily,
-            int AlarmDuration, int AlarmInterval, SensorList Sensor, ArrayList<TaskDevicesList> List, int SelectedSensorValue, boolean NotifyByEmail, java.sql.Date ActionDate,
+    public ActionOnWaterLevelTask(int TaskID, String TaskName, UserList User, RoomList Room, SensorInterface SmokeSensor, boolean isDisabled, boolean repeatDaily,
+            int AlarmDuration, int AlarmInterval, SensorInterface Sensor, ArrayList<TaskDevicesList> List, int SelectedSensorValue, boolean NotifyByEmail, java.sql.Date ActionDate,
             Time EnableTaskOnTime, Time DisableTaskOnTime, Connection DB) {
 
         this.TaskID = TaskID;
@@ -58,9 +57,9 @@ public class ActionOnWaterLevelTask implements Runnable {
         this.DB = DB;
 
         // Get The Maximum Value For The Sensor
-        this.MaxValue = ((Ultrasonic) Sensor.GetSensor()).getMaxValue();
+        this.MaxValue = Sensor.getMaxValue();
         // Get The Minimum Value For The Sensor
-        this.MinValue = ((Ultrasonic) Sensor.GetSensor()).getMinValue();
+        this.MinValue = Sensor.getMinValue();
 
         // Set The Percentage Level For The Water
         this.Levels = new int[][]{{this.MinValue, 100}, {7, 90}, {8, 80}, {9, 70}, {10, 60}, {11, 50}, {12, 40}, {13, 30}, {14, 20}, {this.MaxValue, 10}};
@@ -79,7 +78,14 @@ public class ActionOnWaterLevelTask implements Runnable {
         this.Thread.start();
     }
 
+    // Get The Task ID
+    @Override
+    public int getTaskID() {
+        return TaskID;
+    }
+
     // Disabled The Thread To Stop it and Deleting The Task To Set the New Information
+    @Override
     public boolean setisDisabled(boolean isDisabled) {
         // Check if Thread is Alive To Stop It
         if (Thread.isAlive()) {
@@ -102,10 +108,11 @@ public class ActionOnWaterLevelTask implements Runnable {
     }
 
     // This Method To Execute Changing in The Device And Send Email To User If He / Her Want
+    @Override
     public void Execute() {
         try {
             // Get The Sensor State Value
-            int Level = ((Ultrasonic) Sensor.GetSensor()).getSensorValue();
+            int Level = Sensor.getSensorValue();
 
             // Check if Sensor State Value is Greater Than -1 Or Ignore it
             if (Level != -1) {
@@ -115,7 +122,7 @@ public class ActionOnWaterLevelTask implements Runnable {
                     // Before Execute Changing To Device Let Check The Smoking Sensor
                     // If it is True Do not Execute Changing To Device
                     // For Safety
-                    if (((SmokeSensor) SmokeSensor.GetSensor()).getSensorState()) {
+                    if (SmokeSensor.getSensorState()) {
                         // just To Print the Result of Smoking Sensor State
                         FileLogger.AddWarning("The Task : " + TaskID + " Has been Deactivate, Because the Gas Sensor is Activated");
 
@@ -125,12 +132,12 @@ public class ActionOnWaterLevelTask implements Runnable {
                         for (int i = 0; i < List.size(); i++) {
 
                             // Get The Device Name To Change it State, According to its kind
-                            switch (List.get(i).getDeviceID().getDeviceName()) {
+                            switch (List.get(i).getDevice().getDeviceName()) {
                                 case "Alarm":
                                     // Check if The Device State is Not Equl To User Information State To Change it
-                                    if (((Alarm) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                                    if (List.get(i).getDevice().getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
                                         // Change the Device State According to User Information
-                                        ((Alarm) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval, true);
+                                        List.get(i).getDevice().ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval);
                                     }
                                     break;
                                 default:
@@ -150,7 +157,7 @@ public class ActionOnWaterLevelTask implements Runnable {
                     // Loop Until The Sensor State Value Change
                     while (true) {
                         // Get The Sensor State Value
-                        Level = ((Ultrasonic) Sensor.GetSensor()).getSensorValue();
+                        Level = Sensor.getSensorValue();
 
                         // Check if Sensor State Value is Greater Than -1 and is Not Equal To User Information Percentage
                         // To Break From The Loop

@@ -10,9 +10,9 @@ public class Pins {
     private final ArrayList<PinsList> PinsList;
 
     // Get Infromation from Main Class 
-    public Pins(Connection DB, ArrayList<PinsList> PinsList) {
+    public Pins(Connection DB) {
         this.DB = DB;
-        this.PinsList = PinsList;
+        this.PinsList = new ArrayList();
 
     }
 

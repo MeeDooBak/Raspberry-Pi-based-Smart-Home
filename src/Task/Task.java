@@ -11,32 +11,22 @@ import java.util.ArrayList;
 public class Task implements Runnable {
 
     private final Connection DB;
-    private final ArrayList<TaskList> TaskList;
+    private final ArrayList<TaskInterface> TaskList;
     private final Device Devices;
     private final Sensor Sensors;
     private final Room Room;
     private final User User;
-    private final SensorList SmokeSensor;
+    private final SensorInterface SmokeSensor;
 
     // Get Infromation from Main Class 
-    public Task(Connection DB, ArrayList<TaskList> TaskList, Sensor Sensors, Device Devices, Room Room, User User, SensorList SmokeSensor) {
+    public Task(Connection DB, Sensor Sensors, Device Devices, Room Room, User User, SensorInterface SmokeSensor) {
         this.DB = DB;
-        this.TaskList = TaskList;
+        this.TaskList = new ArrayList();
         this.Sensors = Sensors;
         this.Devices = Devices;
         this.Room = Room;
         this.User = User;
         this.SmokeSensor = SmokeSensor;
-    }
-
-    // Search and return ArrayList index if the specific Task exists by ID
-    public int indexof(int TaskID) {
-        for (int i = 0; i < TaskList.size(); i++) {
-            if (TaskList.get(i).getTaskID() == TaskID) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     // The Thread
@@ -50,7 +40,7 @@ public class Task implements Runnable {
                 // Delete The Task and Loop Until ArrayList To Be Empty
                 while (!TaskList.isEmpty()) {
                     // Loop Until The Task Securely Delete
-                    while (!TaskList.get(0).DeleteTask()) {
+                    while (!TaskList.get(0).setisDisabled(true)) {
                     }
                     // Delete The Task Class
                     TaskList.remove(0);
@@ -120,9 +110,49 @@ public class Task implements Runnable {
                                 NewUserList = User.Get("Father");
                             }
 
-                            // Create and add To the ArrayList the Task Class
-                            TaskList.add(new TaskList(TaskID, TaskName, NewUserList, Room.Get(RoomID), SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval,
-                                    Sensors.Get(SensorID), getDevices(TaskID), SelectedSensorValue, NotifyByEmail, ActionDate, ActionTime, EnableTaskOnTime, DisableTaskOnTime, DB));
+                            RoomList TaskRoom = Room.Get(RoomID);
+                            SensorInterface Sensor = Sensors.Get(SensorID);
+                            ArrayList<TaskDevicesList> List = getDevices(TaskID);
+
+                            // Create and add To the ArrayList the Task Class, According to its kind Using Sensor Name
+                            switch (Sensor.getSensorName()) {
+                                case "Motion Sensor":
+                                    if (SelectedSensorValue == -1) {
+                                        TaskList.add(new ActionOnDetectionTask(TaskID, TaskName, NewUserList, TaskRoom, SmokeSensor, isDisabled, repeatDaily,
+                                                AlarmDuration, AlarmInterval, Sensor, List, NotifyByEmail, ActionDate, EnableTaskOnTime, DisableTaskOnTime, DB));
+
+                                    } else if (SelectedSensorValue > 0) {
+                                        TaskList.add(new ActionAfterNoDetectionTask(TaskID, TaskName, NewUserList, TaskRoom, SmokeSensor, isDisabled, repeatDaily,
+                                                AlarmDuration, AlarmInterval, Sensor, List, SelectedSensorValue, NotifyByEmail, ActionDate, EnableTaskOnTime, DisableTaskOnTime, DB));
+                                    }
+                                    break;
+                                case "Smoke Detector":
+                                    TaskList.add(new SmokeTask(TaskID, TaskName, NewUserList, TaskRoom, isDisabled, repeatDaily, AlarmDuration, AlarmInterval,
+                                            Sensor, List, NotifyByEmail, ActionDate, EnableTaskOnTime, DisableTaskOnTime, DB));
+                                    break;
+                                case "Temperature Sensor":
+                                    TaskList.add(new TemperatureTask(TaskID, TaskName, NewUserList, TaskRoom, SmokeSensor, isDisabled, repeatDaily, AlarmDuration,
+                                            AlarmInterval, Sensor, List, SelectedSensorValue, NotifyByEmail, ActionDate, EnableTaskOnTime, DisableTaskOnTime, DB));
+                                    break;
+                                case "Light Sensor":
+                                    TaskList.add(new LightTask(TaskID, TaskName, NewUserList, TaskRoom, SmokeSensor, isDisabled, repeatDaily, AlarmDuration,
+                                            AlarmInterval, Sensor, List, SelectedSensorValue, NotifyByEmail, ActionDate, EnableTaskOnTime, DisableTaskOnTime, DB));
+                                    break;
+                                case "Ultrasonic":
+                                    TaskList.add(new ActionOnWaterLevelTask(TaskID, TaskName, NewUserList, TaskRoom, SmokeSensor, isDisabled, repeatDaily, AlarmDuration,
+                                            AlarmInterval, Sensor, List, SelectedSensorValue, NotifyByEmail, ActionDate, EnableTaskOnTime, DisableTaskOnTime, DB));
+                                    break;
+                                case "Clock":
+                                    TaskList.add(new TimingTask(TaskID, TaskName, NewUserList, TaskRoom, SmokeSensor, isDisabled, repeatDaily, AlarmDuration, AlarmInterval,
+                                            ActionTime, List, NotifyByEmail, ActionDate, EnableTaskOnTime, DisableTaskOnTime, DB));
+                                    break;
+                                case "Infrared Sensor":
+                                    TaskList.add(new InfraredTask(TaskID, TaskName, NewUserList, TaskRoom, isDisabled, repeatDaily, AlarmDuration, AlarmInterval,
+                                            Sensor, List, NotifyByEmail, ActionDate, EnableTaskOnTime, DisableTaskOnTime, DB));
+                                    break;
+                                default:
+                                    break;
+                            }
 
                             // just To Print the Result
                             FileLogger.AddInfo("Add Task : " + TaskID + ", with Name : " + TaskName);
@@ -183,5 +213,15 @@ public class Task implements Runnable {
 
         // Return The List
         return List;
+    }
+
+    // Search and return ArrayList index if the specific Task exists by ID
+    public int indexof(int TaskID) {
+        for (int i = 0; i < TaskList.size(); i++) {
+            if (TaskList.get(i).getTaskID() == TaskID) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

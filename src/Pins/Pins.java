@@ -16,9 +16,9 @@ public class Pins {
     private final MCP23017GpioProvider[] Provider = new MCP23017GpioProvider[4];
 
     // Get Infromation from Main Class 
-    public Pins(Connection DB, ArrayList<PinsList> PinsList) {
+    public Pins(Connection DB) {
         this.DB = DB;
-        this.PinsList = PinsList;
+        this.PinsList = new ArrayList();
 
         // create gpio controller
         this.GPIO = GpioFactory.getInstance();

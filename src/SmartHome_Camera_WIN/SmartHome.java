@@ -12,8 +12,6 @@ public class SmartHome {
     private static Connection DB;
     private static Pins Pins;
     private static Camera Camera;
-    private static ArrayList<CameraList> CameraList;
-    private static ArrayList<PinsList> PinsList;
 
     public static void main(String[] args) {
         try {
@@ -36,18 +34,14 @@ public class SmartHome {
             SendFile SendFile = new SendFile("192.168.1.99", 21, "root", "mlover054004", DB);
             System.out.println("Class Send File Executed Successfully.");
 
-            // Create ArrayList To Store The Pin Class
-            PinsList = new ArrayList();
             // Create Pin Class
-            Pins = new Pins(DB, PinsList);
+            Pins = new Pins(DB);
             // Start Getting Infrmation From The Database
             Pins.Start();
             System.out.println("Class Pins Executed Successfully.");
 
-            // Create ArrayList To Store The Device Class
-            CameraList = new ArrayList();
             // Create Device Class
-            Camera = new Camera(DB, CameraList, Pins);
+            Camera = new Camera(DB, Pins);
             // Start Getting Infrmation From The Database
             Camera.Start();
             System.out.println("Class Camera Executed Successfully.");

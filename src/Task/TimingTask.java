@@ -1,6 +1,5 @@
 package Task;
 
-import Device.*;
 import Email.*;
 import Logger.*;
 import Rooms.*;
@@ -10,14 +9,14 @@ import java.sql.*;
 import java.text.*;
 import java.util.*;
 
-public class TimingTask implements Runnable {
+public class TimingTask implements Runnable, TaskInterface {
 
     private boolean isDisabled;
     private final int TaskID;
     private final String TaskName;
     private final UserList User;
     private final RoomList Room;
-    private final SensorList SmokeSensor;
+    private final SensorInterface SmokeSensor;
     private final boolean repeatDaily;
     private final int AlarmDuration;
     private final int AlarmInterval;
@@ -31,7 +30,7 @@ public class TimingTask implements Runnable {
     private final Thread Thread;
 
     // Get Device Information from Database
-    public TimingTask(int TaskID, String TaskName, UserList User, RoomList Room, SensorList SmokeSensor, boolean isDisabled, boolean repeatDaily,
+    public TimingTask(int TaskID, String TaskName, UserList User, RoomList Room, SensorInterface SmokeSensor, boolean isDisabled, boolean repeatDaily,
             int AlarmDuration, int AlarmInterval, Time ActionTime, ArrayList<TaskDevicesList> List, boolean NotifyByEmail, java.sql.Date ActionDate,
             Time EnableTaskOnTime, Time DisableTaskOnTime, Connection DB) {
 
@@ -58,7 +57,14 @@ public class TimingTask implements Runnable {
         this.Thread.start();
     }
 
+    // Get The Task ID
+    @Override
+    public int getTaskID() {
+        return TaskID;
+    }
+
     // Disabled The Thread To Stop it and Deleting The Task To Set the New Information
+    @Override
     public boolean setisDisabled(boolean isDisabled) {
         // Check if Thread is Alive To Stop It
         if (Thread.isAlive()) {
@@ -81,12 +87,13 @@ public class TimingTask implements Runnable {
     }
 
     // This Method To Execute Changing in The Device And Send Email To User If He / Her Want
+    @Override
     public void Execute() {
         try {
             // Before Execute Changing To Device Let Check The Smoking Sensor
             // If it is True Do not Execute Changing To Device
             // For Safety
-            if (((SmokeSensor) SmokeSensor.GetSensor()).getSensorState()) {
+            if (SmokeSensor.getSensorState()) {
                 // just To Print the Result of Smoking Sensor State
                 FileLogger.AddWarning("The Task : " + TaskID + " Has been Deactivate, Because the Gas Sensor is Activated");
 
@@ -99,21 +106,21 @@ public class TimingTask implements Runnable {
                 for (int i = 0; i < List.size(); i++) {
 
                     // Get The Device Name To Change it State, According to its kind
-                    switch (List.get(i).getDeviceID().getDeviceName()) {
+                    switch (List.get(i).getDevice().getDeviceName()) {
                         case "Roof Lamp":
                             // Check if The Device State is Not Equl To User Information State To Change it
-                            if (((Light) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                            if (List.get(i).getDevice().getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
                                 // Change the Device State According to User Information
-                                ((Light) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), true);
+                                List.get(i).getDevice().ChangeState(List.get(i).getRequiredDeviceStatus());
                                 Send = true;
                             }
                             break;
 
                         case "AC":
                             // Check if The Device State is Not Equl To User Information State To Change it
-                            if (((AC) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                            if (List.get(i).getDevice().getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
                                 // Change the Device State According to User Information
-                                ((AC) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), true);
+                                List.get(i).getDevice().ChangeState(List.get(i).getRequiredDeviceStatus());
                                 Send = true;
                             }
                             break;
@@ -121,26 +128,26 @@ public class TimingTask implements Runnable {
                         case "Curtains":
                             // Get Last Move For The Curtains From Database
                             try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                                    ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + List.get(i).getDeviceID().getDeviceID())) {
+                                    ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + List.get(i).getDevice().getDeviceID())) {
                                 Result.next();
 
                                 // Check if The Device State is Not Equl To User Information State To Change it
-                                if (((Motor) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                                if (List.get(i).getDevice().getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
                                     // Change the Device State According to User Information
-                                    ((Motor) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), Result.getInt("StepperMotorMoves"), true);
+                                    List.get(i).getDevice().ChangeState(List.get(i).getRequiredDeviceStatus(), Result.getInt("StepperMotorMoves"));
                                     Send = true;
                                 }
                             } catch (SQLException ex) {
                                 // This Catch For DataBase Error 
-                                FileLogger.AddWarning("TimingTask " + TaskID + ", Error In DataBase\n" + ex);
+                                FileLogger.AddWarning("TemperatureTask " + TaskID + ", Error In DataBase\n" + ex);
                             }
                             break;
 
                         case "Alarm":
                             // Check if The Device State is Not Equl To User Information State To Change it
-                            if (((Alarm) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                            if (List.get(i).getDevice().getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
                                 // Change the Device State According to User Information
-                                ((Alarm) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval, true);
+                                List.get(i).getDevice().ChangeState(List.get(i).getRequiredDeviceStatus(), AlarmDuration, AlarmInterval);
                                 Send = true;
                             }
                             break;
@@ -148,13 +155,13 @@ public class TimingTask implements Runnable {
                         case "Garage Door":
                             // Get Last Move For The Garage Door From Database
                             try (Statement Statement = DB.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                                    ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + List.get(i).getDeviceID().getDeviceID())) {
+                                    ResultSet Result = Statement.executeQuery("select * from device_stepper_motor where DeviceID = " + List.get(i).getDevice().getDeviceID())) {
                                 Result.next();
 
                                 // Check if The Device State is Not Equl To User Information State To Change it
-                                if (((Motor) List.get(i).getDeviceID().GetDevice()).getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
+                                if (List.get(i).getDevice().getDeviceState() != List.get(i).getRequiredDeviceStatus()) {
                                     // Change the Device State According to User Information
-                                    ((Motor) List.get(i).getDeviceID().GetDevice()).ChangeState(List.get(i).getRequiredDeviceStatus(), Result.getInt("StepperMotorMoves"), true);
+                                    List.get(i).getDevice().ChangeState(List.get(i).getRequiredDeviceStatus(), Result.getInt("StepperMotorMoves"));
                                     Send = true;
                                 }
                             } catch (SQLException ex) {
@@ -167,13 +174,13 @@ public class TimingTask implements Runnable {
                             // Check if The User Information Want To Tack Image From Security Camera Device
                             if (List.get(i).getTakeImage() > 0) {
                                 // Tack Image According to User Information
-                                ((SecurityCamera) List.get(i).getDeviceID().GetDevice()).Capture(List.get(i).getTakeImage());
+                                List.get(i).getDevice().Capture(List.get(i).getTakeImage());
                             }
 
                             // Check if The User Information Want To Record Video From Security Camera Device
                             if (List.get(i).getTakeVideo() > 0) {
                                 // Record Video According to User Information
-                                ((SecurityCamera) List.get(i).getDeviceID().GetDevice()).Record(List.get(i).getTakeVideo());
+                                List.get(i).getDevice().Record(List.get(i).getTakeVideo());
                             }
                             break;
                         default:

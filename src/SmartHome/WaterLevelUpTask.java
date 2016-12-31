@@ -7,8 +7,8 @@ import java.util.*;
 
 public class WaterLevelUpTask implements Runnable {
 
-    private final ArrayList<SensorList> Sensor;
-    private final DeviceList Device;
+    private final ArrayList<SensorInterface> Sensor;
+    private final DeviceInterface Device;
     private final int UpperMax;
     private final int UpperMin;
     private final int DownMax;
@@ -17,21 +17,21 @@ public class WaterLevelUpTask implements Runnable {
     private int DownDistance;
 
     // Get Infromation from Main Class 
-    public WaterLevelUpTask(ArrayList<SensorList> Sensor, DeviceList Device) {
+    public WaterLevelUpTask(ArrayList<SensorInterface> Sensor, DeviceInterface Device) {
         this.Sensor = Sensor;
         this.Device = Device;
 
         // Get Last Distance For Down Water Tank
-        DownDistance = ((Ultrasonic) Sensor.get(0).GetSensor()).getSensorValue();
+        DownDistance = Sensor.get(0).getSensorValue();
         // Get Maximum Value For Down Water Tank
-        DownMax = ((Ultrasonic) Sensor.get(0).GetSensor()).getMaxValue();
+        DownMax = Sensor.get(0).getMaxValue();
 
         // Get Last Distance For Upper Water Tank
-        UpperDistance = ((Ultrasonic) Sensor.get(1).GetSensor()).getSensorValue();
+        UpperDistance = Sensor.get(1).getSensorValue();
         // Get Maximum Value For Upper Water Tank
-        UpperMax = ((Ultrasonic) Sensor.get(1).GetSensor()).getMaxValue();
+        UpperMax = Sensor.get(1).getMaxValue();
         // Get Minimum Value For Upper Water Tank
-        UpperMin = ((Ultrasonic) Sensor.get(1).GetSensor()).getMinValue();
+        UpperMin = Sensor.get(1).getMinValue();
 
         // Start Thread To Check if Down Water Tank is Empty
         new Thread(this).start();
@@ -46,7 +46,7 @@ public class WaterLevelUpTask implements Runnable {
         while (true) {
             try {
                 // Get and Check The Distance For Down Water Tank is Not Equl -1 
-                while ((DownDistance = ((Ultrasonic) Sensor.get(0).GetSensor()).getSensorValue()) == -1) {
+                while ((DownDistance = Sensor.get(0).getSensorValue()) == -1) {
                     Thread.sleep(50);
                 }
 
@@ -56,12 +56,12 @@ public class WaterLevelUpTask implements Runnable {
                     // Set the Boolean Value With True To Stop Fill the Upper Water Tank
                     isDownWaterTankEmpty = true;
                     // Stop The Water Pump To Fill the Upper Water Tank
-                    ((WaterPump) Device.GetDevice()).ChangeState(false, true, "DOWN");
+                    Device.ChangeState(false, "DOWN");
 
                     // This While Loop Wait Until The Down Water Tank Fill
                     while (true) {
                         // Get and Check The Distance For Down Water Tank is Not Equl -1 
-                        while ((DownDistance = ((Ultrasonic) Sensor.get(0).GetSensor()).getSensorValue()) == -1) {
+                        while ((DownDistance = Sensor.get(0).getSensorValue()) == -1) {
                             Thread.sleep(50);
                         }
 
@@ -74,7 +74,7 @@ public class WaterLevelUpTask implements Runnable {
                             break;
                         } else {
                             // Stop The Water Pump To Fill the Upper Water Tank
-                            ((WaterPump) Device.GetDevice()).ChangeState(false, true, "DOWN");
+                            Device.ChangeState(false, "DOWN");
 
                             // To Sleep For Half a secon
                             Thread.sleep(500);
@@ -99,7 +99,7 @@ public class WaterLevelUpTask implements Runnable {
                 try {
 
                     // Get and Check The Distance For Upper Water Tank is Not Equl -1 
-                    while ((UpperDistance = ((Ultrasonic) Sensor.get(1).GetSensor()).getSensorValue()) == -1) {
+                    while ((UpperDistance = Sensor.get(1).getSensorValue()) == -1) {
                         Thread.sleep(50);
                     }
 
@@ -107,14 +107,14 @@ public class WaterLevelUpTask implements Runnable {
                     // Mean The Upper Water Tank is Empty To Start Fill the Upper Water Tank
                     if (UpperDistance >= UpperMax && !isDownWaterTankEmpty) {
                         // Start The Water Pump To Fill the Upper Water Tank
-                        ((WaterPump) Device.GetDevice()).ChangeState(true, true, "UP");
+                        Device.ChangeState(true, "UP");
                     }
 
                     // Check if the Distance For Upper Water Tank Smaller Than Or Equl The Minimum Value For Upper Water Tank
                     // Mean The Upper Water Tank is Full To Stop Fill the Upper Water Tank
                     if (UpperDistance <= UpperMin) {
                         // Stop The Water Pump To Fill the Upper Water Tank
-                        ((WaterPump) Device.GetDevice()).ChangeState(false, true, "UP");
+                        Device.ChangeState(false, "UP");
                     }
 
                     // To Sleep For Half a secon

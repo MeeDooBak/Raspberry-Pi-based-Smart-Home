@@ -6,19 +6,23 @@ import java.sql.*;
 import java.util.*;
 import com.pi4j.wiringpi.*;
 
-public class TemperatureSensor implements Runnable {
+public class TemperatureSensor implements Runnable, SensorInterface {
 
     private int SensorValue;
     private final int[] Data = new int[10];
     private final int SensorID;
+    private final int RoomID;
+    private final String SensorName;
     private final Connection DB;
     private final int PIN;
     private final int MAXTIMINGS = 85;
 
     // Get Sensor Information from Database
-    public TemperatureSensor(int SensorID, PinsList GateNum, int SensorValue, Connection DB) {
+    public TemperatureSensor(int SensorID, int RoomID, String SensorName, PinsList GateNum, int SensorValue, Connection DB) {
         this.DB = DB;
         this.SensorID = SensorID;
+        this.RoomID = RoomID;
+        this.SensorName = SensorName;
         this.SensorValue = SensorValue;
 
         // Get Pin Number From Pin Class
@@ -30,8 +34,27 @@ public class TemperatureSensor implements Runnable {
         // Start Thread To Get Sensor State
         new Thread(this).start();
     }
+    
+    // Get Sensor ID
+    @Override
+    public int getSensorID() {
+        return SensorID;
+    }
+
+    // Get Sensor Room ID
+    @Override
+    public int getRoomID() {
+        return RoomID;
+    }
+
+    // Get Sensor Name
+    @Override
+    public String getSensorName() {
+        return SensorName;
+    }
 
     // Return Sensor State Value
+    @Override
     public int getSensorValue() {
         return SensorValue;
     }
@@ -108,5 +131,20 @@ public class TemperatureSensor implements Runnable {
                 new Thread(this).start();
             }
         }
+    }
+
+    @Override
+    public int getMaxValue() {
+        return 0;
+    }
+
+    @Override
+    public int getMinValue() {
+        return 0;
+    }
+
+    @Override
+    public boolean getSensorState() {
+        return false;
     }
 }

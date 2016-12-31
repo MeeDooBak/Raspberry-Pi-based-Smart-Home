@@ -37,7 +37,7 @@ public class Mail implements Runnable {
     }
 
     // Get The Information From The Other Classes to add it in the Queue then Send it 
-    public static void SendMail(String MessageType, String TaskName, UserList User, RoomList Room, SensorList Sensor, ArrayList<TaskDevicesList> List, int SelectedSensorValue) {
+    public static void SendMail(String MessageType, String TaskName, UserList User, RoomList Room, SensorInterface Sensor, ArrayList<TaskDevicesList> List, int SelectedSensorValue) {
         String Email = "";
         String Subject = "";
         String Body = "";
@@ -62,7 +62,7 @@ public class Mail implements Runnable {
 
                 Body += "and Turned Devices:\n";
                 for (int i = 0; i < List.size(); i++) {
-                    Body += "Device Name : (" + List.get(i).getDeviceID().getDeviceName() + ")";
+                    Body += "Device Name : (" + List.get(i).getDevice().getDeviceName() + ")";
                     Body += ", Changed State to " + List.get(i).getRequiredDeviceStatus();
                     Body += "\n";
                 }
@@ -125,10 +125,10 @@ public class Mail implements Runnable {
                 Body += "Executed with (" + Sensor.getSensorName() + ")\n";
                 Body += "and Turned Devices:\n";
                 for (int i = 0; i < List.size(); i++) {
-                    Body += "Device Name : " + List.get(i).getDeviceID().getDeviceName();
-                    if (List.get(i).getDeviceID().getDeviceName().equals("Alarm")) {
+                    Body += "Device Name : " + List.get(i).getDevice().getDeviceName();
+                    if (List.get(i).getDevice().getDeviceName().equals("Alarm")) {
                         Body += ", Changed State to " + List.get(i).getRequiredDeviceStatus();
-                    } else if (List.get(i).getDeviceID().getDeviceName().equals("Security Camera")) {
+                    } else if (List.get(i).getDevice().getDeviceName().equals("Security Camera")) {
                         Body += ", Took " + List.get(i).getTakeImage() + " Imgs. ";
                     }
                     Body += "\n";

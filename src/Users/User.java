@@ -12,9 +12,9 @@ public class User implements Runnable {
     private final Room Rooms;
 
     // Get Infromation from Main Class 
-    public User(Connection DB, ArrayList<UserList> UserList, Room Rooms) {
+    public User(Connection DB, Room Rooms) {
         this.DB = DB;
-        this.UserList = UserList;
+        this.UserList = new ArrayList();
         this.Rooms = Rooms;
     }
 

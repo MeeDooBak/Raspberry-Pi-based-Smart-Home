@@ -6,10 +6,12 @@ import java.sql.*;
 import java.util.*;
 import com.pi4j.io.gpio.*;
 
-public class Ultrasonic implements Runnable {
+public class Ultrasonic implements Runnable, SensorInterface {
 
     private int SensorValue;
     private final int SensorID;
+    private final int RoomID;
+    private final String SensorName;
     private final int MaxValue;
     private final int MinValue;
     private final Connection DB;
@@ -17,9 +19,11 @@ public class Ultrasonic implements Runnable {
     private GpioPinDigitalOutput TrigPin;
 
     // Get Sensor Information from Database
-    public Ultrasonic(int SensorID, PinsList GateNum1, PinsList GateNum2, int SensorValue, int MaxValue, int MinValue, Connection DB) {
+    public Ultrasonic(int SensorID, int RoomID, String SensorName, PinsList GateNum1, PinsList GateNum2, int SensorValue, int MaxValue, int MinValue, Connection DB) {
         this.DB = DB;
         this.SensorID = SensorID;
+        this.RoomID = RoomID;
+        this.SensorName = SensorName;
         this.SensorValue = SensorValue;
         this.MaxValue = MaxValue;
         this.MinValue = MinValue;
@@ -42,17 +46,38 @@ public class Ultrasonic implements Runnable {
         }
     }
 
+    // Get Sensor ID
+    @Override
+    public int getSensorID() {
+        return SensorID;
+    }
+
+    // Get Sensor Room ID
+    @Override
+    public int getRoomID() {
+        return RoomID;
+    }
+
+    // Get Sensor Name
+    @Override
+    public String getSensorName() {
+        return SensorName;
+    }
+
     // Return Sensor State Value
+    @Override
     public int getSensorValue() {
         return SensorValue;
     }
 
     // Get the Maximum Value For The Sensor
+    @Override
     public int getMaxValue() {
         return MaxValue;
     }
 
     // Get the Minimum Value For The Sensor
+    @Override
     public int getMinValue() {
         return MinValue;
     }
@@ -120,5 +145,10 @@ public class Ultrasonic implements Runnable {
                 FileLogger.AddWarning("Ultrasonic " + SensorID + ", Error In DataBase\n" + ex);
             }
         }
+    }
+
+    @Override
+    public boolean getSensorState() {
+        return false;
     }
 }
