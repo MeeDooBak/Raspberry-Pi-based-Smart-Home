@@ -138,6 +138,9 @@ public class SendFile implements Runnable {
             } catch (InterruptedException | IOException ex) {
                 // This Catch For DataBase Error 
                 FileLogger.AddWarning("SendFile Class, Error In DataBase\n" + ex);
+
+                // Start The Thread To Send File If the Queue Not Empty
+                new Thread(this).start();
             }
         }
     }

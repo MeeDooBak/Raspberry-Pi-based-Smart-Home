@@ -1,0 +1,66 @@
+Jan 01, 2017 1:38:48 PM Logger.FileLogger AddInfo
+INFO: Add Pin : 107 Camera
+Jan 01, 2017 1:38:48 PM Logger.FileLogger AddInfo
+INFO: Add Pin : 108 Camera
+Jan 01, 2017 1:38:48 PM Logger.FileLogger AddInfo
+INFO: Add Device : 1001, with Name : Security Camera
+Jan 01, 2017 1:38:48 PM Logger.FileLogger AddInfo
+INFO: Add Device : 1002, with Name : Security Camera
+Jan 01, 2017 1:38:49 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Is Live Now
+Jan 01, 2017 1:38:49 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1002, Is Live Now
+Jan 01, 2017 1:39:00 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1002, Capture : Camera_1002_01-01-2017_13-39-00-295.jpg
+Jan 01, 2017 1:39:00 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1002_01-01-2017_13-39-00-295.jpg File.
+Jan 01, 2017 1:39:00 PM Logger.FileLogger AddInfo
+INFO: The Camera_1002_01-01-2017_13-39-00-295.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:39:01 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-39-01-127.jpg
+Jan 01, 2017 1:39:01 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-39-01-381.jpg
+Jan 01, 2017 1:39:01 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-39-01-612.jpg
+Jan 01, 2017 1:39:01 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-39-01-127.jpg File.
+Jan 01, 2017 1:39:01 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-39-01-127.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:39:01 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-39-01-381.jpg File.
+Jan 01, 2017 1:39:01 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-39-01-381.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:39:01 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-39-01-859.jpg
+Jan 01, 2017 1:39:02 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-39-01-612.jpg File.
+Jan 01, 2017 1:39:02 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-39-01-612.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:39:02 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-39-02-81.jpg
+Jan 01, 2017 1:39:02 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-39-01-859.jpg File.
+Jan 01, 2017 1:39:02 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-39-01-859.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:39:02 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-39-02-313.jpg
+Jan 01, 2017 1:39:02 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-39-02-81.jpg File.
+Jan 01, 2017 1:39:02 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-39-02-545.jpg
+Jan 01, 2017 1:39:02 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-39-02-81.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:39:02 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-39-02-783.jpg
+Jan 01, 2017 1:39:02 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-39-02-313.jpg File.
+Jan 01, 2017 1:39:03 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-39-02-313.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:39:03 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-39-02-545.jpg File.
+Jan 01, 2017 1:39:03 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-39-02-545.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:39:03 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-39-02-783.jpg File.
+Jan 01, 2017 1:39:03 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-39-02-783.jpg File is Uploaded Successfully.

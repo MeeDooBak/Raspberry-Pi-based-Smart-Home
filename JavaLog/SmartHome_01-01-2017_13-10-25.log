@@ -1,0 +1,300 @@
+Jan 01, 2017 1:10:35 PM Logger.FileLogger AddInfo
+INFO: Add Pin : 107 Camera
+Jan 01, 2017 1:10:35 PM Logger.FileLogger AddInfo
+INFO: Add Pin : 108 Camera
+Jan 01, 2017 1:10:36 PM Logger.FileLogger AddInfo
+INFO: Add Device : 1001, with Name : Security Camera
+Jan 01, 2017 1:10:36 PM Logger.FileLogger AddInfo
+INFO: Add Device : 1002, with Name : Security Camera
+Jan 01, 2017 1:10:36 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Is Live Now
+Jan 01, 2017 1:10:36 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1002, Is Live Now
+Jan 01, 2017 1:11:09 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1002, Capture : Camera_1002_01-01-2017_13-11-09-955.jpg
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-11-09-974.jpg
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1002_01-01-2017_13-11-09-955.jpg File.
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: The Camera_1002_01-01-2017_13-11-09-955.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-11-09-974.jpg File.
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-11-09-974.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-11-10-210.jpg
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-11-10-210.jpg File.
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-11-10-210.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-11-10-446.jpg
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-11-10-446.jpg File.
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-11-10-446.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-11-10-710.jpg
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-11-10-710.jpg File.
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-11-10-710.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-11-10-947.jpg
+Jan 01, 2017 1:11:10 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-11-10-947.jpg File.
+Jan 01, 2017 1:11:11 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-11-11-183.jpg
+Jan 01, 2017 1:11:11 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-11-10-947.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:11:11 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-11-11-426.jpg
+Jan 01, 2017 1:11:11 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-11-11-183.jpg File.
+Jan 01, 2017 1:11:11 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-11-11-183.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:11:11 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-11-11-673.jpg
+Jan 01, 2017 1:11:11 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-11-11-426.jpg File.
+Jan 01, 2017 1:11:12 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-11-11-426.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:11:12 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-11-11-673.jpg File.
+Jan 01, 2017 1:11:12 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-11-11-673.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:14:05 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-14-05-424.jpg
+Jan 01, 2017 1:14:05 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1002, Capture : Camera_1002_01-01-2017_13-14-05-447.jpg
+Jan 01, 2017 1:14:05 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-14-05-663.jpg
+Jan 01, 2017 1:14:05 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-14-05-894.jpg
+Jan 01, 2017 1:14:05 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-14-05-424.jpg File.
+Jan 01, 2017 1:14:05 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-14-05-424.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:14:06 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1002_01-01-2017_13-14-05-447.jpg File.
+Jan 01, 2017 1:14:06 PM Logger.FileLogger AddInfo
+INFO: The Camera_1002_01-01-2017_13-14-05-447.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:14:06 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-14-06-148.jpg
+Jan 01, 2017 1:14:06 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-14-05-663.jpg File.
+Jan 01, 2017 1:14:06 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-14-06-390.jpg
+Jan 01, 2017 1:14:06 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-14-05-663.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:14:06 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-14-06-720.jpg
+Jan 01, 2017 1:14:06 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-14-05-894.jpg File.
+Jan 01, 2017 1:14:06 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-14-05-894.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:14:07 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-14-06-964.jpg
+Jan 01, 2017 1:14:07 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-14-06-148.jpg File.
+Jan 01, 2017 1:14:07 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-14-06-148.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:14:07 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-14-06-390.jpg File.
+Jan 01, 2017 1:14:07 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-14-07-210.jpg
+Jan 01, 2017 1:14:07 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-14-06-390.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:14:07 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-14-06-720.jpg File.
+Jan 01, 2017 1:14:07 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-14-06-720.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:14:07 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-14-06-964.jpg File.
+Jan 01, 2017 1:14:07 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-14-06-964.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:14:08 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-14-07-210.jpg File.
+Jan 01, 2017 1:14:08 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-14-07-210.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:18:38 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-18-38-688.jpg
+Jan 01, 2017 1:18:38 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1002, Capture : Camera_1002_01-01-2017_13-18-38-789.jpg
+Jan 01, 2017 1:18:38 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-18-38-920.jpg
+Jan 01, 2017 1:18:39 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-18-39-173.jpg
+Jan 01, 2017 1:18:39 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-18-39-405.jpg
+Jan 01, 2017 1:18:39 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-18-39-636.jpg
+Jan 01, 2017 1:18:39 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-18-38-688.jpg File.
+Jan 01, 2017 1:18:39 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-18-38-688.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:18:39 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1002_01-01-2017_13-18-38-789.jpg File.
+Jan 01, 2017 1:18:39 PM Logger.FileLogger AddInfo
+INFO: The Camera_1002_01-01-2017_13-18-38-789.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:18:40 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-18-39-873.jpg
+Jan 01, 2017 1:18:40 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-18-38-920.jpg File.
+Jan 01, 2017 1:18:40 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-18-38-920.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:18:40 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-18-40-237.jpg
+Jan 01, 2017 1:18:40 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-18-39-173.jpg File.
+Jan 01, 2017 1:18:40 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-18-39-173.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:18:40 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-18-39-405.jpg File.
+Jan 01, 2017 1:18:40 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-18-40-474.jpg
+Jan 01, 2017 1:18:40 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-18-39-405.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:18:40 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-18-39-636.jpg File.
+Jan 01, 2017 1:18:40 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-18-39-636.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:18:41 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-18-39-873.jpg File.
+Jan 01, 2017 1:18:41 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-18-39-873.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:18:41 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-18-40-237.jpg File.
+Jan 01, 2017 1:18:41 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-18-40-237.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:18:41 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-18-40-474.jpg File.
+Jan 01, 2017 1:18:41 PM Logger.FileLogger AddInfo
+INFO: The Camera_1001_01-01-2017_13-18-40-474.jpg File is Uploaded Successfully.
+Jan 01, 2017 1:34:11 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1002, Capture : Camera_1002_01-01-2017_13-34-11-16.jpg
+Jan 01, 2017 1:34:11 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-34-11-129.jpg
+Jan 01, 2017 1:34:11 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-34-11-396.jpg
+Jan 01, 2017 1:34:11 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-34-11-647.jpg
+Jan 01, 2017 1:34:11 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1002_01-01-2017_13-34-11-16.jpg File.
+Jan 01, 2017 1:34:11 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+org.apache.commons.net.ftp.FTPConnectionClosedException: FTP response 421 received.  Server closed connection.
+Jan 01, 2017 1:34:11 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-34-11-129.jpg File.
+Jan 01, 2017 1:34:11 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:34:11 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-34-11-396.jpg File.
+Jan 01, 2017 1:34:11 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:34:11 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-34-11-647.jpg File.
+Jan 01, 2017 1:34:11 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:34:11 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-34-11-880.jpg
+Jan 01, 2017 1:34:12 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-34-12-120.jpg
+Jan 01, 2017 1:34:12 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-34-12-359.jpg
+Jan 01, 2017 1:34:12 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-34-12-599.jpg
+Jan 01, 2017 1:34:12 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-34-11-880.jpg File.
+Jan 01, 2017 1:34:12 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:34:12 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-34-12-120.jpg File.
+Jan 01, 2017 1:34:12 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:34:12 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-34-12-359.jpg File.
+Jan 01, 2017 1:34:12 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:34:12 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-34-12-599.jpg File.
+Jan 01, 2017 1:34:12 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:34:12 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-34-12-839.jpg
+Jan 01, 2017 1:34:13 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-34-12-839.jpg File.
+Jan 01, 2017 1:34:13 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:37:12 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1002, Capture : Camera_1002_01-01-2017_13-37-12-484.jpg
+Jan 01, 2017 1:37:12 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-37-12-784.jpg
+Jan 01, 2017 1:37:13 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-37-13-38.jpg
+Jan 01, 2017 1:37:13 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1002_01-01-2017_13-37-12-484.jpg File.
+Jan 01, 2017 1:37:13 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:37:13 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-37-12-784.jpg File.
+Jan 01, 2017 1:37:13 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:37:13 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-37-13-38.jpg File.
+Jan 01, 2017 1:37:13 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:37:13 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-37-13-270.jpg
+Jan 01, 2017 1:37:13 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-37-13-639.jpg
+Jan 01, 2017 1:37:13 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-37-13-870.jpg
+Jan 01, 2017 1:37:14 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-37-14-102.jpg
+Jan 01, 2017 1:37:14 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-37-13-270.jpg File.
+Jan 01, 2017 1:37:14 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:37:14 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-37-13-639.jpg File.
+Jan 01, 2017 1:37:14 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:37:14 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-37-13-870.jpg File.
+Jan 01, 2017 1:37:14 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:37:14 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-37-14-102.jpg File.
+Jan 01, 2017 1:37:14 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:37:14 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-37-14-356.jpg
+Jan 01, 2017 1:37:14 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Capture : Camera_1001_01-01-2017_13-37-14-588.jpg
+Jan 01, 2017 1:37:15 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-37-14-356.jpg File.
+Jan 01, 2017 1:37:15 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error
+Jan 01, 2017 1:37:15 PM Logger.FileLogger AddInfo
+INFO: Start Uploading Camera_1001_01-01-2017_13-37-14-588.jpg File.
+Jan 01, 2017 1:37:15 PM Logger.FileLogger AddWarning
+WARNING: SendFile Class, Error In DataBase
+java.net.SocketException: Software caused connection abort: socket write error

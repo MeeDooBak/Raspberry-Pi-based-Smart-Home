@@ -1,0 +1,12 @@
+Jan 01, 2017 6:27:32 PM Logger.FileLogger AddInfo
+INFO: Add Pin : 107 Camera
+Jan 01, 2017 6:27:32 PM Logger.FileLogger AddInfo
+INFO: Add Pin : 108 Camera
+Jan 01, 2017 6:27:32 PM Logger.FileLogger AddInfo
+INFO: Add Device : 1001, with Name : Security Camera
+Jan 01, 2017 6:27:32 PM Logger.FileLogger AddInfo
+INFO: Add Device : 1002, with Name : Security Camera
+Jan 01, 2017 6:27:33 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1001, Is Live Now
+Jan 01, 2017 6:27:33 PM Logger.FileLogger AddInfo
+INFO: SecurityCamera 1002, Is Live Now
