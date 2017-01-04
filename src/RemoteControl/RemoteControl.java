@@ -247,9 +247,6 @@ public class RemoteControl implements Runnable {
                         }
                     }
                 }
-
-                // To Sleep For 2 Second
-                Thread.sleep(2000);
             }
         } catch (IOException | InterruptedException ex) {
             // This Catch For Error In Getting Key From Remote Control 
